@@ -1,0 +1,19 @@
+pnpm-lock.yaml
+node_modules/
+dist/
+.next/
+.expo/
+.turbo/
+coverage/
+# Preserve original planning documents and draft contracts.
+MASTER_SPEC.md
+AGENTS.md
+architecture/
+legal/
+prompts/
+backlog/BUILD_BACKLOG.csv
+backlog/SPRINT_PLAN.md
+tests/ACCEPTANCE_MATRIX.md
+docs/EXPLORATION_AND_PRESS.md
+docs/DEVELOPMENT_PLAN.md
+**/next-env.d.ts

@@ -1,0 +1,44 @@
+{
+  "name": "deckforge",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "engines": {
+    "node": ">=22.22.0 <23",
+    "pnpm": "10.30.2"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "pnpm --filter @deckforge/contracts build && pnpm --filter @deckforge/api dev",
+    "dev:mobile": "pnpm build:packages && pnpm --filter @deckforge/mobile dev",
+    "dev:web": "pnpm build:packages && pnpm --filter @deckforge/mobile web",
+    "dev:admin": "pnpm build:packages && pnpm --filter @deckforge/admin dev",
+    "dev:jobs": "pnpm --filter @deckforge/jobs dev",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "infra:status": "docker compose ps",
+    "build": "turbo run build",
+    "build:packages": "pnpm --filter \"./packages/*\" -r build",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "turbo run typecheck && tsc -p tsconfig.tests.json",
+    "test": "pnpm build:packages && vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "setup:local": "node scripts/setup.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "eslint": "10.13.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "16.5.0",
+    "prettier": "3.9.10",
+    "turbo": "2.11.10",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

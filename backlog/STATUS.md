@@ -1,0 +1,8 @@
+# Implementation status
+
+| Ticket                   | Status                                             | Evidence                                                                                                                                           | Remaining acceptance                                                                                                            |
+| ------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| B001 — Monorepo scaffold | Implemented and locally validated, 27 October 2026 | [Validation report](../docs/B001_REPORT.md): clean install, formatting/lint/types, 9 tests, 10 builds, live web/API/admin/jobs and Docker services | Original CSV requires checks to succeed in CI; pending B002. Native device/compiled-app validation not claimed.                 |
+| B002 — Automated CI      | Next / not started                                 | Workspace commands are ready                                                                                                                       | Workflow, dependency audit, failing-check experiment, actual remote PR check protection; add Prisma validation when B004 lands. |
+
+The 82-row CSV remains the source of ticket scope and dependencies. This file records implementation status without rewriting its acceptance criteria. No other backlog ticket is complete.

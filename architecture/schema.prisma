@@ -1,0 +1,464 @@
+// DeckForge initial relational-domain DRAFT.
+// This is NOT a finished migration; have Codex validate against the pinned Prisma
+// version, add missing indexes/check constraints, authorization and migrations.
+// Use DB check constraints to enforce positive step deltas and ledger invariants.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CardRarity { COMMON UNCOMMON RARE EPIC LEGENDARY }
+enum CardStatus { OWNED LOCKED CONSUMED REVOKED }
+enum CardBranch { BLUE RED }
+enum FaceSuit { CLUBS DIAMONDS HEARTS SPADES }
+enum OwnershipAction { MINT GRANT FUSION_CONSUME FUSION_CREATE PRESS_EVOLVE LOCK UNLOCK REVOKE }
+enum GameKind { HOLDEM_CLASSIC HOLDEM_EVOLVED SPADES_CLASSIC }
+enum GameStatus { WAITING ACTIVE COMPLETE CANCELLED }
+enum Currency { PLAY_CHIPS TRAIL_CREDITS STORE_GEMS }
+enum PurchaseStatus { PENDING VERIFIED REFUNDED REVOKED }
+enum IncubationStatus { ACTIVE COMPLETED CANCELLED REJECTED }
+enum PressJobStatus { ACTIVE PAUSED READY_TO_CLAIM COMPLETED CANCELLED REVOKED }
+enum PackKind { EARNED_RANDOM PAID_FIXED TRAIL_CACHE }
+enum LocationDropStatus { DRAFT ACTIVE SUSPENDED EXPIRED }
+enum TrailRunStatus { ACTIVE REVIEW COMPLETED CANCELLED REJECTED }
+
+model User {
+  id             String          @id @default(uuid())
+  externalAuthId String?         @unique
+  isGuest        Boolean         @default(true)
+  status         String          @default("ACTIVE")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  cards          CardInstance[]
+  ownerships     OwnershipEvent[]
+  loadouts       Loadout[]
+  wallets        Wallet[]
+  purchases      Purchase[]
+  incubations    IncubationJob[]
+  rewards        RewardGrant[]
+  pressScreens   OwnedPressScreen[]
+  pressJobs      PressJob[]
+  activityClaims ActivityClaim[]
+  packOpenings   PackOpening[]
+  dropClaims     LocationClaim[]
+  trailRuns      TrailRun[]
+}
+
+model FaceDefinition {
+  id           String         @id // E.g. 'A-S' or '10-H'
+  rank         Int            // 2..14 where Ace=14
+  suit         FaceSuit
+  cardTemplates CardTemplate[]
+  instances    CardInstance[]
+  loadoutSlots LoadoutSlot[]
+  @@unique([rank, suit])
+}
+
+model CardSeries {
+  id            String          @id @default(uuid())
+  slug          String          @unique
+  displayName   String
+  rightsOwner   String          @default("ORIGINAL")
+  status        String          @default("DRAFT")
+  supplyCap     Int?
+  createdAt     DateTime        @default(now())
+  templates     CardTemplate[]
+  instances     CardInstance[]
+}
+
+model CardTemplate {
+  id             String       @id @default(uuid())
+  seriesId       String
+  faceId         String
+  frontAssetKey  String
+  backAssetKey   String
+  playStyleFamily String // earnable gameplay identity; paid skins cannot change this
+  rarity         CardRarity   @default(COMMON)
+  version        Int          @default(1)
+  series         CardSeries   @relation(fields: [seriesId], references: [id])
+  face           FaceDefinition @relation(fields: [faceId], references: [id])
+  instances      CardInstance[]
+  @@unique([seriesId, faceId, version])
+}
+
+model CardInstance {
+  id             String       @id @default(uuid())
+  ownerId        String
+  faceId         String
+  seriesId       String
+  templateId     String
+  activeSkinId   String? // visual only; never read in scoring or fusion recipes
+  status         CardStatus   @default(OWNED)
+  level          Int          @default(1) // validated: 1..6
+  branch         CardBranch   @default(BLUE)
+  rarity         CardRarity   @default(COMMON)
+  editionSerial  Int?         // unique per series, when issued
+  sourceKind     String
+  acquiredAt     DateTime     @default(now())
+  stateVersion   Int          @default(1)
+  owner          User         @relation(fields: [ownerId], references: [id])
+  face           FaceDefinition @relation(fields: [faceId], references: [id])
+  series         CardSeries   @relation(fields: [seriesId], references: [id])
+  template       CardTemplate @relation(fields: [templateId], references: [id])
+  activeSkin     DisplaySkin? @relation(fields: [activeSkinId], references: [id])
+  events         OwnershipEvent[]
+  loadoutSlots   LoadoutSlot[]
+  fusionIngredients FusionIngredient[]
+  incubationJobs IncubationJob[]
+  pressJobs      PressJob[]
+  @@unique([seriesId, editionSerial])
+  @@index([ownerId, status, faceId])
+  @@index([seriesId, templateId])
+}
+
+model OwnershipEvent {
+  id           String          @id @default(uuid())
+  cardId       String
+  actorUserId  String?
+  action       OwnershipAction
+  reason       String
+  refId        String?
+  metadata     Json?
+  recordedAt   DateTime        @default(now())
+  card         CardInstance    @relation(fields: [cardId], references: [id])
+  actor        User?           @relation(fields: [actorUserId], references: [id])
+  @@index([cardId, recordedAt])
+}
+
+model Loadout {
+  id           String       @id @default(uuid())
+  userId       String
+  name         String
+  active       Boolean      @default(false)
+  version      Int          @default(1)
+  user         User         @relation(fields: [userId], references: [id])
+  slots        LoadoutSlot[]
+  @@index([userId, active])
+}
+
+model LoadoutSlot {
+  id           String         @id @default(uuid())
+  loadoutId    String
+  faceId       String
+  instanceId   String
+  loadout      Loadout        @relation(fields: [loadoutId], references: [id])
+  face         FaceDefinition @relation(fields: [faceId], references: [id])
+  instance     CardInstance   @relation(fields: [instanceId], references: [id])
+  @@unique([loadoutId, faceId])
+  @@unique([loadoutId, instanceId])
+}
+
+model FusionJob {
+  id             String            @id @default(uuid())
+  actorUserId    String
+  idempotencyKey String            @unique
+  childCardId    String?           @unique
+  status         String            @default("PENDING")
+  createdAt      DateTime          @default(now())
+  finalizedAt    DateTime?
+  ingredients    FusionIngredient[]
+}
+
+model FusionIngredient {
+  fusionId    String
+  cardId      String
+  fusion      FusionJob    @relation(fields: [fusionId], references: [id])
+  card        CardInstance @relation(fields: [cardId], references: [id])
+  @@id([fusionId, cardId])
+  @@unique([cardId]) // cannot feed the same card into two fusions
+}
+
+model GameRoom {
+  id              String       @id @default(uuid())
+  gameKind        GameKind
+  rulesetVersion  String
+  status          GameStatus   @default(WAITING)
+  stateVersion    Int          @default(0)
+  snapshot        Json?
+  createdAt       DateTime     @default(now())
+  completedAt     DateTime?
+  events          GameEvent[]
+}
+
+model GameEvent {
+  id          String      @id @default(uuid())
+  roomId      String
+  seq         Int
+  commandId   String?
+  eventType   String
+  publicData  Json
+  secretData  Json?        // strict server-only access; consider encryption
+  occurredAt  DateTime    @default(now())
+  room        GameRoom    @relation(fields: [roomId], references: [id])
+  @@unique([roomId, seq])
+  @@unique([roomId, commandId])
+  @@index([roomId, occurredAt])
+}
+
+model Wallet {
+  id          String       @id @default(uuid())
+  userId      String
+  currency    Currency
+  balance     BigInt       @default(0)
+  version     Int          @default(1)
+  user        User         @relation(fields: [userId], references: [id])
+  entries     LedgerEntry[]
+  @@unique([userId, currency])
+}
+
+model LedgerEntry {
+  id             String      @id @default(uuid())
+  walletId       String
+  amount         BigInt      // signed delta
+  eventKey       String      @unique
+  reason         String
+  referenceId    String?
+  createdAt      DateTime    @default(now())
+  wallet         Wallet      @relation(fields: [walletId], references: [id])
+  @@index([walletId, createdAt])
+}
+
+model Purchase {
+  id             String         @id @default(uuid())
+  userId         String
+  platform       String
+  platformTxnId  String         @unique
+  productId      String
+  status         PurchaseStatus @default(PENDING)
+  verifiedAt     DateTime?
+  refundedAt     DateTime?
+  createdAt      DateTime       @default(now())
+  user           User           @relation(fields: [userId], references: [id])
+}
+
+// LEGACY v1 model below: retire in B069 migration; do not implement beside PressJob.
+model IncubationJob {
+  id               String            @id @default(uuid())
+  userId           String
+  cardId           String
+  targetSteps      Int
+  acceptedSteps    Int               @default(0)
+  status           IncubationStatus  @default(ACTIVE)
+  idempotencyKey   String            @unique
+  createdAt        DateTime          @default(now())
+  completedAt      DateTime?
+  user             User              @relation(fields: [userId], references: [id])
+  card             CardInstance      @relation(fields: [cardId], references: [id])
+  stepClaims       StepClaim[]
+  @@index([userId, status])
+}
+
+model StepClaim {
+  id               String         @id @default(uuid())
+  incubationId     String
+  externalSampleId String         @unique
+  source           String
+  startTime        DateTime
+  endTime          DateTime
+  acceptedDelta    Int
+  createdAt        DateTime       @default(now())
+  incubation       IncubationJob  @relation(fields: [incubationId], references: [id])
+}
+
+model RewardGrant {
+  id             String     @id @default(uuid())
+  userId         String
+  triggerKey     String     @unique
+  rewardType     String
+  rewardPayload  Json
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+}
+
+model IdempotencyKey {
+  key           String      @id
+  scope         String
+  subjectId     String
+  requestHash   String
+  response      Json?
+  createdAt     DateTime    @default(now())
+  expiresAt     DateTime?
+  @@index([scope, subjectId])
+}
+
+// v1.1: Printing Press, paid fixed-content packs, earned activity and curated trails.
+// All numeric limits are server-versioned rules; add check constraints/transaction tests.
+// Health/geo samples are ephemeral evidence; do not persist raw route traces here.
+
+model PressScreenPattern {
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  branch            CardBranch
+  fromLevel         Int
+  toLevel           Int
+  requiredSteps     Int
+  requiredTrailInk  Int      @default(0)
+  trailCreditPrice  Int
+  ruleVersion       String
+  active            Boolean  @default(false)
+  ownedScreens      OwnedPressScreen[]
+  @@index([active, branch, fromLevel])
+}
+
+model OwnedPressScreen {
+  id           String   @id @default(uuid())
+  userId       String
+  patternId    String
+  sourceEvent  String   @unique
+  consumedAt   DateTime?
+  acquiredAt   DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+  pattern      PressScreenPattern @relation(fields: [patternId], references: [id])
+  pressJobs    PressJob[]
+  @@index([userId, consumedAt])
+}
+
+model PressJob {
+  id            String   @id @default(uuid())
+  userId        String
+  cardId        String
+  ownedScreenId String
+  state         PressJobStatus @default(ACTIVE)
+  acceptedSteps Int      @default(0)
+  requiredSteps Int
+  ruleVersion   String
+  // Snapshot the recipe; later admin edits cannot mutate this active job.
+  recipeSnapshot Json
+  idempotencyKey String @unique
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  user          User     @relation(fields: [userId], references: [id])
+  card          CardInstance @relation(fields: [cardId], references: [id])
+  screen        OwnedPressScreen @relation(fields: [ownedScreenId], references: [id])
+  // Enforce one active job per user/card with partial indexes in SQL migration.
+  @@index([userId, state])
+  @@index([cardId, state])
+}
+
+model ActivityClaim {
+  id           String  @id @default(uuid())
+  userId       String
+  source       String
+  sourceSampleKey String
+  startTime    DateTime
+  endTime      DateTime
+  acceptedSteps Int
+  trailCreditsEarned Int @default(0)
+  pressJobId   String?
+  pressStepsAllocated Int @default(0)
+  createdAt    DateTime @default(now())
+  // Link only to account; pressJobId is an event reference to avoid sync cascades.
+  user         User @relation(fields: [userId], references: [id])
+  @@unique([userId, source, sourceSampleKey])
+  @@index([userId, startTime])
+}
+
+model PackCatalog {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  kind            PackKind
+  published       Boolean  @default(false)
+  priceTrailCredits Int?
+  storeSku        String?
+  poolVersion     String
+  // EARNED_RANDOM: versioned chance table; PAID_FIXED: exact cosmetic contents.
+  versionedContents Json
+  startsAt        DateTime?
+  endsAt          DateTime?
+  openings        PackOpening[]
+}
+
+model PackOpening {
+  id             String  @id @default(uuid())
+  userId         String
+  packId         String
+  idempotencyKey String  @unique
+  poolVersion    String
+  contentsSnapshot Json
+  debitLedgerEventKey String? @unique
+  openedAt       DateTime @default(now())
+  user           User @relation(fields: [userId], references: [id])
+  pack           PackCatalog @relation(fields: [packId], references: [id])
+  @@index([userId, openedAt])
+}
+
+model LocationDrop {
+  id           String @id @default(uuid())
+  slug         String @unique
+  category     String // unbranded original category; no third-party claim of affiliation
+  name         String
+  regionKey    String
+  latitude     Float
+  longitude    Float
+  radiusMeters Int
+  status       LocationDropStatus @default(DRAFT)
+  safetyApprovedAt DateTime?
+  publishedRewardRule Json
+  startsAt     DateTime?
+  endsAt       DateTime?
+  claims       LocationClaim[]
+  @@index([status, regionKey])
+}
+
+model LocationClaim {
+  id             String @id @default(uuid())
+  userId         String
+  dropId         String
+  idempotencyKey String @unique
+  claimWindowKey String
+  resultSnapshot Json
+  claimedAt      DateTime @default(now())
+  user           User @relation(fields: [userId], references: [id])
+  drop           LocationDrop @relation(fields: [dropId], references: [id])
+  @@unique([userId, dropId, claimWindowKey])
+}
+
+model TrailRoute {
+  id             String @id @default(uuid())
+  slug           String @unique
+  title          String
+  regionKey      String
+  // Admin-curated public-access route geometry, not an individual's movement history.
+  publicRouteGeometry Json
+  orderedCheckpoints Json
+  publiclyAccessible Boolean @default(false)
+  approvedAt     DateTime?
+  accessibilityMetadata Json?
+  rewardRuleVersion String
+  publishedRewardRules Json
+  runs           TrailRun[]
+  @@index([regionKey, publiclyAccessible])
+}
+
+model TrailRun {
+  id             String @id @default(uuid())
+  userId         String
+  routeId        String
+  state          TrailRunStatus @default(ACTIVE)
+  startedAt      DateTime @default(now())
+  endedAt        DateTime?
+  acceptedLapCount Int @default(0)
+  // No raw GPS path; only coarse validation summary and claim id.
+  verificationSummary Json?
+  idempotencyKey String @unique
+  user           User @relation(fields: [userId], references: [id])
+  route          TrailRoute @relation(fields: [routeId], references: [id])
+  laps           TrailLap[]
+  @@index([userId, state, startedAt])
+}
+
+model TrailLap {
+  id             String @id @default(uuid())
+  runId          String
+  lapIndex       Int
+  claimEventKey  String @unique
+  rewardSnapshot Json
+  validatedAt    DateTime @default(now())
+  run            TrailRun @relation(fields: [runId], references: [id])
+  @@unique([runId, lapIndex])
+}

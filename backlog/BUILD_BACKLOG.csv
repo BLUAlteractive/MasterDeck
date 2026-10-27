@@ -1,0 +1,83 @@
+﻿ID,Milestone,Priority,Ticket,Dependencies,Description / technical work,Definition of done / acceptance
+B001,M0,P0,Monorepo scaffold,,"Establish pnpm workspace, mobile/admin/api/jobs/packages, lint/types/tests scripts",Clean install and workspace lint/typecheck/test jobs succeed in CI
+B002,M0,P0,Automated CI,B001,"Set up GitHub Actions dependency audit, unit tests, migration validations, PR check gates",PR cannot merge failing checks; logs show commands and versions
+B003,M0,P0,Architecture and ADR,B001,"Define bounded contexts, data contracts, environment configs, local runbook",ADR docs and protocol diagrams reviewed; no secret values in repo
+B004,M0,P0,Database foundation,"B001,B003","Prisma schema, migrations, seeds, local Postgres and transaction conventions",prisma validate/migrate reset work; referential constraints prevent duplicate card UUID
+B005,M0,P0,Auth and permissions,B004,"Guest/authenticated lifecycle, account linking, JWT socket validation, admin RBAC",Unauthorized API and room actions rejected; guest link maintains exact inventory
+B006,M1,P0,Card catalog & art manifests,B004,"52 face definitions, original series/asset manifests, rarity metadata, art validation",All 52 unique faces render; invalid asset/license metadata rejected
+B007,M1,P0,Idempotent starter deck,"B005,B006",Transactional 52-card starter grant with idempotency and rate limit,10 simultaneous calls yield exactly 52 valid instance IDs and one grant record
+B008,M1,P0,Ownership history,B007,Immutable ownership events and instance status transitions,"History preserves all mints, grants, consumes; traceable by ID and operator"
+B009,M1,P0,Loadout validator,B007,"Exactly one owned active instance for each 52 face identity, 100-slot collection manager",Reject duplicate/missing faces; never delete inventory at 100-slot threshold
+B010,M1,P0,Collection mobile gallery,"B006,B008,B009","Filter/sort series, view front/back/history, equip loadout, favorites",Physical device displays 52 cards legibly; screen-reader reads suit/rank
+B011,M1,P1,Album and archive,B008,"Show owned, discovered, formerly owned, set completion and personal achievements",Historical ownership persists after fusion and serial provenance is accurate
+B012,M2,P0,Pure five-card evaluator,B001,"Five-card poker evaluator, rank classes and rank test oracles","Enumerate 2,598,960 five-card hands with standard category counts"
+B013,M2,P0,Best 5 of 7,B012,"Select best of 21 five-card combos, handle wheel/royal tie breaks",Matches independent reference on generated 7-card seeds
+B014,M2,P0,Poker state machine,B013,"Pure reducer for blinds, shuffle, deal, bets, fold, raise, streets, showdown",Illegal turns and invalid bets rejected; deterministic event replay
+B015,M2,P0,Side-pots and splits,B014,"All-in and partial contributions, eligible players, pot arithmetic",Conservation of chips and side-pot ownership hold via property tests
+B016,M2,P0,Poker bot/test harness,B014,Deterministic scripted players and seeded scenarios for CI,Test harness can finish 1000 valid simulated matches without manual intervention
+B017,M2,P0,Rules explanation/UI payload,"B013,B014","Typed client-safe outcome, pot and hand-breakdown schema",Player can reproduce standard outcome from publicly visible cards
+B018,M3,P0,Game room actor,"B014,B005",Server-authoritative room lifecycle with serialized commands and durable events,Parallel commands and stale stateVersion cannot fork match state
+B019,M3,P0,Matchmaking and private rooms,B018,"Public queue, invite room, ready check and seat permission",Two devices complete join/leave without duplicate assignment
+B020,M3,P0,Per-player projections,B018,"Hide hole-card/deck secrets, reveal at terminal showdown only",Opponent network payload cannot reveal private ranks before showdown
+B021,M3,P0,Reconnect/replay,"B018,B020","Snapshots and replay, transient disconnect/rejoin and timeout policy",Resume without duplicate actions; unfinished game settlement consistent
+B022,M3,P0,Match results and chip ledger,"B015,B018,B021",Settle once with immutable money-free Play Chip ledger and results,Duplicate finish messages credit once; conservation and audit report pass
+B023,M4,P0,Evolved scoring engine,"B013,B009",Versioned integer rule + bonuses for qualifying hole instances,Straight 5500 beats 5210 flush; no 2-category overtake
+B024,M4,P0,Transparent bonus breakdown,"B023,B017","Explain included cards, style combo, total cap and tiebreak",No bonus from unused holes or public board; screen-reader description works
+B025,M4,P0,Separate matchmaking modes,"B019,B023","Separate queues, labeled match screen and chosen rule versions",Classic match cannot accidentally execute bonus logic
+B026,M4,P0,Fairness simulation,B023,Monte Carlo across staged rarity/level distributions and economy cohorts,"Document distribution of upsets, win-rate advantage and balance gates"
+B027,M5,P0,Spades deal and trick engine,B012,"Four-player team game with 13-card hands, legal follow suit, spades trump",All deals consume exactly 52 unique faces; cannot play illegal cards
+B028,M5,P0,Spades scoring,B027,"Bid phase, nil, bags, target score and rules config",Published examples pass; mixed partnerships settle once
+B029,M5,P0,Spades realtime actor,"B027,B028,B018",Integrate Spades state machine into common room protocol,Four devices can complete a 13-trick game and reconnect
+B030,M5,P1,Spades UX,B029,Bidding/trick/partner status mobile UI with accessible controls,No ambiguous trick results; legal playable cards obvious
+B031,M5,P1,Spades friends/rematch,"B029,B019","Private lobby, friend invites, table chat safe mode, rematch",Same 4 friends create match and finish 2 successive games
+B032,M6,P0,Fusion transaction,"B008,B009",Validate five identical eligible ingredient cards and atomically create child,Parallel idempotent requests cannot double consume; lineage complete
+B033,M6,P1,Fusion UI and preview,"B032,B010","Preview sources/child, confirm, failure states and new card animation",Actual result matches preview; no silent consumption
+B034,M6,P1,Health steps bridge,B005,"Permissioned OS steps native integration, overlap/source checks, anti-abuse",iOS/Android test devices and permission denial scenarios pass
+B035,M6,P1,Accessibility movement alternatives,"B034,B037","Nonwalking equivalent quests for Trail Credits and functional Printing Press upgrades, explicit no-GPS graceful fallback",Equivalent fair gameplay progression available with denied steps/GPS; no spoofed step sample is fabricated
+B036,M6,P1,Achievement engine,"B022,B028,B032",Typed achievements from server events with idempotent grants,10 full house milestone cannot be farmed through match replay
+B037,M6,P1,Missions & seasons,B036,"Daily/weekly missions, season progress and rewards",Scheduled restart and duplicate worker events cannot reissue rewards
+B038,M6,P0,Wallet restrictions,B022,"Separate earned Play Chips, earned Trail Credits and paid cosmetic Store Gems; event-ledger wallet restrictions","No currency interchange, purchased wagering chips, paid functional screens or cashout endpoints exist"
+B039,M7,P0,Direct cosmetics storefront,"B006,B038","Products/entitlements, approved direct purchase items, pricing and asset previews",No nondisclosed chance mechanic or game strength purchases in Classic
+B040,M7,P0,Apple/Google receipt verification,B039,"Signed verification and webhook processing, account-bound entitlements",Client spoofed payment cannot grant item; retry and refund tested
+B041,M7,P0,Purchase restore/refund,B040,Restore purchases and reconcile refunds with previously granted items,No unauthorized double entitlement or negative receipt state
+B042,M7,P0,Tournament system,"B022,B029","Schedule, brackets/leaderboards, game outcome ingest, in-game-only prizes",Rerun settlement grants exactly once; admin can replay result
+B043,M7,P1,Tournament mobile UI,B042,"Schedule, join, status, reporting and archived results","Registered user sees next action, eligibility and complete results"
+B044,M7,P0,Admin content/catalog,"B006,B005",Draft/review/publish original series and live product switches,Editor cannot mint uncontrolled scarce cards; all changes audited
+B045,M7,P0,Moderation and incidents,"B005,B018","Report/block/suspend, audit trail, game dispute inspector",Suspended users excluded; evidence can reconstruct controversial match
+B046,M7,P1,Operational dashboards,"B022,B032,B040,B042","Funnels, WEC, ledger check, latency, fraudulent grants, refund views",Server metric dashboards reconcile to database of record
+B047,M8,P0,Mobile app polish,"B010,B025,B030,B033,B039","Card animation, onboarding, mobile nav, sound/haptics, adaptive layout",Completes e2e user journeys on current Android/iOS test devices
+B048,M8,P0,Accessibility audit,B047,"Colorblind suits, screen readers, scaled text and motor affordances",Critical core flow works with labels and non-walking alternative
+B049,M8,P0,Security audit,"B045,B040,B032","Auth, socket projection, race conditions, dependency and admin controls",No known critical/high unmitigated findings before beta
+B050,M8,P0,Load and failure test,"B021,B022,B029","WebSocket, 500 concurrent games target, DB recovery and chaos testing",No incorrect settlement; documented performance baselines
+B051,M8,P0,Privacy deletion/export,"B005,B034,B046","Consent, data export, deletion, retention and policies",Removal requests audited; step/private data appropriately minimized
+B052,M8,P0,Backups and disaster recovery,"B004,B018","Restore game event logs, assets and DB to clean environment",Observed replay produces matching outcomes and ownership balances
+B053,M8,P0,Launch operations,"B049,B050,B051,B052","Staging/prod, feature flags, alerting, support tools, incident runbooks",Go/no-go checklist signed and rollback drill passes
+B054,M8,P0,Controlled beta / store review,"B047,B053","App store distribution, legal sign-offs, 18+ beta, real retention tracking",Launch criteria pass; no unlicensed brand/cash reward/NFT dependency
+B055,M9,P2,Additional games plugin contract,B027,"Plugin contract supports Blackjack, Tonk, Bid Whist without changing inventory",Example test-only game plugin uses same 52 face loadout
+B056,M9,P2,Licensed partner campaign schema,B044,"Disabled interfaces for rights, catalog campaign and royalty reporting",No use of third-party brands without written activation
+B057,M9,P2,Redemption adapter,B056,Future signed code issuance and redemption interface with fraud controls,All cases pending legal/partner approval; off by default
+B058,M9,P2,Expanded geospatial partner adapter,"B072,B075",Future vendor AR and licensed retailer sponsor APIs on top of already-shipped original location drop and trail engine,Licensed integrations can be disabled while original v1 map/trail/drop functionality remains operational
+B059,M9,P2,Blockchain provenance adapter,B008,Signed provenance certificate abstraction; optional future public attestation,"No on-chain personal data, token unlocks or wagering; disabled by default"
+B060,M6,P0,Separate three wallet balances,"B004,B038","Migrate Credits into Store Gems display and add TRAIL_CREDITS earned-only currency, atomic ledger and no swaps","Test no negative balances, forbidden exchanges, purchasable power or cross-ledger transfers"
+B061,M6,P0,Canonical activity ingestion,"B034,B060","OS native permissioned step sources, aggregation/interval conflict resolution and event deduplication",Reimport 100 repeated or overlapping samples and corrections: Trail Credit and one Press progress awarded only once
+B062,M6,P0,Versioned pack catalog,"B006,B044","Earned random pools odds and fixed cosmetic pack definitions, published stock/time configurations",Disclosed fixed contents or actual pool odds always match server version used for grant
+B063,M6,P0,Earned pack open engine,"B060,B062,B008","Transactional Trail Credit spend, seeded server RNG, immutable draw outcome and duplicate policies",Parallel requests and retries yield same pack reward card IDs and one debit
+B064,M7,P0,Purchased fixed cosmetic pack IAP,"B039,B062","Pack SKU exact cosmetic items, platform receipt verification, refunds and restore",Correct entitlement after verified purchase; no functional rarity/score effects
+B065,M7,P1,Pack opening UI and inventory,"B063,B064,B010","Pack shelf, exact contents/odds, reveal animations, purchase history, accessibility",Show earned and paid pathways clearly and never imply a paid pack contains power
+B066,M6,P0,Press screen recipe catalog,"B006,B060","Publish basic fine master tier recipes and earned Trail Credit prices, version snapshots",Screen recipes validate branch/tier transition only and cannot be changed for active jobs
+B067,M6,P0,Screen purchase and inventory,"B066,B008","Purchase functional consumables only with earned Trail Credits, inventory and refund locks",Atomic screen entitlement once; store gems forbidden as payment for functional screen
+B068,M6,P0,Printing Press job domain,"B067,B032","Job lock on card/screen, one active per player, progress state machine and immutable snapshot",Cannot start two jobs on same user/card; invalid terminal level and match lock rejected
+B069,M6,P0,Walk-to-evolve atomic claim,"B068,B061",One accepted step stream advances press; job ready then consumes screen+ink and mutates card level in place,"Same card UUID upgraded once with PRESS_EVOLVE provenance; no fusion duplication, no double spend"
+B070,M6,P1,Printing Press themed screens UI,"B068,B069,B010","Press platen, screen selection, animated imprint progress, print reveal and lineage view",Both screen reader and low-animation mode complete L1 to L3 without confusion
+B071,M6,P1,Trail Credit earning hub,"B060,B061","Accepted step vs raw difference, daily cap, activity sources, nonwalking alternate quests",Device permission denied still allows gameplay and equivalent upgrade route
+B072,M7,P0,Foreground location permission adapter,B005,Permission dialogs and fresh accuracy-filtered foreground GPS; no default always-on tracking,Revocation handled and no GPS used for ordinary Press Job
+B073,M7,P0,Public safe POI/drop registry,"B072,B044","Admin original category drops, approval/status, cooldown, public-site safety rules",Only reviewed safe entries publish; no trademarked sponsor imagery
+B074,M7,P0,Nearby drop proof and claim,"B072,B073,B008","Server fresh location proof validation, source rate limits and exactly-once reward grant","Mock GPS, old proof and duplicate cooldown claims rejected or flagged"
+B075,M7,P0,Approved park trail catalog,"B072,B044","Curated public legal access, geometry, ordered checkpoints, hours and reward configurations",Unsafe/closed/private routes cannot be activated and geo rights documented
+B076,M7,P0,Trail lap proof verifier,"B075,B061","Foreground route session, checkpoint sequence, elapsed-time and physical plausibility validation","Start/end teleport, implausible travel, replay, car-speed and missing checkpoint fail"
+B077,M7,P0,Trail lap award and progression,"B076,B008","Exactly-once first/third/fifth lap reward, Trail Ink and original bound edition issue","Concurrent lap claim produces one configured output, cap and season boundaries honored"
+B078,M7,P1,Explore map and trail lap UI,"B073,B075,B076","Drop list, original icon map, trail details, route start/pause/finish, lap feedback and safe warnings","Usable on iOS/Android, accessible list fallback and consent controls"
+B079,M7,P0,Explore safety admin console,"B073,B075,B077","Enable/disable unsafe sites, approve new route, inspect fraud and configure pool versions",Emergency disable and rollback works without deleting earned card history
+B080,M8,P0,Real-device Health/GPS tests,"B061,B072,B078","Android/iOS integration with consent/revoke, spotty GPS, source edits and low battery","Recorded outcomes for both OS platforms, no duplicated minted currency"
+B081,M8,P0,Economy abuse and policy audit,"B063,B064,B069,B077","Pack rate/odds/fairness review, pay-to-win test, privacy and location retention tests",No purchased gameplay boosts; route trace purge and fraud replay drills pass
+B082,M8,P0,End-to-end walk/press/trail beta gate,"B065,B070,B078,B080,B081","End-to-end single-user journey spanning steps, credits, screen, in-place upgrade, packs and trail rewards","Fresh account completes all three loops, APIs reconcile, no unlicensed or unsafe drop locations"

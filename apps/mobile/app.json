@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "DeckForge Dev",
+    "slug": "deckforge-dev",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "web": {
+      "bundler": "metro"
+    },
+    "ios": {
+      "bundleIdentifier": "com.deckforge.dev"
+    },
+    "android": {
+      "package": "com.deckforge.dev"
+    }
+  }
+}
