@@ -80,3 +80,41 @@ No approval is inferred from recording these proposals. Most do not block the mi
 - Alternatives: waiting leaves development blocked; suppressing the advisory weakens the audit; a global override unnecessarily affects unrelated consumers. A scoped tested override removes the vulnerable dependency while preserving the gate.
 - Validation/removal: full quality and audit checks, Expo native bundle exports and local development startup are required. Hosted checks must pass before acceptance. Remove this override and its compatibility tests when an upstream Expo release declares a patched dependency; review new consumers before changing the CLI version. Roll back the remediation commit if incompatible behavior is discovered, restoring the blocked audit gate.
 - Impact: development tooling only; no scoring, economy, API, persistence or legal boundary change. Native bundle export does not claim native compilation/device validation. Evidence: `docs/B002_REMEDIATION.md`.
+
+## B003 architecture clarification — 28 October 2026
+
+Engineering baseline and alternatives are in [ADR-0001](adr/0001-platform-boundaries.md), with [architecture](ARCHITECTURE.md), [protocol](PROTOCOL.md), [environment runbook](ENVIRONMENTS.md) and [requirement coverage](REQUIREMENT_COVERAGE.md). This records implementable boundaries, not product-owner approval of pending rules.
+
+- R-01: resolved naming by the crosswalk below; never cite a bare D-ID from MASTER_SPEC §20 as a register ID.
+- R-02/R-03: v1 Explore remains core under §24; shared deck/RNG contracts belong to game-core, implemented with B014 and reused by Spades independently of poker evaluation. No backlog dependency is silently edited.
+- R-04: hosted B002 checks now pass, completing B001's scaffold CI evidence; see B002_REMEDIATION. M0 still requires B004/B005.
+- R-05/R-06: B004 schema review handoff and owning-ticket protocol requirements are documented. Draft OpenAPI path parameters are corrected; master §8.5 trail start/complete naming is selected. Planned operations still need complete per-feature Zod/OpenAPI schemas and auth/concurrency tests when implemented.
+- R-12: canonical currencies apply from the first wallet schema; no game-earned Trail Credits except an explicitly approved accessibility-equivalent quest. B038 policy and B060 transaction ownership are distinguished.
+- R-13: choose Supabase Auth as B005's first adapter; no provider account, credentials or SDK added. Environment separation and future issuer/audience/JWKS configuration are documented. Map/data and native provider selections remain gated at their owning integration tickets.
+- R-14: all 82 ticket IDs are mapped to v1 requirements. Push notifications and season-pass acceptance are recorded as gaps needing owner resolution, not silently removed from launch scope.
+- R-07–R-11 remain pending before their affected implementations. No tuning, seed disclosure, source trust or press cancellation decision is approved here. The combined B003–B004 prompt is interpreted sequentially using the backlog: architecture now, executable persistence in B004.
+
+### Master §20 to decision-register crosswalk
+
+The left column belongs only to MASTER_SPEC §20; the right column belongs to this register. The mapping reconciles topics, not product changes.
+
+| Master §20 ID/topic                             | Register baseline                                                                             |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| D-01 original brand                             | D-01                                                                                          |
+| D-02 separate poker modes                       | D-02                                                                                          |
+| D-03 loadout/manager                            | D-04                                                                                          |
+| D-04 fusion and branches                        | D-05/D-06                                                                                     |
+| D-05 red branch earned separately               | Master §4.2/§20 D-05; register D-05 covers branch progression, not a new red acquisition rule |
+| D-06 included owned hole cards                  | D-08                                                                                          |
+| D-07 capped integer Evolved score               | D-09                                                                                          |
+| D-08 Classic Spades legality                    | D-10                                                                                          |
+| D-09 nonpurchasable Play Chips                  | D-11                                                                                          |
+| D-10 cosmetic Store Gems / earned Trail Credits | D-11/D-16/D-18/D-19                                                                           |
+| D-11 fixed paid / earned random packs           | D-12/D-22                                                                                     |
+| D-12 launch press and Explore; later AR         | D-13/D-14/D-17–D-21                                                                           |
+| D-13 off-chain provenance                       | D-07                                                                                          |
+| D-14 independent original IP                    | D-01/D-14                                                                                     |
+| D-15 adult initial positioning                  | D-15                                                                                          |
+| D-16 no physical-value prizes                   | D-12 and MASTER_SPEC §3.3/§20 D-16                                                            |
+
+Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SPEC §4.3). Register D-16 specifically isolates paid display skins (§4.1); it must not be confused with master §20 D-16. All unchanged product restrictions still apply.

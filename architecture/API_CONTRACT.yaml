@@ -1,27 +1,52 @@
 openapi: 3.0.3
 info:
-  title: DeckForge API — draft contract
-  version: 0.1.0
+  title: DeckForge API — implemented health and planned business contracts
+  version: 0.2.0
   description: >-
-    Starter interface only. Implement schemas, server auth and concurrency control
-    before exposing a production service. No real-money or NFT endpoints exist.
+    Only GET /health is implemented. All /v1 business operations are planned.
+    Complete strict schemas, auth, limits and tests in each owning ticket before exposure.
+    See docs/PROTOCOL.md; no real-money or NFT endpoints exist.
 servers:
   - url: https://api.example.invalid/v1
 paths:
+  /health:
+    get:
+      operationId: getHealth
+      x-implementation-status: implemented
+      summary: Public process liveness; not database or dependency readiness
+      servers:
+        - url: http://localhost:3001
+      responses:
+        '200':
+          description: Process alive
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [service, status]
+                properties:
+                  service: {type: string, enum: [deckforge-api]}
+                  status: {type: string, enum: [ok]}
+        '429':
+          description: Public health rate limit exceeded
   /me:
     get:
+      x-implementation-status: planned
       summary: Authenticated player profile
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Player profile}
-        '401': {description: Unauthenticated}
+        '200': {description: "Player profile"}
+        '401': {description: "Unauthenticated"}
   /catalog/series:
     get:
+      x-implementation-status: planned
       summary: Published original card series
       responses:
-        '200': {description: Paginated series list}
+        '200': {description: "Paginated series list"}
   /cards:
     get:
+      x-implementation-status: planned
       summary: Owned cards in inventory, including consumed-history filtered by status
       security: [{bearerAuth: []}]
       parameters:
@@ -29,9 +54,15 @@ paths:
           name: cursor
           schema: {type: string}
       responses:
-        '200': {description: Paginated card instances}
+        '200': {description: "Paginated card instances"}
   /cards/{cardId}/provenance:
+    parameters:
+      - in: path
+        name: cardId
+        required: true
+        schema: {type: string, format: uuid}
     get:
+      x-implementation-status: planned
       summary: View safe public/owner provenance fields
       security: [{bearerAuth: []}]
       parameters:
@@ -40,9 +71,10 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       responses:
-        '200': {description: Card provenance}
+        '200': {description: "Card provenance"}
   /evolutions/preview:
     post:
+      x-implementation-status: planned
       summary: Non-mutating fusion eligibility preview
       security: [{bearerAuth: []}]
       requestBody:
@@ -51,10 +83,11 @@ paths:
           application/json:
             schema: {$ref: '#/components/schemas/FusionPreviewRequest'}
       responses:
-        '200': {description: Eligibility and prospective child details}
-        '409': {description: One or more cards ineligible or locked}
+        '200': {description: "Eligibility and prospective child details"}
+        '409': {description: "One or more cards ineligible or locked"}
   /evolutions/confirm:
     post:
+      x-implementation-status: planned
       summary: One-transaction five-instance fusion
       security: [{bearerAuth: []}]
       requestBody:
@@ -63,103 +96,148 @@ paths:
           application/json:
             schema: {$ref: '#/components/schemas/FusionConfirmRequest'}
       responses:
-        '200': {description: One unique fusion result; idempotent on retry}
-        '409': {description: Cannot commit atomically or conflict}
+        '200': {description: "One unique fusion result; idempotent on retry"}
+        '409': {description: "Cannot commit atomically or conflict"}
   /tournaments:
     get:
+      x-implementation-status: planned
       summary: Published tournaments and eligibility
       responses:
-        '200': {description: Tournament list}
+        '200': {description: "Tournament list"}
   /commerce/verify:
     post:
+      x-implementation-status: planned
       summary: Verify platform-signed receipt server-side
       security: [{bearerAuth: []}]
       responses:
-        '202': {description: Verification queued for authorized server-side processing}
-        '400': {description: Unrecognized or invalid receipt}
+        '202': {description: "Verification queued for authorized server-side processing"}
+        '400': {description: "Unrecognized or invalid receipt"}
   /activity/sync:
     post:
+      x-implementation-status: planned
       summary: Sync consented platform step records; canonical dedupe then allocate Trail Credits and Press progress once
       security: [{bearerAuth: []}]
       responses:
-        '202': {description: Reconciliation accepted; never trust submitted totals without source reconciliation}
-        '409': {description: Stale or duplicated claim}
+        '202': {description: "Reconciliation accepted; never trust submitted totals without source reconciliation"}
+        '409': {description: "Stale or duplicated claim"}
   /wallets:
     get:
+      x-implementation-status: planned
       summary: Separate Play Chips, earned Trail Credits and paid-only Store Gems
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Nontransferable currency balances}
+        '200': {description: "Nontransferable currency balances"}
   /screens:
     get:
+      x-implementation-status: planned
       summary: Published functional screen patterns priced only in earned Trail Credits
       responses:
-        '200': {description: Tier-eligible printing screens and prices}
+        '200': {description: "Tier-eligible printing screens and prices"}
   /screens/{screenId}/buy:
+    parameters:
+      - in: path
+        name: screenId
+        required: true
+        schema: {type: string, format: uuid}
     post:
+      x-implementation-status: planned
       summary: Atomically debit earned Trail Credits and grant one screen entitlement
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: One newly owned screen entitlement or prior response on retry}
+        '200': {description: "One newly owned screen entitlement or prior response on retry"}
   /press/jobs:
     post:
+      x-implementation-status: planned
       summary: Lock eligible owned card and screen to a versioned walking-to-evolution recipe
       security: [{bearerAuth: []}]
       responses:
-        '201': {description: Press job created with fixed goal and target tier}
-        '409': {description: Card, owned screen or concurrent active job ineligible}
+        '201': {description: "Press job created with fixed goal and target tier"}
+        '409': {description: "Card, owned screen or concurrent active job ineligible"}
   /press/jobs/{jobId}/claim:
+    parameters:
+      - in: path
+        name: jobId
+        required: true
+        schema: {type: string, format: uuid}
     post:
+      x-implementation-status: planned
       summary: Atomically consume functional screen and ink and evolve SAME card instance
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Original instance ID with incremented state version and press provenance}
-        '409': {description: Missing proof, outstanding steps or conflicting card lock}
+        '200': {description: "Original instance ID with incremented state version and press provenance"}
+        '409': {description: "Missing proof, outstanding steps or conflicting card lock"}
   /packs:
     get:
+      x-implementation-status: planned
       summary: Catalog of earned random packs with versioned odds and paid fixed-content cosmetic packs
       responses:
-        '200': {description: Pack catalog with exact contents or earn-only published odds}
+        '200': {description: "Pack catalog with exact contents or earn-only published odds"}
   /packs/{packId}/open:
+    parameters:
+      - in: path
+        name: packId
+        required: true
+        schema: {type: string, format: uuid}
     post:
+      x-implementation-status: planned
       summary: Idempotent server-side pack fulfillment and earned-currency debit or validated IAP entitlement
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Immutable same opening result after retries}
-        '409': {description: Insufficient earned currency, ineligible pack or unverified purchase}
+        '200': {description: "Immutable same opening result after retries"}
+        '409': {description: "Insufficient earned currency, ineligible pack or unverified purchase"}
   /drops/nearby:
     get:
+      x-implementation-status: planned
       summary: Active original safe location-category drops near consented foreground location
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Public drop metadata, without personal location history}
+        '200': {description: "Public drop metadata, without personal location history"}
   /drops/{dropId}/claim:
+    parameters:
+      - in: path
+        name: dropId
+        required: true
+        schema: {type: string, format: uuid}
     post:
+      x-implementation-status: planned
       summary: Validate fresh opt-in proximity, safe public access and one claim per cooldown
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Idempotent original collectible drop reward}
-        '409': {description: Failed proof, ineligible location or cooldown}
+        '200': {description: "Idempotent original collectible drop reward"}
+        '409': {description: "Failed proof, ineligible location or cooldown"}
   /trails/nearby:
     get:
+      x-implementation-status: planned
       summary: Admin-approved public trail routes and route-lap reward rules
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Safe route metadata and availability}
-  /trails/{trailId}/runs:
+        '200': {description: "Safe route metadata and availability"}
+  /trails/{trailId}/start:
+    parameters:
+      - in: path
+        name: trailId
+        required: true
+        schema: {type: string, format: uuid}
     post:
+      x-implementation-status: planned
       summary: Start opt-in foreground location session on an approved public route
       security: [{bearerAuth: []}]
       responses:
-        '201': {description: Created route session}
-  /trails/runs/{runId}/laps:
+        '201': {description: "Created route session"}
+  /trails/runs/{runId}/complete:
+    parameters:
+      - in: path
+        name: runId
+        required: true
+        schema: {type: string, format: uuid}
     post:
-      summary: Submit verified ordered-checkpoint lap evidence for one-time server award
+      x-implementation-status: planned
+      summary: Submit ordered-checkpoint session evidence for server verification
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: Accepted lap and reward, same result on retry}
-        '202': {description: Evidence queued for review}
-        '409': {description: Spoof/replay/missing checkpoints/cooldown}
+        '200': {description: "Accepted lap and reward, same result on retry"}
+        '202': {description: "Evidence queued for review"}
+        '409': {description: "Spoof/replay/missing checkpoints/cooldown"}
 components:
   securitySchemes:
     bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
