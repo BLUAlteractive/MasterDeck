@@ -20,7 +20,9 @@ pnpm ci:database
 pnpm ci:audit
 ```
 
-`ci:audit` needs registry access. As of 27 October 2026 it intentionally reports a failure for [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) through `expo > @expo/cli > zod@3.25.76`. Application Zod is already 4.6.7, but Expo CLI declares `^3.25.76`. No patched compatible Zod 3 release was found. Do not force Zod 4 into that range or weaken the gate simply to get a green check; an upstream-compatible fix or a separately reviewed remediation is still required.
+`ci:audit` needs registry access. On 28 October 2026, the full audit passes the high/critical threshold with one low finding remaining. [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) was removed by a scoped compatibility override: only `@expo/cli@58.1.16>zod` resolves to patched 4.6.7. No audit finding is suppressed.
+
+Expo's latest stable CLI still declares Zod 3. This is a project-maintained compatibility remediation, not an upstream-supported dependency range. Both CLI Zod consumers were inspected; `scripts/expo-cli-compat.test.ts` exercises plugin descriptors, text/audio/image output validation, MCP parameters, strict parsing and JSON Schema conversion with valid and invalid inputs. It also pins the reviewed CLI/Zod versions so an upstream CLI update requires review. Remove the override and compatibility tests when a verified Expo release uses patched Zod natively. See [remediation evidence](B002_REMEDIATION.md).
 
 The API's express-rate-limit was updated from 8.2.1 to 8.7.1, resolving its rate-limit advisory and updating transitive ip-address to 10.7.5. Both corresponding high-severity findings disappeared on re-audit.
 
@@ -39,6 +41,6 @@ The public repository is [BLUAlteractive/MasterDeck](https://github.com/BLUAlter
 - [Deliberate failure run](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40637659188): the named assertion failed, quality stopped before builds, and the PR reported `BLOCKED`.
 - [Run after removing the probe](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40637856692): quality passed on Ubuntu (9 tests, 10 package builds); the database handoff explicitly reported deferred. Audit failed on the remaining high Expo CLI/Zod advisory (plus one low finding).
 
-The probe is absent from the current branch. Required checks are active and hosted behavior is verified, but overall CI acceptance and merging remain blocked until the high advisory is resolved. No merge or bypass was performed.
+The probe is absent from the current branch. These runs record the original blocker; the follow-up remediation and current acceptance are tracked in [B002 remediation](B002_REMEDIATION.md). No merge or bypass was performed.
 
 Sources: [setup-node caching](https://github.com/actions/setup-node), [pnpm setup](https://github.com/pnpm/action-setup), and [GitHub required-check behavior](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks).

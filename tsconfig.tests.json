@@ -10,6 +10,7 @@
   "include": [
     "vitest.config.mts",
     "packages/**/*.test.ts",
-    "services/**/*.test.ts"
+    "services/**/*.test.ts",
+    "scripts/**/*.test.ts"
   ]
 }

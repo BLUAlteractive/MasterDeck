@@ -1,6 +1,6 @@
 # B002 — Automated CI implementation report
 
-27 October 2026. **Implemented and verified on GitHub; acceptance remains blocked by the unresolved dependency advisory.** Hosted quality checks and merge protection are verified.
+27 October 2026 implementation history. Hosted quality checks and merge protection were verified; the initial dependency advisory blocked acceptance. See [28 October remediation and current status](B002_REMEDIATION.md).
 
 ## Changes
 
@@ -30,7 +30,7 @@ Final clean reproduction also passed: a fresh temporary workspace excluded `node
 
 The rate-limiter update was exercised by existing real HTTP health/CORS tests. No financial, inventory or gameplay code changed. No migration or production data operation occurred.
 
-## Remaining work
+## Remaining work at initial validation (superseded by remediation)
 
 - A compatible fix for the Expo CLI transitive Zod advisory is required. No ignore list, cross-major override or audit failure suppression was added.
 - Hosted execution and protection are verified below. The PR must remain blocked until the high dependency advisory is remediated.
