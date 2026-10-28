@@ -1,6 +1,6 @@
 # B002 dependency remediation — 28 October 2026
 
-**Local validation passed; hosted confirmation pending.** This follows the original [B002 report](B002_REPORT.md) and resolves its high dependency finding locally.
+**Validated locally and on GitHub; ready for review.** This follows the original [B002 report](B002_REPORT.md) and resolves its high dependency finding.
 
 ## Changed files
 
@@ -26,3 +26,9 @@ This is a project-maintained compatibility override outside Expo's declared Zod 
 Native exports do not prove native compilation or device behavior. One low advisory remains below the established high/critical gate. Database/migration integration belongs to B004. Remove the scoped override and compatibility tests after validating an upstream Expo release with a patched native dependency. Reverting the remediation restores the original audit blocker.
 
 Next smallest planned ticket after hosted acceptance: B003 — Architecture and ADR. No merge is performed as part of this remediation.
+
+## Hosted acceptance
+
+[Run 40694638477](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40694638477) passed both required jobs on Ubuntu at remediation commit `a391fd1`: frozen installation, formatting, lint, types, all 14 tests and all 10 builds, plus the unchanged high/critical dependency audit. The database handoff explicitly deferred to B004. Earlier deliberate-failure evidence and branch protection remain documented in the original report.
+
+B002 implementation is validated and ready for review in [PR #1](https://github.com/BLUAlteractive/MasterDeck/pull/1). The remaining low finding and project-maintained override are documented risks, not hidden audit exceptions. No merge was performed.
