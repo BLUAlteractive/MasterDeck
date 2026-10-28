@@ -6,3 +6,6 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - unrs-resolver
+# Scoped compatibility remediation; see docs/DECISIONS.md and scripts/expo-cli-compat.test.ts.
+overrides:
+  '@expo/cli@58.1.16>zod': 4.6.7

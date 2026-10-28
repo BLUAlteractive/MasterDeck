@@ -26,7 +26,10 @@
     "test": "pnpm build:packages && vitest run",
     "test:watch": "vitest",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
-    "setup:local": "node scripts/setup.mjs"
+    "setup:local": "node scripts/setup.mjs",
+    "ci:quality": "pnpm check && pnpm build",
+    "ci:audit": "pnpm audit --audit-level=high",
+    "ci:database": "node scripts/ci-database.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

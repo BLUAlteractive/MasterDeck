@@ -66,3 +66,17 @@ No approval is inferred from recording these proposals. Most do not block the mi
 - The single-screen mobile shell uses Expo's root component entry. Add Expo Router when navigation is introduced; no navigation or product behavior is changed by this temporary scaffold simplification.
 - Local Docker services are optional for B001 shells. B004 owns executable Prisma schema/migrations; do not install or validate the known-incomplete draft as though it were production-ready.
 - B001 status is tracked separately from the unchanged 82-ticket CSV. Its local implementation can pass while the original “succeed in CI” acceptance remains pending B002. No production deployment is authorized or performed.
+
+## B002 implementation decisions — 27 October 2026
+
+- CI uses two stable required-check names: `Quality checks` and `Dependency audit`. Frozen installs use pinned Node/pnpm; cache only pnpm downloads. Actions are SHA-pinned with read-only permissions and checkout credentials disabled. Remote merge enforcement is verified on `BLUAlteractive/MasterDeck`: both checks are bound to GitHub Actions and required on `main`, including for administrators. PR #1 demonstrated a blocked deliberate failure and successful quality recovery; audit remains blocking. See `docs/B002_REPORT.md` for run evidence.
+- Audit all dependencies and fail on high/critical findings or registry errors. Updating express-rate-limit within major 8 resolves two findings. Expo CLI's remaining Zod 3 advisory stays visible and blocks audit; the initial implementation added no risk acceptance or override. The explicit compatibility remediation below supersedes that initial blocker.
+- Until B004 creates executable database files, report validation as deferred. Fail the database guard once those paths appear, requiring B004 to implement actual Prisma/migration/integration checks. Do not execute the planning draft or invent migrations in B002.
+
+## B002 dependency compatibility remediation — 28 October 2026
+
+- Context: the latest stable Expo CLI 58.1.16 still requires `zod ^3.25.76`; no patched compatible Zod 3 release exists. Application contracts already use patched Zod 4.6.7. The high advisory blocks required CI.
+- Choice: a version-qualified pnpm override changes only `@expo/cli@58.1.16>zod` to 4.6.7. This is maintained by this project, outside Expo's declared range. We reviewed both CLI Zod consumers and added executable compatibility coverage for plugin validation, output variants, MCP command parsing and JSON Schema serialization. Tests fail when the reviewed CLI or Zod versions change.
+- Alternatives: waiting leaves development blocked; suppressing the advisory weakens the audit; a global override unnecessarily affects unrelated consumers. A scoped tested override removes the vulnerable dependency while preserving the gate.
+- Validation/removal: full quality and audit checks, Expo native bundle exports and local development startup are required. Hosted checks must pass before acceptance. Remove this override and its compatibility tests when an upstream Expo release declares a patched dependency; review new consumers before changing the CLI version. Roll back the remediation commit if incompatible behavior is discovered, restoring the blocked audit gate.
+- Impact: development tooling only; no scoring, economy, API, persistence or legal boundary change. Native bundle export does not claim native compilation/device validation. Evidence: `docs/B002_REMEDIATION.md`.
