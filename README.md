@@ -102,6 +102,7 @@ The game/domain packages may not import UI, network, database or server framewor
 - [Project engineering rules](AGENTS.md) and [canonical master specification](MASTER_SPEC.md).
 - [Exploration and Printing Press](docs/EXPLORATION_AND_PRESS.md), [decisions](docs/DECISIONS.md), [development plan](docs/DEVELOPMENT_PLAN.md).
 - [82-ticket backlog](backlog/BUILD_BACKLOG.csv), [ticket status](backlog/STATUS.md), [B001 validation report](docs/B001_REPORT.md).
+- [Architecture baseline](docs/ARCHITECTURE.md), [protocol](docs/PROTOCOL.md), [environment runbook](docs/ENVIRONMENTS.md), [ADR-0001](docs/adr/0001-platform-boundaries.md), [requirement coverage](docs/REQUIREMENT_COVERAGE.md).
 - [Execution prompts](prompts/START_HERE.md), [acceptance matrix](tests/ACCEPTANCE_MATRIX.md), [launch gates](legal/LAUNCH_GATES.md).
 
-The files under `architecture/` are draft reference contracts. They are not deployed schemas or proof of implemented features.
+The files under `architecture/` are draft reference contracts; OpenAPI explicitly marks implemented health and planned business operations. They are not deployed schemas or proof of implemented features.
