@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@deckforge/card-domain": "workspace:*",
     "@deckforge/contracts": "workspace:*",
     "@deckforge/database": "workspace:*",
     "@nestjs/common": "12.3.2",

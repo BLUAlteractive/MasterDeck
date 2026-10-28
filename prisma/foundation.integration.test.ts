@@ -27,6 +27,7 @@ beforeAll(async () => {
         seriesId: sampleSeriesId,
         faceId: 'A-S',
         playStyleFamily: 'fixture-only',
+        version: 999,
       },
     })
   ).id;

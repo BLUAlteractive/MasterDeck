@@ -99,13 +99,14 @@ async function card(ownerId: string) {
       seriesId_faceId_version: {
         seriesId: '11111111-1111-4111-8111-111111111111',
         faceId: 'Q-H',
-        version: 1,
+        version: 999,
       },
     },
     create: {
       seriesId: '11111111-1111-4111-8111-111111111111',
       faceId: 'Q-H',
       playStyleFamily: 'auth-fixture',
+      version: 999,
     },
     update: {},
   });

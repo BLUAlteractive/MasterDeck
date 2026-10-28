@@ -14,6 +14,16 @@ enum UserStatus {
   DELETED
 }
 
+enum ArtAssetKind {
+  FRONT
+  BACK
+}
+
+enum AssetUseScope {
+  INTERNAL_PREVIEW
+  COMMERCIAL
+}
+
 enum UserRole {
   PLAYER
   ADMIN
@@ -96,18 +106,20 @@ model FaceDefinition {
   rank      Int
   suit      FaceSuit
   templates CardTemplate[]
+  artAssets DesignAsset[]
 
   @@unique([rank, suit])
 }
 
 model CardSeries {
-  id          String         @id @default(uuid()) @db.Uuid
-  slug        String         @unique
-  displayName String
-  rightsOwner String
-  status      CatalogStatus  @default(DRAFT)
-  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
-  templates   CardTemplate[]
+  id              String         @id @default(uuid()) @db.Uuid
+  slug            String         @unique
+  displayName     String
+  manifestVersion Int            @default(1)
+  rightsOwner     String
+  status          CatalogStatus  @default(DRAFT)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+  templates       CardTemplate[]
 }
 
 model CardTemplate {
@@ -119,6 +131,12 @@ model CardTemplate {
   rarity          CardRarity     @default(COMMON)
   series          CardSeries     @relation(fields: [seriesId], references: [id], onDelete: Restrict)
   face            FaceDefinition @relation(fields: [faceId], references: [id], onDelete: Restrict)
+  frontAssetId    String?        @db.Uuid
+  frontKind       ArtAssetKind   @default(FRONT)
+  backAssetId     String?        @db.Uuid
+  backKind        ArtAssetKind   @default(BACK)
+  frontAsset      DesignAsset?   @relation("TemplateFront", fields: [frontAssetId, faceId, frontKind], references: [id, faceId, kind], onDelete: Restrict)
+  backAsset       DesignAsset?   @relation("TemplateBack", fields: [backAssetId, backKind], references: [id, kind], onDelete: Restrict)
   instances       CardInstance[]
 
   @@unique([seriesId, faceId, version])
@@ -201,4 +219,26 @@ model DeletionRequest {
   userId    String   @unique @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model DesignAsset {
+  id                String          @id @db.Uuid
+  key               String          @unique
+  kind              ArtAssetKind
+  faceId            String?
+  mimeType          String
+  sha256            String
+  width             Int
+  height            Int
+  rightsBasis       String
+  rightsHolder      String
+  sourceRef         String
+  useScope          AssetUseScope   @default(INTERNAL_PREVIEW)
+  approvalReference String?
+  face              FaceDefinition? @relation(fields: [faceId], references: [id], onDelete: Restrict)
+  fronts            CardTemplate[]  @relation("TemplateFront")
+  backs             CardTemplate[]  @relation("TemplateBack")
+
+  @@unique([id, faceId, kind])
+  @@unique([id, kind])
 }

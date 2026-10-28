@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { healthResponseSchema } from '@deckforge/contracts';
+import { CatalogPreview } from './src/CatalogPreview';
 import { shellTheme } from '@deckforge/ui';
 
 export default function App() {
@@ -29,9 +30,11 @@ export default function App() {
           DeckForge
         </Text>
         <Text style={styles.subtitle}>Your collection starts here.</Text>
-        <Text style={styles.body}>Development shell · B001</Text>
         <Text style={styles.body}>
-          The workspace is ready for the first collection milestone.
+          Development preview · Catalog foundation
+        </Text>
+        <Text style={styles.body}>
+          Explore the first original card study below.
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -48,6 +51,7 @@ export default function App() {
           {status}
         </Text>
       </View>
+      <CatalogPreview />
     </ScrollView>
   );
 }
@@ -67,7 +71,7 @@ const styles = StyleSheet.create({
   page: {
     flexGrow: 1,
     backgroundColor: shellTheme.background,
-    justifyContent: 'center',
+    gap: 28,
     alignItems: 'center',
     padding: 24,
   },

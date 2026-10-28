@@ -20,9 +20,9 @@ pnpm ci:database
 pnpm ci:audit
 ```
 
-`ci:audit` needs registry access. On 28 October 2026, the full audit passes the high/critical threshold with one low finding remaining. [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) was removed by a scoped compatibility override: only `@expo/cli@58.1.16>zod` resolves to patched 4.6.7. No audit finding is suppressed.
+`ci:audit` needs registry access. On 28 October 2026, the full audit passes the high/critical threshold with one low finding remaining. [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) was removed by a scoped compatibility override: only `@expo/cli@58.1.17>zod` resolves to patched 4.6.7. No audit finding is suppressed.
 
-Expo's latest stable CLI still declares Zod 3. This is a project-maintained compatibility remediation, not an upstream-supported dependency range. Both CLI Zod consumers were inspected; `scripts/expo-cli-compat.test.ts` exercises plugin descriptors, text/audio/image output validation, MCP parameters, strict parsing and JSON Schema conversion with valid and invalid inputs. It also pins the reviewed CLI/Zod versions so an upstream CLI update requires review. Remove the override and compatibility tests when a verified Expo release uses patched Zod natively. See [remediation evidence](B002_REMEDIATION.md).
+Expo's latest stable CLI still declares Zod 3. This is a project-maintained compatibility remediation, not an upstream-supported dependency range. Both CLI Zod consumers were inspected; `scripts/expo-cli-compat.test.ts` exercises plugin descriptors, text/audio/image output validation, MCP parameters, strict parsing and JSON Schema conversion with valid and invalid inputs. It also pins the reviewed CLI/Zod versions so an upstream CLI update requires review. B006 updated Expo to the recommended 58.0.21 patch; CLI 58.1.17 still declares Zod 3 and both inspected consumers are byte-identical to 58.1.16. The exact-version compatibility gate now targets 58.1.17. Remove the override and compatibility tests when a verified Expo release uses patched Zod natively. See [remediation evidence](B002_REMEDIATION.md).
 
 The API's express-rate-limit was updated from 8.2.1 to 8.7.1, resolving its rate-limit advisory and updating transitive ip-address to 10.7.5. Both corresponding high-severity findings disappeared on re-audit.
 

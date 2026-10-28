@@ -6,13 +6,14 @@ import { createTokenVerifier } from './auth/token-verifier';
 import { readConfig } from './config';
 async function main() {
   const config = readConfig(process.env);
-  const auth = config.auth
-    ? new AuthService(
-        createDatabase(config.auth.databaseUrl),
-        createTokenVerifier(config.auth),
-      )
+  const database = config.databaseUrl
+    ? createDatabase(config.databaseUrl)
     : null;
-  const app = await createApp(config.origins, auth);
+  const auth =
+    config.auth && database
+      ? new AuthService(database, createTokenVerifier(config.auth))
+      : null;
+  const app = await createApp(config.origins, auth, database);
   await app.listen(config.port, config.host);
 }
 main().catch(() => {

@@ -135,3 +135,11 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Local database ADMIN plus verified MFA is required for the admin capability probe; no client/provider metadata role grants privileges. Deletion is a queued request plus access suspension, not a completed purge; B051 owns completion/retention/export.
 - Socket authentication is wired, but all room/game actions remain unavailable until B018 implements membership and actors. This is auth boundary validation, not a playable room or private event stream.
 - Actual development Supabase sign-in/linking and native configuration remain unverified without project setup. Signed-fixture tests are necessary evidence, not a substitute for this external acceptance. No production provider account or resource is created by this ticket.
+
+## B006 catalog foundation — 28 October 2026
+
+- Canonical 52-face values now live in pure game-core and feed database seeds and the original vector renderer. No shuffle, deal or ownership-based face probabilities are introduced.
+- Original geometry and labels use no external image/font assets. JSON manifest, bundled data and 53 exports are hash-checked together. Seed art is INTERNAL_PREVIEW and the series stays DRAFT; this is not commercial/designer/producer approval. B044 must verify actual review evidence and authority before publication.
+- Asset content/provenance and earned template identity are immutable; new content needs new versions. SQL front/back kinds and face mappings prevent mismatched references. Legacy draft templates may have null art references; public projections reject incomplete/unapproved manifests.
+- Mobile preview is a bounded artwork catalog, not owned inventory or a starter grant. Native SVG uses the SDK-recommended 15.16.0; physical device and full accessibility evidence remain B010/B048.
+- Expo now recommends 58.0.21 (CLI 58.1.17). Both CLI Zod consumers are byte-identical to reviewed 58.1.16, still declare Zod 3, and pass all five compatibility tests. The scoped 4.6.7 override and exact-version gate now target 58.1.17; no audit suppression or SDK major upgrade.

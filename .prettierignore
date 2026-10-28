@@ -18,3 +18,6 @@ docs/EXPLORATION_AND_PRESS.md
 docs/DEVELOPMENT_PLAN.md
 **/next-env.d.ts
 packages/database/src/generated/
+
+# Byte-exact hashed SVG exports; regenerate through catalog:export.
+assets/foundation/v*/

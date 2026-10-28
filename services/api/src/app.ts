@@ -7,6 +7,8 @@ import {
 } from '@deckforge/contracts';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { IdentityController } from './auth/controller';
+import type { PrismaClient } from '@deckforge/database';
+import { CatalogController } from './catalog';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
 import { attachAuthSocket } from './auth/socket';
@@ -28,20 +30,24 @@ class AppModule {}
 export async function createApp(
   origins: string[] = [],
   auth: AuthService | null = null,
+  catalogDatabase: PrismaClient | null = auth?.database ?? null,
 ) {
   let stopSocket = () => {};
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
-      controllers: [HealthController, IdentityController],
+      controllers: [HealthController, IdentityController, CatalogController],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
+        { provide: 'CATALOG_DATABASE', useValue: catalogDatabase },
         {
           provide: 'AUTH_SHUTDOWN',
           useValue: {
             beforeApplicationShutdown: () => stopSocket(),
             onApplicationShutdown: async () => {
               if (auth) await auth.database.$disconnect();
+              if (catalogDatabase && catalogDatabase !== auth?.database)
+                await catalogDatabase.$disconnect();
             },
           },
         },

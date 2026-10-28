@@ -44,10 +44,18 @@ paths:
         default: {$ref: '#/components/responses/ApiError'}
   /catalog/series:
     get:
-      x-implementation-status: planned
-      summary: Published original card series
+      x-implementation-status: implemented
+      summary: Validated published catalog; draft/internal-preview artwork is excluded
+      parameters:
+        - {in: query, name: cursor, schema: {type: string, format: uuid}}
+        - {in: query, name: limit, schema: {type: integer, minimum: 1, maximum: 20, default: 10}}
       responses:
-        '200': {description: "Paginated series list"}
+        '200':
+          description: Public page without private rights-review references
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CatalogList'}
+        default: {$ref: '#/components/responses/ApiError'}
   /cards:
     get:
       x-implementation-status: implemented
@@ -348,6 +356,47 @@ components:
                   message: {type: string}
                   requestId: {type: string, format: uuid}
   schemas:
+    PublicArt:
+      type: object
+      additionalProperties: false
+      required: [id, key, sha256, width, height]
+      properties:
+        id: {type: string, format: uuid}
+        key: {type: string}
+        sha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+        width: {type: integer, minimum: 1}
+        height: {type: integer, minimum: 1}
+    CatalogList:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        nextCursor: {type: string, format: uuid, nullable: true}
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, slug, displayName, version, cards]
+            properties:
+              id: {type: string, format: uuid}
+              slug: {type: string}
+              displayName: {type: string}
+              version: {type: integer, minimum: 1}
+              cards:
+                type: array
+                minItems: 52
+                maxItems: 52
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [faceId, rarity, playStyleFamily, front, back]
+                  properties:
+                    faceId: {type: string, pattern: '^(?:[2-9]|10|J|Q|K|A)-[CDHS]$'}
+                    rarity: {type: string, enum: [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY]}
+                    playStyleFamily: {type: string}
+                    front: {$ref: '#/components/schemas/PublicArt'}
+                    back: {$ref: '#/components/schemas/PublicArt'}
     EmptyCommand:
       type: object
       additionalProperties: false

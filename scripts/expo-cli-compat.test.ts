@@ -42,9 +42,9 @@ const plugin = {
   },
 };
 
-describe('Expo CLI 58.1.16 compatibility with patched Zod 4', () => {
+describe('Expo CLI 58.1.17 compatibility with patched Zod 4', () => {
   it('resolves the exact reviewed CLI and patched Zod versions', () => {
-    expect(cliRequire('./package.json').version).toBe('58.1.16');
+    expect(cliRequire('./package.json').version).toBe('58.1.17');
     expect(cliRequire('zod/package.json').version).toBe('4.6.7');
   });
 
