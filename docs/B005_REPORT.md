@@ -36,3 +36,7 @@ The API preserves one internal user and existing inventory on same-provider iden
 Auth tombstone/audit/deletion retention and provider purge belong to B051. Destructive reversal SQL is for the owned disposable test database only; production recovery requires reviewed forward repair or separate backup restore. No paid economy, score, activity/location proof or gameplay behavior changed.
 
 Next smallest action: supply development identity configuration and complete B005's observed provider flow before marking M0 complete. Next planned ticket afterward: B006 — Card catalog and art manifests. No merge is performed by this work.
+
+## Hosted backend validation
+
+[Run 40725254362](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40725254362) passed Quality checks and Dependency audit at commit b6c013e, including auth/database migration, rollback and reset/reseed tests on Ubuntu. [Draft PR #4](https://github.com/BLUAlteractive/MasterDeck/pull/4) remains pending real-provider acceptance. No merge was performed. Independent B006 catalog work can proceed while provider setup is pending; B005/M0 acceptance remains open.
