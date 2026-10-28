@@ -44,7 +44,7 @@ pnpm infra:status
 pnpm infra:down
 ```
 
-PostgreSQL is bound to `127.0.0.1:5432`, Redis to `127.0.0.1:6379`. Both are local development services. The example database password is deliberately public and must never be used in deployed environments. `infra:down` preserves the Postgres named volume. Database migrations, seeds, Prisma CLI/client and persistence arrive in **B004**; there is no migration/reset command in B001. See [database boundary](prisma/README.md). Redis data is disposable in this scaffold.
+PostgreSQL is bound to `127.0.0.1:5432`, Redis to `127.0.0.1:6379`. Both are local development services. The example database password is deliberately public and must never be used in deployed environments. `infra:down` preserves the Postgres named volume. B004 adds pinned Prisma, a scoped schema, migrations and development seeds. Set root DATABASE_URL from the updated template, then run `pnpm db:deploy` and `pnpm db:seed`. Existing env files are preserved by setup. Run `pnpm ci:database` for isolated migration/constraint/rollback/reset checks. See [database instructions and destructive reset safeguards](prisma/README.md). Redis data is disposable in this scaffold.
 
 If ports are occupied, change root `.env` infrastructure ports and the reserved API connection URLs together. API `PORT` and the mobile `EXPO_PUBLIC_API_URL` must also agree. The shells can run with Docker stopped because they do not yet use persistence.
 
@@ -91,7 +91,8 @@ packages/game-spades/ Future Spades rules, independent of poker
 packages/card-domain/ Pure collection/evolution boundary
 packages/contracts/  Zod public API contract
 packages/ui/         Platform-neutral presentation tokens
-prisma/              Database boundary; executable schema deferred to B004
+packages/database/   Server-only generated Prisma client and development seed
+prisma/              Executable foundation schema, migrations, seed and DB tests
 scripts/             Repeatable local environment setup
 ```
 

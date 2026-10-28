@@ -3,6 +3,8 @@ packages:
   - services/*
   - packages/*
 onlyBuiltDependencies:
+  - '@prisma/engines'
+  - prisma
   - esbuild
   - sharp
   - unrs-resolver

@@ -48,7 +48,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Formatting, lint, types, tests and builds
         run: pnpm ci:quality
-      - name: Database validation handoff
+      - name: Isolated migrations, seeds, constraints and rollback
         run: pnpm ci:database
 
   audit:
