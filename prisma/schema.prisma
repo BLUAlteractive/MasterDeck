@@ -1,0 +1,168 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../packages/database/src/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum FaceSuit {
+  CLUBS
+  DIAMONDS
+  HEARTS
+  SPADES
+}
+
+enum CatalogStatus {
+  DRAFT
+  PUBLISHED
+  RETIRED
+}
+
+enum CardRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum CardBranch {
+  BLUE
+  RED
+}
+
+enum CardStatus {
+  OWNED
+  LOCKED
+  CONSUMED
+  REVOKED
+}
+
+enum OwnershipAction {
+  MINT
+  GRANT
+  FUSION_CONSUME
+  FUSION_CREATE
+  PRESS_EVOLVE
+  LOCK
+  UNLOCK
+  REVOKE
+}
+
+model User {
+  id         String             @id @default(uuid()) @db.Uuid
+  status     UserStatus         @default(ACTIVE)
+  isGuest    Boolean            @default(true)
+  createdAt  DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime           @updatedAt @db.Timestamptz(3)
+  identities ExternalIdentity[]
+  cards      CardInstance[]
+  events     OwnershipEvent[]
+  operations OperationRecord[]
+}
+
+model ExternalIdentity {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  issuer    String
+  subject   String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([issuer, subject])
+  @@index([userId])
+}
+
+model FaceDefinition {
+  id        String         @id
+  rank      Int
+  suit      FaceSuit
+  templates CardTemplate[]
+
+  @@unique([rank, suit])
+}
+
+model CardSeries {
+  id          String         @id @default(uuid()) @db.Uuid
+  slug        String         @unique
+  displayName String
+  rightsOwner String
+  status      CatalogStatus  @default(DRAFT)
+  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
+  templates   CardTemplate[]
+}
+
+model CardTemplate {
+  id              String         @id @default(uuid()) @db.Uuid
+  seriesId        String         @db.Uuid
+  faceId          String
+  version         Int            @default(1)
+  playStyleFamily String
+  rarity          CardRarity     @default(COMMON)
+  series          CardSeries     @relation(fields: [seriesId], references: [id], onDelete: Restrict)
+  face            FaceDefinition @relation(fields: [faceId], references: [id], onDelete: Restrict)
+  instances       CardInstance[]
+
+  @@unique([seriesId, faceId, version])
+  @@unique([id, seriesId, faceId])
+}
+
+model CardInstance {
+  id            String           @id @default(uuid()) @db.Uuid
+  ownerId       String           @db.Uuid
+  templateId    String           @db.Uuid
+  seriesId      String           @db.Uuid
+  faceId        String
+  status        CardStatus       @default(OWNED)
+  level         Int              @default(1)
+  branch        CardBranch       @default(BLUE)
+  rarity        CardRarity       @default(COMMON)
+  editionSerial Int?
+  stateVersion  Int              @default(1)
+  createdAt     DateTime         @default(now()) @db.Timestamptz(3)
+  owner         User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  template      CardTemplate     @relation(fields: [templateId, seriesId, faceId], references: [id, seriesId, faceId], onDelete: Restrict)
+  events        OwnershipEvent[]
+
+  @@unique([seriesId, editionSerial])
+  @@index([ownerId, status, faceId])
+}
+
+model OwnershipEvent {
+  id           String          @id @default(uuid()) @db.Uuid
+  instanceId   String          @db.Uuid
+  actorUserId  String?         @db.Uuid
+  action       OwnershipAction
+  sourceKey    String          @unique
+  reason       String
+  stateVersion Int
+  snapshot     Json
+  recordedAt   DateTime        @default(now()) @db.Timestamptz(3)
+  instance     CardInstance    @relation(fields: [instanceId], references: [id], onDelete: Restrict)
+  actor        User?           @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([instanceId, recordedAt])
+}
+
+// Foundation only: feature services own request hashes, replay and expiry semantics.
+model OperationRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  operation   String
+  key         String
+  requestHash String
+  result      Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, operation, key])
+}

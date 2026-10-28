@@ -118,3 +118,11 @@ The left column belongs only to MASTER_SPEC §20; the right column belongs to th
 | D-16 no physical-value prizes                   | D-12 and MASTER_SPEC §3.3/§20 D-16                                                            |
 
 Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SPEC §4.3). Register D-16 specifically isolates paid display skins (§4.1); it must not be confused with master §20 D-16. All unchanged product restrictions still apply.
+
+## B004 database foundation — 28 October 2026
+
+- Pin stable Prisma CLI/client/PostgreSQL adapter 7.10.1; Prisma 8 RC is outside this ticket. The Prisma 7 config owns root CLI URL and explicit seed command; generated client is ignored, regenerated and server-only. API health remains process liveness.
+- Implement foundational identity bindings, faces/series/templates, instances, immutable ownership history and scoped committed operations. Defer feature tables and services; no legacy incubation or currency model is created. Sample seed contains only 52 canonical faces and one unpublished no-art series, no player grants.
+- SQL adds branch/level/version/identity, composite template consistency, append-only history and scoped uniqueness constraints beyond Prisma metadata. Feature tickets still own atomic business services, source-key semantics, concurrency proof and privacy retention.
+- Database checks replace B004's CI deferral with an owned, temporary PostgreSQL container. All mutations, reversal and reset verification target only that generated database; existing Compose data is untouched. Prisma's agent reset guard requires explicit fresh consent; do not bypass it or infer success from the earlier tests.
+- Schema rollback SQL is test-only and destructive; deployed recovery uses reviewed forward repair or separate restore, not a reset. No production mutation is authorized by this architecture decision.

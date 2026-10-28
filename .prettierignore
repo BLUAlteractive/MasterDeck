@@ -17,3 +17,4 @@ tests/ACCEPTANCE_MATRIX.md
 docs/EXPLORATION_AND_PRESS.md
 docs/DEVELOPMENT_PLAN.md
 **/next-env.d.ts
+packages/database/src/generated/

@@ -7,6 +7,7 @@ export default tseslint.config(
   {
     ignores: [
       '**/node_modules/**',
+      'packages/database/src/generated/**',
       '**/dist/**',
       '**/.next/**',
       '**/.expo/**',
@@ -44,6 +45,9 @@ export default tseslint.config(
                 '**/apps/**',
                 '@deckforge/api',
                 '@deckforge/jobs',
+                '@deckforge/database',
+                '@deckforge/database/*',
+                '**/database/**',
                 '@deckforge/ui',
               ],
               message:

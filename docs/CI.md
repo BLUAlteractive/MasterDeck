@@ -6,7 +6,7 @@
 
 | Required check name | Command                                    | Behavior                                                                                                                                                      |
 | ------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Quality checks      | `pnpm ci:quality`, then `pnpm ci:database` | Formatting, lint, strict types, unit/HTTP tests and all builds; stop immediately on failure. Database handoff is described below.                             |
+| Quality checks      | `pnpm ci:quality`, then `pnpm ci:database` | Formatting, lint, strict types, unit/HTTP tests and all builds; stop immediately on failure. Isolated database checks are described below.                    |
 | Dependency audit    | `pnpm ci:audit`                            | Audit the full dependency graph, including tooling; high/critical advisories and registry errors fail the job. No advisory exceptions or `continue-on-error`. |
 
 Both jobs clean-install the frozen lockfile and print Node/pnpm versions. Node comes from `.nvmrc`, pnpm from `package.json#packageManager`. Only pnpm's download store is cached through setup-node, keyed by the lockfile; `node_modules`, `.env`, framework outputs and Turbo artifacts are not restored from CI caches. The audit job disables package install scripts. Quality builds use no private credentials or developer `.env` files.
@@ -26,11 +26,11 @@ Expo's latest stable CLI still declares Zod 3. This is a project-maintained comp
 
 The API's express-rate-limit was updated from 8.2.1 to 8.7.1, resolving its rate-limit advisory and updating transitive ip-address to 10.7.5. Both corresponding high-severity findings disappeared on re-audit.
 
-## Database handoff to B004
+## Isolated database checks — B004
 
-No executable Prisma schema/migrations exist yet. `ci:database` reports **deferred**, rather than claiming validation of the draft under `architecture/`. The guard fails as soon as `prisma/schema.prisma` or `prisma/migrations` appears, so B004 cannot quietly add persistence without implementing its CI checks.
+`ci:database` now creates its own temporary PostgreSQL 17.6 container, never reading a caller database URL. It validates/generates the pinned Prisma 7.10.1 client, deploys migrations twice, checks status, seeds twice, and runs database constraint/concurrency tests. It exercises a test-only reversal, verifies tables were removed, resets the owned temporary database, reseeds and reruns tests. Cleanup removes only that container. GitHub Ubuntu runners supply Docker; no staging/production credentials or shared database are used.
 
-B004 must replace that guard with pinned Prisma CLI validation, migrate-deploy against an isolated disposable PostgreSQL service, and its integration/constraint tests. Its job must validate migrations from an empty database, prove seeds/reset behavior where required, and document rollback. Never supply a staging or production database URL to this job. No database mutations or schema implementation are part of B002.
+The API health response remains liveness-only. See [database instructions](../prisma/README.md) for schema scope, transaction conventions, manual reset safety and Prisma's explicit-consent guard for local agent reset checks. The old B004 deferral has been replaced; failures in any database stage fail **Quality checks**.
 
 ## GitHub activation and merge protection
 

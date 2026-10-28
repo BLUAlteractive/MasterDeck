@@ -3,13 +3,18 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "src/generated/**"],
       "env": ["EXPO_PUBLIC_API_URL", "NEXT_TELEMETRY_DISABLED"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/prisma/schema.prisma"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/prisma/schema.prisma"]
     },
     "dev": {
       "dependsOn": ["^build"],
