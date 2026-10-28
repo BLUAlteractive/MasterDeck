@@ -1,6 +1,6 @@
 # B006 — Card catalog and art manifests report
 
-28 October 2026. **Implemented and locally validated; hosted confirmation pending.** This independent catalog slice proceeded while B005's actual-provider configuration remained pending. The preview is draft artwork, not owned cards, a starter grant or a playable game.
+28 October 2026. **Implemented and validated locally and on GitHub; ready for review.** This independent catalog slice proceeded while B005's actual-provider configuration remained pending. The preview is draft artwork, not owned cards, a starter grant or a playable game.
 
 ## Changed files
 
@@ -28,6 +28,8 @@
 - Browser via `pnpm --filter @deckforge/mobile web` / API dev start: all **52 accessible face labels** observed, API button reached **API connected**, black/red faces and back visually inspected. A web SVG accessibility-prop warning was fixed; fresh reload produced no new warning/error.
 - At **390 × 844**, all 52 labels remained mounted, document width equaled viewport width (390) and cards fit a two-column grid. Temporary viewport override reset afterward. [Mobile-width evidence](evidence/b006-mobile.jpg), [additional suit evidence](evidence/b006-catalog.jpg).
 - OpenAPI structural validation, final formatting/whitespace, frozen dependency install and a limited credential-pattern scan passed. Re-export was byte-identical for all 55 generated artifacts. No generated client, private env, consent value or production key is committed.
+
+Hosted [CI run 40733560191](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40733560191) passed both Quality checks (including disposable PostgreSQL integration) and Dependency audit for implementation commit `4675760`. [PR #5](https://github.com/BLUAlteractive/MasterDeck/pull/5) is stacked on B005; no merge was performed. Local documentation links also passed validation.
 
 ## Limits and next ticket
 
