@@ -1,6 +1,6 @@
 # B004 — Database foundation report
 
-28 October 2026. **Implemented and locally validated; hosted confirmation pending.** The explicit-consent reset gate is resolved. Work is isolated on `database/b004-foundation`, stacked on B003; no production or existing local Compose database has been mutated.
+28 October 2026. **Validated locally and on GitHub; ready for review.** The explicit-consent reset gate is resolved. Work is isolated on `database/b004-foundation`, stacked on B003; no production or existing local Compose database has been mutated.
 
 ## Changed files
 
@@ -39,3 +39,7 @@ The user confirmed continuation after the bounded reset approval request. The ex
 Full quality remains 19 unit tests and 11 builds; database verification adds eight distinct integration cases, executed both before and after reset. No production credential or approval bypass was added. Final formatting, lint, workflow validation, frozen installation, credential-pattern scan and whitespace checks passed.
 
 Next: publish the B004 commit/PR, verify hosted checks and proceed to **B005 — Auth and permissions**. Managed-provider/device setup and linking/merge review remain explicit gates; continued development does not authorize production resources or skipped acceptance.
+
+## Hosted acceptance
+
+[Run 40720773484](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40720773484) passed Quality checks and Dependency audit at commit 54dc641, including disposable migration/seed/constraints/rollback/reset/reseed on Ubuntu. Review: [PR #3](https://github.com/BLUAlteractive/MasterDeck/pull/3), stacked on B003. No merge or production operation was performed.
