@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm db:generate && turbo run dev",
-    "dev:api": "pnpm --filter @deckforge/contracts build && pnpm --filter @deckforge/api dev",
+    "dev:api": "pnpm db:generate && pnpm --filter \"@deckforge/api^...\" -r build && pnpm --filter @deckforge/api dev",
     "dev:mobile": "pnpm build:packages && pnpm --filter @deckforge/mobile dev",
     "dev:web": "pnpm build:packages && pnpm --filter @deckforge/mobile web",
     "dev:admin": "pnpm build:packages && pnpm --filter @deckforge/admin dev",
@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@types/express": "5.0.6",
     "@types/node": "22.20.5",
     "dotenv": "18.0.9",
     "eslint": "10.13.0",
@@ -46,6 +47,7 @@
     "globals": "16.5.0",
     "prettier": "3.9.10",
     "prisma": "7.10.1",
+    "socket.io-client": "4.8.4",
     "tsx": "4.23.15",
     "turbo": "2.11.10",
     "typescript": "5.9.3",

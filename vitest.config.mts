@@ -6,6 +6,7 @@ export default defineConfig({
       'services/**/*.test.ts',
       'scripts/**/*.test.ts',
     ],
+    exclude: ['**/node_modules/**', '**/*.integration.test.ts'],
     environment: 'node',
     testTimeout: 10000,
   },

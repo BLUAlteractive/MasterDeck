@@ -45,6 +45,7 @@ function cardData() {
 
 describe('PostgreSQL foundation constraints', () => {
   it('seeds all 52 canonical faces and one unpublished sample without grants or overwrite', async () => {
+    const before = await database.cardInstance.count();
     await Promise.all([seedFoundation(database), seedFoundation(database)]);
     const faces = await database.faceDefinition.findMany();
     expect(faces).toHaveLength(52);
@@ -65,7 +66,7 @@ describe('PostgreSQL foundation constraints', () => {
         })
       ).status,
     ).toBe('DRAFT');
-    expect(await database.cardInstance.count()).toBe(0);
+    expect(await database.cardInstance.count()).toBe(before);
     await database.cardSeries.update({
       where: { id: sampleSeriesId },
       data: { displayName: 'Retained local edit' },

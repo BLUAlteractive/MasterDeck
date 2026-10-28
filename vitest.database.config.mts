@@ -1,7 +1,10 @@
 import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
-    include: ['prisma/**/*.integration.test.ts'],
+    include: [
+      'prisma/**/*.integration.test.ts',
+      'services/**/*.integration.test.ts',
+    ],
     environment: 'node',
     testTimeout: 15000,
     hookTimeout: 15000,
