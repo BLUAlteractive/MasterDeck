@@ -15,6 +15,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@deckforge/card-domain": "workspace:*",
     "zod": "4.6.7"
   }
 }

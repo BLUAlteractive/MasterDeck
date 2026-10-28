@@ -9,6 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@deckforge/card-domain": "workspace:*",
+    "@deckforge/game-core": "workspace:*",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1"
   }

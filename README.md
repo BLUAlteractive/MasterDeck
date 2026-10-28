@@ -1,6 +1,6 @@
 # DeckForge
 
-A collectible playing-card platform. **B001 provides a runnable development scaffold only.** Gameplay, card grants, purchases and activity/location integrations are not implemented. B005 adds backend identity/permission boundaries; actual provider-flow acceptance remains pending development configuration. DeckForge remains a working title.
+A collectible playing-card platform. **The application is in incremental development.** Gameplay, card grants, purchases and activity/location integrations are not implemented. B005 adds backend identity/permission boundaries; actual provider-flow acceptance remains pending development configuration. DeckForge remains a working title.
 
 ## Prerequisites
 
@@ -46,7 +46,7 @@ pnpm infra:down
 
 PostgreSQL is bound to `127.0.0.1:5432`, Redis to `127.0.0.1:6379`. Both are local development services. The example database password is deliberately public and must never be used in deployed environments. `infra:down` preserves the Postgres named volume. B004 adds pinned Prisma, a scoped schema, migrations and development seeds. Set root DATABASE_URL from the updated template, then run `pnpm db:deploy` and `pnpm db:seed`. Existing env files are preserved by setup. Run `pnpm ci:database` for isolated migration/constraint/rollback/reset checks. See [database instructions and destructive reset safeguards](prisma/README.md). Redis data is disposable in this scaffold.
 
-If ports are occupied, change root `.env` infrastructure ports and the reserved API connection URLs together. API `PORT` and the mobile `EXPO_PUBLIC_API_URL` must also agree. The shells can run with Docker stopped because they do not yet use persistence.
+If ports are occupied, change root `.env` infrastructure ports and the reserved API connection URLs together. API `PORT` and the mobile `EXPO_PUBLIC_API_URL` must also agree. Health and the bundled artwork preview can run with Docker stopped; public catalog and private identity requests need a migrated PostgreSQL database.
 
 ## Mobile and networking
 
@@ -97,6 +97,10 @@ scripts/             Repeatable local environment setup
 ```
 
 The game/domain packages may not import UI, network, database or server frameworks. Production game state, deals, inventory and rewards will remain server-authoritative. No frontend result or balance will become authoritative.
+
+## Catalog preview
+
+B006 displays an original 52-face vector study and one blue back in the mobile/web shell. It is draft artwork, not an owned starter grant. Run `pnpm dev:api` and `pnpm dev:web`; see [catalog and art guide](docs/CATALOG.md). The public server catalog excludes the default draft seed. Gameplay and purchases are not part of the preview.
 
 ## Product and delivery references
 

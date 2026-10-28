@@ -57,5 +57,11 @@ export function readConfig(env: Record<string, string | undefined>) {
       databaseUrl,
     };
   }
-  return { auth, port: result.data.PORT, host: result.data.HOST, origins };
+  return {
+    auth,
+    databaseUrl: result.data.DATABASE_URL ?? null,
+    port: result.data.PORT,
+    host: result.data.HOST,
+    origins,
+  };
 }

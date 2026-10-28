@@ -35,7 +35,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:reset": "node scripts/database-reset.mjs",
-    "db:test": "node scripts/ci-database.mjs"
+    "db:test": "node scripts/ci-database.mjs",
+    "catalog:export": "pnpm build:packages && tsx scripts/export-card-art.mts && prettier --write packages/card-domain/src/development-catalog.ts assets/foundation/manifest.json"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

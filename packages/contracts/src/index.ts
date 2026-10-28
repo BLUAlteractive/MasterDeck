@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { raritySchema } from '@deckforge/card-domain';
 
 /** Public liveness response; contains no environment, identity or database details. */
 export const healthResponseSchema = z
@@ -38,7 +39,7 @@ export const privateCardsSchema = z
           faceId: z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
           level: z.number().int().min(1).max(6),
           branch: z.enum(['BLUE', 'RED']),
-          rarity: z.enum(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']),
+          rarity: raritySchema,
           stateVersion: z.number().int().positive(),
         })
         .strict(),
@@ -66,4 +67,47 @@ export const deletionResponseSchema = z
   .strict();
 export const adminAccessSchema = z
   .object({ role: z.literal('ADMIN'), mfa: z.literal(true) })
+  .strict();
+
+export const publicCatalogAssetSchema = z
+  .object({
+    id: z.uuid(),
+    key: z.string().min(1),
+    sha256: z.string().regex(/^[0-9a-f]{64}$/),
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+  })
+  .strict();
+export const catalogSeriesSchema = z
+  .object({
+    id: z.uuid(),
+    slug: z.string(),
+    displayName: z.string(),
+    version: z.number().int().positive(),
+    cards: z
+      .array(
+        z
+          .object({
+            faceId: z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
+            rarity: raritySchema,
+            playStyleFamily: z.string(),
+            front: publicCatalogAssetSchema,
+            back: publicCatalogAssetSchema,
+          })
+          .strict(),
+      )
+      .length(52),
+  })
+  .strict();
+export const catalogListSchema = z
+  .object({
+    items: z.array(catalogSeriesSchema),
+    nextCursor: z.uuid().nullable(),
+  })
+  .strict();
+export const catalogQuerySchema = z
+  .object({
+    cursor: z.uuid().optional(),
+    limit: z.coerce.number().int().min(1).max(20).default(10),
+  })
   .strict();

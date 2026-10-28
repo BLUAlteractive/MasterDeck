@@ -4,7 +4,7 @@
 
 ## Configuration ownership
 
-`pnpm setup:local` copies templates without overwriting existing ignored files. Each process reads its workspace `.env`; Compose reads root `.env`. Root values are not automatically passed into workspace `.env` files. Restart the relevant process after changing a value. API and jobs validate their active configuration with Zod at startup; API DATABASE_URL is used when B005 identity is configured; worker/database and Redis URLs otherwise remain reserved by the shells. Prisma CLI reads root DATABASE_URL independently.
+`pnpm setup:local` copies templates without overwriting existing ignored files. Each process reads its workspace `.env`; Compose reads root `.env`. Root values are not automatically passed into workspace `.env` files. Restart the relevant process after changing a value. API and jobs validate their active configuration with Zod at startup; API DATABASE_URL enables the read-only public catalog independently of B005 identity; private auth additionally needs issuer/JWKS. Worker database/Redis URLs remain reserved by the shell. Prisma CLI reads root DATABASE_URL independently.
 
 | Template                     | Current variables                                                                                     | Visibility / behavior                                                                                                                           |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |

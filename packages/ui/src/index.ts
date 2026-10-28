@@ -6,3 +6,8 @@ export const shellTheme = {
   muted: '#b9c8cf',
   accent: '#e7bd79',
 } as const;
+export {
+  cardArtDimensions,
+  renderCardFaceSvg,
+  renderCardBackSvg,
+} from './card-art';
