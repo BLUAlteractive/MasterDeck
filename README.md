@@ -76,7 +76,7 @@ pnpm build          # shared TS, API/jobs, Next production build, Expo web expor
 
 Individual commands: `pnpm format`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:watch`. Tests start an isolated API on an ephemeral loopback port and do not require Docker or real accounts. `pnpm test:watch` assumes shared packages have already been built.
 
-CI, required PR checks, dependency audits and deliberately failing pipeline validation belong to **B002**. Native builds, real-device UI behavior and database readiness are separate from a green web build.
+GitHub Actions configuration is implemented in **B002**. Run `pnpm ci:quality`, `pnpm ci:database` and `pnpm ci:audit` locally. The dependency audit currently fails on an Expo CLI transitive Zod advisory; remote execution and required PR checks still need a GitHub repository. See [CI setup and blockers](docs/CI.md) and [B002 validation report](docs/B002_REPORT.md). Native builds, real-device UI behavior and database readiness are separate from a green web build.
 
 ## Workspace
 

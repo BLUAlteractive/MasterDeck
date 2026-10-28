@@ -66,3 +66,9 @@ No approval is inferred from recording these proposals. Most do not block the mi
 - The single-screen mobile shell uses Expo's root component entry. Add Expo Router when navigation is introduced; no navigation or product behavior is changed by this temporary scaffold simplification.
 - Local Docker services are optional for B001 shells. B004 owns executable Prisma schema/migrations; do not install or validate the known-incomplete draft as though it were production-ready.
 - B001 status is tracked separately from the unchanged 82-ticket CSV. Its local implementation can pass while the original “succeed in CI” acceptance remains pending B002. No production deployment is authorized or performed.
+
+## B002 implementation decisions — 27 October 2026
+
+- CI uses two stable required-check names: `Quality checks` and `Dependency audit`. Frozen installs use pinned Node/pnpm; cache only pnpm downloads. Actions are SHA-pinned with read-only permissions and checkout credentials disabled. Remote merge enforcement must be verified after a repository is identified.
+- Audit all dependencies and fail on high/critical findings or registry errors. Updating express-rate-limit within major 8 resolves two findings. Expo CLI's remaining Zod 3 advisory stays visible and blocks audit; no implicit risk acceptance, ignore entry or unsupported Zod major override is authorized.
+- Until B004 creates executable database files, report validation as deferred. Fail the database guard once those paths appear, requiring B004 to implement actual Prisma/migration/integration checks. Do not execute the planning draft or invent migrations in B002.
