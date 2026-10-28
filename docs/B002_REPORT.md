@@ -38,3 +38,9 @@ The rate-limiter update was exercised by existing real HTTP health/CORS tests. N
 - Native/device validation remains outside this CI scaffold; these builds cover TypeScript, Next and Expo web.
 
 Next smallest work: resolve the audit/remote acceptance blockers for B002; next planned backlog ticket is B003 — Architecture and ADR.
+
+## GitHub activation progress
+
+The owner approved public publication to `BLUAlteractive/MasterDeck`. B001 commit `1f53715` is now published on `main`. Branch protection was applied and confirmed through the GitHub API: pull requests required, `Quality checks` and `Dependency audit` required with up-to-date branches, administrators included, force pushes/deletion disabled.
+
+Publishing `ci/b002-foundation` was rejected by GitHub because the current OAuth token lacks the `workflow` scope. The branch remains local; no PR or hosted run exists yet. Automatic approval review also rejected starting an OAuth scope expansion without explicit scope-specific user authorization. No token was changed. Required checks are configured but their hosted behavior is not yet proven. The Zod audit finding remains unresolved.
