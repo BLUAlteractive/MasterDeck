@@ -14,6 +14,11 @@ enum UserStatus {
   DELETED
 }
 
+enum UserRole {
+  PLAYER
+  ADMIN
+}
+
 enum FaceSuit {
   CLUBS
   DIAMONDS
@@ -59,24 +64,28 @@ enum OwnershipAction {
 }
 
 model User {
-  id         String             @id @default(uuid()) @db.Uuid
-  status     UserStatus         @default(ACTIVE)
-  isGuest    Boolean            @default(true)
-  createdAt  DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime           @updatedAt @db.Timestamptz(3)
-  identities ExternalIdentity[]
-  cards      CardInstance[]
-  events     OwnershipEvent[]
-  operations OperationRecord[]
+  id              String             @id @default(uuid()) @db.Uuid
+  status          UserStatus         @default(ACTIVE)
+  role            UserRole           @default(PLAYER)
+  isGuest         Boolean            @default(true)
+  createdAt       DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime           @updatedAt @db.Timestamptz(3)
+  identities      ExternalIdentity[]
+  cards           CardInstance[]
+  events          OwnershipEvent[]
+  operations      OperationRecord[]
+  authAudit       AuthAudit[]
+  deletionRequest DeletionRequest?
 }
 
 model ExternalIdentity {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @db.Uuid
   issuer    String
   subject   String
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt DateTime      @default(now()) @db.Timestamptz(3)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sessions  AuthSession[]
 
   @@unique([issuer, subject])
   @@index([userId])
@@ -165,4 +174,31 @@ model OperationRecord {
   user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([userId, operation, key])
+}
+
+model AuthSession {
+  id                String           @id @default(uuid()) @db.Uuid
+  identityId        String           @db.Uuid
+  providerSessionId String           @db.Uuid
+  revokedAt         DateTime?        @db.Timestamptz(3)
+  createdAt         DateTime         @default(now()) @db.Timestamptz(3)
+  identity          ExternalIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+
+  @@unique([identityId, providerSessionId])
+}
+
+model AuthAudit {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  event     String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+// Queue only: B051 supplies provider deletion, retention, export and actual purge.
+model DeletionRequest {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 }

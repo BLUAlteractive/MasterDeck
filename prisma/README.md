@@ -4,7 +4,7 @@ The executable schema is `prisma/schema.prisma`, configured by root `prisma.conf
 
 ## Scope and invariant ownership
 
-Foundation contains internal User and external `(issuer, subject)` bindings, canonical faces, draft series/templates, individual card instances, append-only ownership events and actor/operation-scoped committed operation records. It creates no users, player cards, rewards, wallets, fusion/press jobs, purchases or game state during seeding. No API endpoint is connected to this database yet.
+Foundation contains internal User and external `(issuer, subject)` bindings, canonical faces, draft series/templates, individual card instances, append-only ownership events and actor/operation-scoped committed operation records. It creates no users, player cards, rewards, wallets, fusion/press jobs, purchases or game state during seeding. B005 extends this foundation with auth sessions/audit/deletion requests; configured identity endpoints use the database, while health remains process liveness. See [identity setup](../docs/AUTH.md).
 
 The development seed inserts exactly 52 faces plus one unpublished original sample series with no artwork or licensing claim. It does not overwrite local edits or grant inventory. B006 owns catalog/rights/asset validation and publication; B007 owns starter grants. Later tickets add their own narrowly scoped migrations rather than deploying the entire planning draft.
 
@@ -36,7 +36,7 @@ pnpm ci:database
 pnpm db:test
 ```
 
-Requires a working local Docker engine. The runner creates a fresh random database/password in a new loopback-published PostgreSQL container with temporary storage and no persistent volume. It ignores any caller DATABASE_URL, validates/generates, deploys twice, checks status, seeds twice and runs eight real PostgreSQL integration cases. It reverses the first migration and verifies that all foundation tables disappeared, then exercises Prisma reset, reseeds and reruns the suite. Finally it removes only its own container. CI executes this same command; no production or shared database URL is provided.
+Requires a working local Docker engine. The runner creates a fresh random database/password in a new loopback-published PostgreSQL container with temporary storage and no persistent volume. It ignores any caller DATABASE_URL, validates/generates, deploys twice, checks status, seeds twice and runs foundation and identity integration cases (18 at B005). It reverses the first migration and verifies that all foundation tables disappeared, then exercises Prisma reset, reseeds and reruns the suite. Finally it removes only its own container. CI executes this same command; no production or shared database URL is provided.
 
 Prisma's Codex safety guard requires explicit user consent for an agent to exercise `prisma migrate reset --force`, even on the runner-owned database. Do not bypass that guard, manufacture consent, disable agent detection or claim the reset passed when it stopped. When the user approves, forward the exact consent message using Prisma's documented consent environment variable for that bounded run only. Never persist consent in configuration, a script or CI secrets.
 

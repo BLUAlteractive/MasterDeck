@@ -1,6 +1,6 @@
 # DeckForge
 
-A collectible playing-card platform. **B001 provides a runnable development scaffold only.** Gameplay, accounts, card grants, purchases and activity/location integrations are not implemented. DeckForge remains a working title.
+A collectible playing-card platform. **B001 provides a runnable development scaffold only.** Gameplay, card grants, purchases and activity/location integrations are not implemented. B005 adds backend identity/permission boundaries; actual provider-flow acceptance remains pending development configuration. DeckForge remains a working title.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ pnpm dev:web
 
 Then open <http://localhost:8081>. Optional separate shells: `pnpm dev:admin` and `pnpm dev:jobs`.
 
-The jobs process only prints readiness/heartbeat messages and handles shutdown. Admin is a static shell with no administrative actions. The API exposes only a rate-limited public health route. Health reports process liveness, not database readiness.
+The jobs process only prints readiness/heartbeat messages and handles shutdown. Admin is a static shell with no administrative actions. The API always exposes a rate-limited public health route; configured B005 private routes require verified managed identity and a migrated database. Health reports process liveness, not database readiness.
 
 ## Local database services
 
@@ -65,7 +65,7 @@ Native commands generate ignored native projects and may download native build d
 - Browser CORS: add an exact browser origin to API `CORS_ORIGINS` if you change the web host/port. Do not use a wildcard.
 - Restart Expo after environment changes. `EXPO_PUBLIC_*` values are bundled and **must never contain secrets**.
 
-Shared packages compile to `dist/`; after editing a shared package, rerun `pnpm build:packages` (or restart `pnpm dev`). No external API credentials are needed for the shells.
+Shared packages compile to `dist/`; after editing a shared package, rerun `pnpm build:packages` (or restart `pnpm dev`). No external API credentials are needed for the health/static shells. See [identity setup and remaining acceptance](docs/AUTH.md) for optional B005 auth configuration.
 
 ## Automated checks
 

@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 // Never read a caller's DATABASE_URL. Own a fresh container, random DB/password and no volume.
 const name = `deckforge-test-${randomUUID()}`;
@@ -83,29 +83,29 @@ try {
   run(['db:seed'], env);
   run(['exec', 'vitest', 'run', '--config', 'vitest.database.config.mts'], env);
   stage = 'rollback';
-  docker(
-    [
-      'exec',
-      '-i',
-      name,
-      'psql',
-      '-U',
-      'postgres',
-      '-d',
-      databaseName,
-      '-v',
-      'ON_ERROR_STOP=1',
-    ],
-    {
-      input: readFileSync(
-        new URL(
-          '../prisma/rollback/202610280001_foundation.sql',
-          import.meta.url,
-        ),
-        'utf8',
-      ),
-    },
-  );
+  const rollbackDirectory = new URL('../prisma/rollback/', import.meta.url);
+  for (const filename of readdirSync(rollbackDirectory)
+    .filter((name) => name.endsWith('.sql'))
+    .sort()
+    .reverse()) {
+    docker(
+      [
+        'exec',
+        '-i',
+        name,
+        'psql',
+        '-U',
+        'postgres',
+        '-d',
+        databaseName,
+        '-v',
+        'ON_ERROR_STOP=1',
+      ],
+      {
+        input: readFileSync(new URL(filename, rollbackDirectory), 'utf8'),
+      },
+    );
+  }
   const remaining = docker([
     'exec',
     name,

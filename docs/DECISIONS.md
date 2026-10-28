@@ -126,3 +126,12 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - SQL adds branch/level/version/identity, composite template consistency, append-only history and scoped uniqueness constraints beyond Prisma metadata. Feature tickets still own atomic business services, source-key semantics, concurrency proof and privacy retention.
 - Database checks replace B004's CI deferral with an owned, temporary PostgreSQL container. All mutations, reversal and reset verification target only that generated database; existing Compose data is untouched. Prisma's agent reset guard requires explicit fresh consent; do not bypass it or infer success from the earlier tests.
 - Schema rollback SQL is test-only and destructive; deployed recovery uses reviewed forward repair or separate restore, not a reset. No production mutation is authorized by this architecture decision.
+
+## B005 identity boundary — 28 October 2026
+
+- Implement the selected Supabase JWT adapter with fixed server-configured HTTPS issuer/JWKS, audience and asymmetric algorithm allowlists. Test signing keys exist only in isolated tests; no runtime test-auth flag or user-selected key endpoint is introduced.
+- Internal user bindings remain stable. Guest linking requires the provider-issued permanent token to resolve to the expected same internal user; it does not merge accounts, reassign cards or trust email/metadata. Cross-account merges remain a product/identity review gate.
+- Local session revocation uses durable tombstones; local suspension and token expiry fail closed. Provider sign-out must also be performed by the client, and immediate external provider-wide revocation is not claimed from stateless JWT verification.
+- Local database ADMIN plus verified MFA is required for the admin capability probe; no client/provider metadata role grants privileges. Deletion is a queued request plus access suspension, not a completed purge; B051 owns completion/retention/export.
+- Socket authentication is wired, but all room/game actions remain unavailable until B018 implements membership and actors. This is auth boundary validation, not a playable room or private event stream.
+- Actual development Supabase sign-in/linking and native configuration remain unverified without project setup. Signed-fixture tests are necessary evidence, not a substitute for this external acceptance. No production provider account or resource is created by this ticket.

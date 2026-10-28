@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: DeckForge API — implemented health and planned business contracts
+  title: DeckForge API — implemented identity foundation and planned business contracts
   version: 0.2.0
   description: >-
-    Only GET /health is implemented. All /v1 business operations are planned.
+    Health and the operations marked implemented are available; identity routes fail closed unless configured. Other business operations remain planned.
     Complete strict schemas, auth, limits and tests in each owning ticket before exposure.
     See docs/PROTOCOL.md; no real-money or NFT endpoints exist.
 servers:
@@ -32,12 +32,16 @@ paths:
           description: Public health rate limit exceeded
   /me:
     get:
-      x-implementation-status: planned
-      summary: Authenticated player profile
+      x-implementation-status: implemented
+      summary: Current verified internal profile
       security: [{bearerAuth: []}]
       responses:
-        '200': {description: "Player profile"}
-        '401': {description: "Unauthenticated"}
+        '200':
+          description: Safe profile
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Profile'}
+        default: {$ref: '#/components/responses/ApiError'}
   /catalog/series:
     get:
       x-implementation-status: planned
@@ -46,15 +50,19 @@ paths:
         '200': {description: "Paginated series list"}
   /cards:
     get:
-      x-implementation-status: planned
-      summary: Owned cards in inventory, including consumed-history filtered by status
+      x-implementation-status: implemented
+      summary: Minimal owner-only active inventory; owner selectors are rejected
       security: [{bearerAuth: []}]
       parameters:
-        - in: query
-          name: cursor
-          schema: {type: string}
+        - {in: query, name: cursor, schema: {type: string, format: uuid}}
+        - {in: query, name: limit, schema: {type: integer, minimum: 1, maximum: 100, default: 50}}
       responses:
-        '200': {description: "Paginated card instances"}
+        '200':
+          description: Page of owned or locked card instances
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PrivateCards'}
+        default: {$ref: '#/components/responses/ApiError'}
   /cards/{cardId}/provenance:
     parameters:
       - in: path
@@ -238,10 +246,165 @@ paths:
         '200': {description: "Accepted lap and reward, same result on retry"}
         '202': {description: "Evidence queued for review"}
         '409': {description: "Spoof/replay/missing checkpoints/cooldown"}
+  /auth/session:
+    post:
+      x-implementation-status: implemented
+      summary: Bind a verified managed session to one internal user
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EmptyCommand'}
+      responses:
+        '200':
+          description: Safe operation result
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Profile'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /auth/guest-link:
+    post:
+      x-implementation-status: implemented
+      summary: Confirm same-user permanent identity without moving inventory
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/GuestLink'}
+      responses:
+        '200':
+          description: Safe operation result
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Profile'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /auth/logout:
+    post:
+      x-implementation-status: implemented
+      summary: Durably revoke this local session
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EmptyCommand'}
+      responses:
+        '200':
+          description: Safe operation result
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LogoutResult'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /me/deletion-request:
+    post:
+      x-implementation-status: implemented
+      summary: Queue deletion and suspend access; not a completed purge
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EmptyCommand'}
+      responses:
+        '202':
+          description: Safe operation result
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DeletionResult'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /admin/access:
+    get:
+      x-implementation-status: implemented
+      summary: Require local non-guest ADMIN plus verified aal2
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Safe operation result
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminAccess'}
+        default: {$ref: '#/components/responses/ApiError'}
 components:
   securitySchemes:
     bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  responses:
+    ApiError:
+      description: Safe validation, identity, permission, conflict or availability error
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [error]
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                required: [code, message, requestId]
+                properties:
+                  code: {type: string}
+                  message: {type: string}
+                  requestId: {type: string, format: uuid}
   schemas:
+    EmptyCommand:
+      type: object
+      additionalProperties: false
+    Profile:
+      type: object
+      additionalProperties: false
+      required: [userId, isGuest, role]
+      properties:
+        userId: {type: string, format: uuid}
+        isGuest: {type: boolean}
+        role: {type: string, enum: [PLAYER, ADMIN]}
+    GuestLink:
+      type: object
+      additionalProperties: false
+      required: [expectedUserId, idempotencyKey]
+      properties:
+        expectedUserId: {type: string, format: uuid}
+        idempotencyKey: {type: string, minLength: 10, maxLength: 128}
+    LogoutResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status: {type: string, enum: [revoked]}
+    DeletionResult:
+      type: object
+      additionalProperties: false
+      required: [requestId, status]
+      properties:
+        requestId: {type: string, format: uuid}
+        status: {type: string, enum: [pending]}
+    AdminAccess:
+      type: object
+      additionalProperties: false
+      required: [role, mfa]
+      properties:
+        role: {type: string, enum: [ADMIN]}
+        mfa: {type: boolean, enum: [true]}
+    PrivateCards:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        nextCursor: {type: string, format: uuid, nullable: true}
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [instanceId, faceId, level, branch, rarity, stateVersion]
+            properties:
+              instanceId: {type: string, format: uuid}
+              faceId: {type: string, pattern: '^(?:[2-9]|10|J|Q|K|A)-[CDHS]$'}
+              level: {type: integer, minimum: 1, maximum: 6}
+              branch: {type: string, enum: [BLUE, RED]}
+              rarity: {type: string, enum: [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY]}
+              stateVersion: {type: integer, minimum: 1}
     FusionPreviewRequest:
       type: object
       required: [ingredientIds]
