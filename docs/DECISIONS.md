@@ -69,6 +69,6 @@ No approval is inferred from recording these proposals. Most do not block the mi
 
 ## B002 implementation decisions — 27 October 2026
 
-- CI uses two stable required-check names: `Quality checks` and `Dependency audit`. Frozen installs use pinned Node/pnpm; cache only pnpm downloads. Actions are SHA-pinned with read-only permissions and checkout credentials disabled. Remote merge enforcement must be verified after a repository is identified.
+- CI uses two stable required-check names: `Quality checks` and `Dependency audit`. Frozen installs use pinned Node/pnpm; cache only pnpm downloads. Actions are SHA-pinned with read-only permissions and checkout credentials disabled. Remote merge enforcement is verified on `BLUAlteractive/MasterDeck`: both checks are bound to GitHub Actions and required on `main`, including for administrators. PR #1 demonstrated a blocked deliberate failure and successful quality recovery; audit remains blocking. See `docs/B002_REPORT.md` for run evidence.
 - Audit all dependencies and fail on high/critical findings or registry errors. Updating express-rate-limit within major 8 resolves two findings. Expo CLI's remaining Zod 3 advisory stays visible and blocks audit; no implicit risk acceptance, ignore entry or unsupported Zod major override is authorized.
 - Until B004 creates executable database files, report validation as deferred. Fail the database guard once those paths appear, requiring B004 to implement actual Prisma/migration/integration checks. Do not execute the planning draft or invent migrations in B002.

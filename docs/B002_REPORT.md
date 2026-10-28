@@ -1,6 +1,6 @@
 # B002 — Automated CI implementation report
 
-27 October 2026. **Implemented locally; acceptance blocked by the unresolved dependency advisory and missing GitHub remote.** No hosted run or enforced branch protection is claimed.
+27 October 2026. **Implemented and verified on GitHub; acceptance remains blocked by the unresolved dependency advisory.** Hosted quality checks and merge protection are verified.
 
 ## Changes
 
@@ -33,14 +33,21 @@ The rate-limiter update was exercised by existing real HTTP health/CORS tests. N
 ## Remaining work
 
 - A compatible fix for the Expo CLI transitive Zod advisory is required. No ignore list, cross-major override or audit failure suppression was added.
-- The owner must identify the GitHub remote. Actual hosted Linux runs, the hosted failure experiment and required-check enforcement remain unverified. See [CI activation instructions](CI.md).
+- Hosted execution and protection are verified below. The PR must remain blocked until the high dependency advisory is remediated.
 - Prisma and migration tests are deferred explicitly to B004. B002's guard prevents silent omission when persistence lands.
 - Native/device validation remains outside this CI scaffold; these builds cover TypeScript, Next and Expo web.
 
-Next smallest work: resolve the audit/remote acceptance blockers for B002; next planned backlog ticket is B003 — Architecture and ADR.
+Next smallest work: resolve the audit acceptance blocker for B002; next planned backlog ticket is B003 — Architecture and ADR.
 
-## GitHub activation progress
+## GitHub validation and publication
 
-The owner approved public publication to `BLUAlteractive/MasterDeck`. B001 commit `1f53715` is now published on `main`. Branch protection was applied and confirmed through the GitHub API: pull requests required, `Quality checks` and `Dependency audit` required with up-to-date branches, administrators included, force pushes/deletion disabled.
+The owner approved public publication and the OAuth workflow authorization. B001 commit `1f53715` is published on `main`; B002 is on `ci/b002-foundation` in [PR #1](https://github.com/BLUAlteractive/MasterDeck/pull/1). Earlier upload/authorization blockers are resolved.
 
-Publishing `ci/b002-foundation` was rejected by GitHub because the current OAuth token lacks the `workflow` scope. The branch remains local; no PR or hosted run exists yet. Automatic approval review also rejected starting an OAuth scope expansion without explicit scope-specific user authorization. No token was changed. Required checks are configured but their hosted behavior is not yet proven. The Zod audit finding remains unresolved.
+Commands executed: `gh auth refresh --hostname github.com --scopes workflow`, `git push`, `gh pr create`, `gh run watch`, `gh run view --log`, `gh pr view`, and GitHub branch-protection API reads/writes through `gh api`.
+
+- [Hosted failure experiment, run 40637659188](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40637659188), commit `daed9fb`: the deliberate failing assertion caused Quality checks to fail; the existing 9 tests passed and builds did not run. GitHub reported the PR as `BLOCKED`.
+- The probe was removed in commit `a7a57ea` and pushed.
+- [Hosted clean quality run 40637856692](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40637856692): Ubuntu frozen installation, formatting, lint, types, 9 tests and all 10 builds passed. Database validation explicitly deferred to B004. Dependency audit failed with one high and one low finding; the blocking high is GHSA-mrhx-c7xc-m3w5.
+- GitHub API confirms `main` requires a PR, up-to-date branches, and both named checks bound to GitHub Actions app 15368. Administrators are included; force pushes/deletion are disabled. Required approving reviews: zero. PR merge state remains `BLOCKED`.
+
+No merge or audit bypass was performed. Temporary failing test code is absent from the branch tip. The GitHub authorization blocker is resolved; the dependency advisory remains the acceptance blocker.

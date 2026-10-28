@@ -32,16 +32,13 @@ B004 must replace that guard with pinned Prisma CLI validation, migrate-deploy a
 
 ## GitHub activation and merge protection
 
-No Git remote was configured when B002 was implemented. Workflow YAML does not enforce branch protection by itself.
+The public repository is [BLUAlteractive/MasterDeck](https://github.com/BLUAlteractive/MasterDeck); B002 is [PR #1](https://github.com/BLUAlteractive/MasterDeck/pull/1). Publication and OAuth workflow authorization are complete.
 
-After the owner identifies the GitHub repository and the branch is published:
+`main` protection was verified through the GitHub API: pull requests and up-to-date branches are required; **Quality checks** and **Dependency audit** are bound to the GitHub Actions app (15368). Protection includes administrators; force pushes and branch deletion are disabled. No approving review count is required.
 
-1. Enable Actions for the pinned actions and run CI on a pull request.
-2. Configure an active branch ruleset for `main`: require a pull request, require **Quality checks** and **Dependency audit** from GitHub Actions, and require the branch to be up to date (or use a merge queue).
-3. Prevent direct pushes, force pushes and deletion; apply the checks to administrators and remove unintended bypasses. Confirm repository/plan support and preserve existing stricter rules.
-4. On a disposable PR branch, add a clearly named failing assertion, observe a failed **Quality checks** run and blocked merge, then remove it and rerun. Do not merge the probe or bypass the audit blocker.
-5. Record run URLs and merge-protection evidence in the ticket report. B001's CI criterion and B002's remote acceptance stay pending until observed; the current audit blocker must be resolved before claiming overall green CI.
+- [Deliberate failure run](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40637659188): the named assertion failed, quality stopped before builds, and the PR reported `BLOCKED`.
+- [Run after removing the probe](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40637856692): quality passed on Ubuntu (9 tests, 10 package builds); the database handoff explicitly reported deferred. Audit failed on the remaining high Expo CLI/Zod advisory (plus one low finding).
 
-The local failure experiment exercises the identical `ci:quality` command. It is not proof that a hosted runner executed or that GitHub blocks merging.
+The probe is absent from the current branch. Required checks are active and hosted behavior is verified, but overall CI acceptance and merging remain blocked until the high advisory is resolved. No merge or bypass was performed.
 
 Sources: [setup-node caching](https://github.com/actions/setup-node), [pnpm setup](https://github.com/pnpm/action-setup), and [GitHub required-check behavior](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks).
