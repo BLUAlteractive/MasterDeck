@@ -21,7 +21,7 @@ A transition locks the card, checks owner and expectedVersion, validates the pur
 
 SQL enforces lock field shape, terminal states, immutable origin/owner/serial/earned identity, version advancement, one event per version, exact matching snapshots and action/state consistency at commit. Helpers verify reservation tokens; privileged direct SQL is not an application authorization interface. Automated writers identify their service with a bounded `operatorId`; human actions also retain actorUserId. No actor or history row is erased on ordinary consumption.
 
-Level/rarity/branch/owner mutation is currently blocked. B032 creates a separate child after consuming five, while B068/B069 must explicitly extend the guard for evidence-linked in-place Press evolution and consumption. There is no generic PRESS_EVOLVE or tier-edit bypass. Future reviewed restore/transfer semantics, if approved, require a scoped migration and tests rather than resurrecting terminal rows through this helper.
+Level/rarity/branch/owner mutation is currently blocked. B032 creates a separate child after consuming five, while B068/B069 must explicitly extend the guard for evidence-linked in-place Press evolution; screen/supply consumption belongs in that Press transaction. There is no generic PRESS_EVOLVE or tier-edit bypass. Future reviewed restore/transfer semantics, if approved, require a scoped migration and tests rather than resurrecting terminal rows through this helper.
 
 ## Read API
 

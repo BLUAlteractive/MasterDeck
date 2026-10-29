@@ -1,6 +1,6 @@
 # B008 — Ownership history report
 
-28 October 2026. Implemented; final local and hosted results are recorded below. Real-provider/artwork gates remain open; no merge or deployment is claimed.
+28 October 2026. Implemented and validated locally and on GitHub. Real-provider/artwork gates remain open; no merge or deployment is claimed.
 
 ## Changed files
 
@@ -23,7 +23,7 @@
 - `pnpm ci:audit`: passed the high/critical gate; one inherited low advisory remains.
 - `pnpm --package=@redocly/cli@2.72.0 dlx redocly lint architecture/API_CONTRACT.yaml --extends spec`: passed.
 - `git diff --check`, local documentation links and a limited credential-pattern scan passed. API health returned ok and the local web server returned HTTP 200; both remain running. No UI changed and no new native/browser-rendering evidence is claimed.
-- Hosted validation is pending publication below.
+- Hosted [CI run 40804881433](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40804881433) passed Quality checks (including PostgreSQL) and Dependency audit for implementation commit `05287b8`. [Draft PR #7](https://github.com/BLUAlteractive/MasterDeck/pull/7) is stacked on B007; the external onboarding gates remain explicit. No merge was performed.
 
 ## Remaining risks and next ticket
 
