@@ -71,6 +71,35 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/PrivateCards'}
         default: {$ref: '#/components/responses/ApiError'}
+  /cards/starter:
+    post:
+      operationId: grantStarterDeck
+      x-implementation-status: implemented
+      summary: Exactly one free base deck per verified internal account
+      description: >-
+        Requires active bound identity/session and an eligible published approved series.
+        No client-selected instance IDs, rarity, level or owner. Twenty attempts per user
+        per minute per process plus the global IP limit. All successful retries return the
+        original grant, including after catalog retirement or subsequent card changes.
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [seriesId, idempotencyKey]
+              properties:
+                seriesId: {type: string, format: uuid}
+                idempotencyKey: {type: string, pattern: '^[A-Za-z0-9_-]{10,128}$'}
+      responses:
+        '200':
+          description: Stable original grant receipt; current inventory is GET /cards
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/StarterGrant'}
+        default: {$ref: '#/components/responses/ApiError'}
   /cards/{cardId}/provenance:
     parameters:
       - in: path
@@ -377,12 +406,13 @@ components:
           items:
             type: object
             additionalProperties: false
-            required: [id, slug, displayName, version, cards]
+            required: [id, slug, displayName, version, starterEligible, cards]
             properties:
               id: {type: string, format: uuid}
               slug: {type: string}
               displayName: {type: string}
               version: {type: integer, minimum: 1}
+              starterEligible: {type: boolean}
               cards:
                 type: array
                 minItems: 52
@@ -397,6 +427,29 @@ components:
                     playStyleFamily: {type: string}
                     front: {$ref: '#/components/schemas/PublicArt'}
                     back: {$ref: '#/components/schemas/PublicArt'}
+    StarterGrant:
+      type: object
+      additionalProperties: false
+      required: [grantId, seriesId, manifestVersion, cards]
+      properties:
+        grantId: {type: string, format: uuid}
+        seriesId: {type: string, format: uuid}
+        manifestVersion: {type: integer, minimum: 1}
+        cards:
+          type: array
+          minItems: 52
+          maxItems: 52
+          items:
+            type: object
+            additionalProperties: false
+            required: [instanceId, faceId, level, branch, rarity, stateVersion]
+            properties:
+              instanceId: {type: string, format: uuid}
+              faceId: {type: string, pattern: '^(?:[2-9]|10|J|Q|K|A)-[CDHS]$'}
+              level: {type: integer, enum: [1]}
+              branch: {type: string, enum: [BLUE]}
+              rarity: {type: string, enum: [COMMON]}
+              stateVersion: {type: integer, enum: [1]}
     EmptyCommand:
       type: object
       additionalProperties: false

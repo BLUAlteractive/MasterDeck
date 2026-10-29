@@ -86,6 +86,7 @@ model User {
   operations      OperationRecord[]
   authAudit       AuthAudit[]
   deletionRequest DeletionRequest?
+  starterGrant    StarterGrant?
 }
 
 model ExternalIdentity {
@@ -120,6 +121,8 @@ model CardSeries {
   status          CatalogStatus  @default(DRAFT)
   createdAt       DateTime       @default(now()) @db.Timestamptz(3)
   templates       CardTemplate[]
+  starterEligible Boolean        @default(false)
+  starterGrants   StarterGrant[]
 }
 
 model CardTemplate {
@@ -144,22 +147,25 @@ model CardTemplate {
 }
 
 model CardInstance {
-  id            String           @id @default(uuid()) @db.Uuid
-  ownerId       String           @db.Uuid
-  templateId    String           @db.Uuid
-  seriesId      String           @db.Uuid
-  faceId        String
-  status        CardStatus       @default(OWNED)
-  level         Int              @default(1)
-  branch        CardBranch       @default(BLUE)
-  rarity        CardRarity       @default(COMMON)
-  editionSerial Int?
-  stateVersion  Int              @default(1)
-  createdAt     DateTime         @default(now()) @db.Timestamptz(3)
-  owner         User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
-  template      CardTemplate     @relation(fields: [templateId, seriesId, faceId], references: [id, seriesId, faceId], onDelete: Restrict)
-  events        OwnershipEvent[]
+  id             String           @id @default(uuid()) @db.Uuid
+  ownerId        String           @db.Uuid
+  templateId     String           @db.Uuid
+  seriesId       String           @db.Uuid
+  faceId         String
+  status         CardStatus       @default(OWNED)
+  level          Int              @default(1)
+  branch         CardBranch       @default(BLUE)
+  rarity         CardRarity       @default(COMMON)
+  editionSerial  Int?
+  stateVersion   Int              @default(1)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  owner          User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  template       CardTemplate     @relation(fields: [templateId, seriesId, faceId], references: [id, seriesId, faceId], onDelete: Restrict)
+  events         OwnershipEvent[]
+  starterGrantId String?          @db.Uuid
+  starterGrant   StarterGrant?    @relation(fields: [starterGrantId], references: [id], onDelete: Restrict)
 
+  @@unique([starterGrantId, faceId])
   @@unique([seriesId, editionSerial])
   @@index([ownerId, status, faceId])
 }
@@ -241,4 +247,17 @@ model DesignAsset {
 
   @@unique([id, faceId, kind])
   @@unique([id, kind])
+}
+
+// Permanent business-source uniqueness survives retries, logout and inventory changes.
+model StarterGrant {
+  id              String         @id @db.Uuid
+  userId          String         @unique @db.Uuid
+  seriesId        String         @db.Uuid
+  manifestVersion Int
+  result          Json
+  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  series          CardSeries     @relation(fields: [seriesId], references: [id], onDelete: Restrict)
+  cards           CardInstance[]
 }

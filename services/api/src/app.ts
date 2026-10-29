@@ -9,6 +9,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { IdentityController } from './auth/controller';
 import type { PrismaClient } from '@deckforge/database';
 import { CatalogController } from './catalog';
+import { StarterController, StarterService } from './starter';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
 import { attachAuthSocket } from './auth/socket';
@@ -36,9 +37,18 @@ export async function createApp(
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
-      controllers: [HealthController, IdentityController, CatalogController],
+      controllers: [
+        HealthController,
+        IdentityController,
+        CatalogController,
+        StarterController,
+      ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
+        {
+          provide: 'STARTER_SERVICE',
+          useValue: auth ? new StarterService(auth) : null,
+        },
         { provide: 'CATALOG_DATABASE', useValue: catalogDatabase },
         {
           provide: 'AUTH_SHUTDOWN',
