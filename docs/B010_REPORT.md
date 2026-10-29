@@ -1,6 +1,6 @@
 # B010 — Collection mobile gallery implementation report
 
-29 October 2026. **Implementation prepared; full ticket acceptance pending real-provider session integration acceptance and physical-device/screen-reader validation.** Draft preview is usable independently. Hosted evidence follows after execution. No merge/deployment is claimed.
+29 October 2026. **Implementation prepared; full ticket acceptance pending real-provider session integration acceptance and physical-device/screen-reader validation.** Draft preview is usable independently. Implementation commit `d075d34` is in [draft PR #9](https://github.com/BLUAlteractive/MasterDeck/pull/9); [hosted CI](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40907795094) passed both Quality checks and Dependency audit. No merge/deployment is claimed.
 
 ## Changed files
 
@@ -23,7 +23,7 @@
 - `pnpm ci:audit`: high/critical gate passed; one inherited low finding remains. OpenAPI structural validation passed.
 - Both iOS and Android bundle exports passed after the RN patch. Expo install check now reports Dependencies are up to date. These are bundles, not native compilation or device evidence.
 - Early checks found the Expo root prop signature, missing React DOM test types, mixed Node/RN global test types and formatting; corrected without unsafe type suppressions. The vendor check initially rejected RN 0.88.0/types 19.2.3; updated the requested patches and repeated exports/checks. Earlier stopped dev-server logs showed stale Metro HMR errors while dependencies changed; the owned server was restarted, not treated as successful visual evidence.
-- Final formatting/whitespace, local documentation links and a limited credential-pattern scan passed (the scan was corrected to skip the intentionally deleted old component). API health returned ok and web returned HTTP 200 after a clean-cache server restart; both remain running. Provider storage is origin-scoped; SDK callbacks never perform asynchronous provider work. Hosted validation is pending below.
+- Final formatting/whitespace, local documentation links and a limited credential-pattern scan passed (the scan was corrected to skip the intentionally deleted old component). API health returned ok and web returned HTTP 200 after a clean-cache server restart; both remain running. Provider storage is origin-scoped; SDK callbacks never perform asynchronous provider work. Hosted Quality checks independently passed the clean lockfile install, formatting/lint/types/tests/builds and isolated database migration/rollback suite; Dependency audit also passed for implementation commit `d075d34`.
 
 ## Remaining risks / next work
 
