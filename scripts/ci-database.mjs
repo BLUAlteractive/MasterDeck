@@ -76,6 +76,7 @@ try {
   );
   run(['db:validate'], env);
   run(['db:generate'], env);
+  run(['build:packages'], env); // Standalone DB checks must never use stale package/client outputs.
   run(['db:deploy'], env);
   run(['db:deploy'], env); // A second deploy must be a no-op.
   run(['exec', 'prisma', 'migrate', 'status'], env);

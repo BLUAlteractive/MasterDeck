@@ -1,6 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createDatabase, type PrismaClient } from '../packages/database/src';
+import {
+  createDatabase,
+  createCardWithOrigin,
+  cardSnapshot,
+  type PrismaClient,
+  type Prisma,
+} from '../packages/database/src';
 import { sampleSeriesId, seedFoundation } from '../packages/database/src/seed';
 
 let database: PrismaClient;
@@ -35,6 +41,18 @@ beforeAll(async () => {
 afterAll(async () => {
   await database?.$disconnect();
 });
+function createCard(input: { data: Prisma.CardInstanceUncheckedCreateInput }) {
+  if (input.data.stateVersion !== undefined && input.data.stateVersion !== 1)
+    return database.cardInstance.create(input);
+  return database.$transaction((tx) =>
+    createCardWithOrigin(tx, input.data, {
+      operatorId: 'test.foundation',
+      actorUserId: userId,
+      sourceKey: randomUUID(),
+      reason: 'FOUNDATION_FIXTURE',
+    }),
+  );
+}
 function cardData() {
   return {
     ownerId: userId,
@@ -86,7 +104,7 @@ describe('PostgreSQL foundation constraints', () => {
     const id = randomUUID();
     const results = await Promise.allSettled(
       Array.from({ length: 8 }, () =>
-        database.cardInstance.create({ data: { ...cardData(), id } }),
+        createCard({ data: { ...cardData(), id } }),
       ),
     );
     expect(
@@ -104,14 +122,14 @@ describe('PostgreSQL foundation constraints', () => {
 
   it('rejects missing owners, mismatched template faces and referenced-row deletion', async () => {
     await expect(
-      database.cardInstance.create({
+      createCard({
         data: { ...cardData(), ownerId: randomUUID() },
       }),
     ).rejects.toMatchObject({ code: 'P2003' });
     await expect(
-      database.cardInstance.create({ data: { ...cardData(), faceId: 'Q-H' } }),
+      createCard({ data: { ...cardData(), faceId: 'Q-H' } }),
     ).rejects.toMatchObject({ code: 'P2003' });
-    await database.cardInstance.create({ data: cardData() });
+    await createCard({ data: cardData() });
     await expect(
       database.user.delete({ where: { id: userId } }),
     ).rejects.toMatchObject({ code: 'P2003' });
@@ -140,27 +158,27 @@ describe('PostgreSQL foundation constraints', () => {
       { editionSerial: -1 },
     ]) {
       await expect(
-        database.cardInstance.create({ data: { ...cardData(), ...invalid } }),
+        createCard({ data: { ...cardData(), ...invalid } }),
       ).rejects.toThrow();
     }
     await expect(
-      database.cardInstance.create({
+      createCard({
         data: { ...cardData(), branch: 'RED', level: 2 },
       }),
     ).resolves.toMatchObject({ level: 2 });
     const serial = 101;
-    await database.cardInstance.create({
+    await createCard({
       data: { ...cardData(), editionSerial: serial },
     });
     await expect(
-      database.cardInstance.create({
+      createCard({
         data: { ...cardData(), editionSerial: serial },
       }),
     ).rejects.toMatchObject({ code: 'P2002' });
   });
 
   it('protects permanent instance identity and advances mutable state by one version', async () => {
-    const card = await database.cardInstance.create({ data: cardData() });
+    const card = await createCard({ data: cardData() });
     await expect(
       database.cardInstance.update({
         where: { id: card.id },
@@ -175,9 +193,34 @@ describe('PostgreSQL foundation constraints', () => {
     ).rejects.toThrow();
     const attempts = await Promise.all(
       Array.from({ length: 8 }, () =>
-        database.cardInstance.updateMany({
-          where: { id: card.id, stateVersion: 1 },
-          data: { status: 'LOCKED', stateVersion: { increment: 1 } },
+        database.$transaction(async (tx) => {
+          const result = await tx.cardInstance.updateMany({
+            where: { id: card.id, stateVersion: 1 },
+            data: {
+              status: 'LOCKED',
+              lockToken: randomUUID(),
+              lockReason: 'TEST_MATCH',
+              stateVersion: 2,
+            },
+          });
+          if (result.count) {
+            const updated = await tx.cardInstance.findUniqueOrThrow({
+              where: { id: card.id },
+            });
+            await tx.ownershipEvent.create({
+              data: {
+                instanceId: card.id,
+                actorUserId: userId,
+                operatorId: 'test.foundation',
+                action: 'LOCK',
+                sourceKey: randomUUID(),
+                reason: 'LOCK_FIXTURE',
+                stateVersion: 2,
+                snapshot: cardSnapshot(updated),
+              },
+            });
+          }
+          return result;
         }),
       ),
     );
@@ -195,17 +238,9 @@ describe('PostgreSQL foundation constraints', () => {
   });
 
   it('preserves append-only events and rejects duplicate source keys and orphan history', async () => {
-    const card = await database.cardInstance.create({ data: cardData() });
-    const event = await database.ownershipEvent.create({
-      data: {
-        instanceId: card.id,
-        actorUserId: userId,
-        action: 'GRANT',
-        sourceKey: randomUUID(),
-        reason: 'integration fixture',
-        stateVersion: 1,
-        snapshot: { level: 1 },
-      },
+    const card = await createCard({ data: cardData() });
+    const event = await database.ownershipEvent.findUniqueOrThrow({
+      where: { id: card.originEventId! },
     });
     await expect(
       database.ownershipEvent.update({
@@ -225,7 +260,8 @@ describe('PostgreSQL foundation constraints', () => {
       sourceKey: copy.sourceKey,
       reason: copy.reason,
       stateVersion: copy.stateVersion,
-      snapshot: { level: 1 },
+      operatorId: 'test.foundation',
+      snapshot: cardSnapshot(card),
     };
     await expect(
       database.ownershipEvent.create({ data }),
@@ -289,15 +325,20 @@ describe('PostgreSQL foundation constraints', () => {
     await expect(
       database.$transaction(
         async (tx) => {
-          await tx.cardInstance.create({ data: { ...cardData(), id } });
+          const originEventId = randomUUID();
+          const created = await tx.cardInstance.create({
+            data: { ...cardData(), id, originEventId },
+          });
           await tx.ownershipEvent.create({
             data: {
+              id: originEventId,
+              operatorId: 'test.foundation',
               instanceId: id,
               action: 'GRANT',
               sourceKey: id,
               reason: 'rollback fixture',
               stateVersion: 1,
-              snapshot: { level: 1 },
+              snapshot: cardSnapshot(created),
             },
           });
           throw new Error('intentional rollback');
