@@ -1,6 +1,6 @@
 # B009 — Loadout validator report
 
-28 October 2026. Backend implemented; final validation evidence follows. No gallery UI or match admission is claimed.
+28 October 2026. Backend implemented and validated locally and on GitHub. No gallery UI or match admission is claimed.
 
 ## Changed files
 
@@ -20,7 +20,7 @@
 - Final `pnpm ci:database`: **43 cases in 6 files passed before and after rollback/reset/reseed**. Forced failure during manager replacement restored the 100 old references/version; competing manager clears yielded one 200 and one 409. Query owner selectors and revoked sessions were rejected. The 125 card rows/origin events survived all display operations.
 - `pnpm ci:audit`: passed the high/critical gate; one inherited low advisory remains.
 - `pnpm --package=@redocly/cli@2.72.0 dlx redocly lint architecture/API_CONTRACT.yaml --extends spec`: passed.
-- Local documentation links, a limited credential-pattern scan and `git diff --check` passed. API health returned ok and the local web server returned HTTP 200; both remain running. No new UI/native rendering evidence is claimed. Hosted confirmation is pending publication.
+- Local documentation links, a limited credential-pattern scan and `git diff --check` passed. API health returned ok and the local web server returned HTTP 200; both remain running. No new UI/native rendering evidence is claimed. Hosted [CI run 40814797470](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40814797470) passed Quality checks (including PostgreSQL) and Dependency audit for implementation commit `b82ee2b`. [Draft PR #8](https://github.com/BLUAlteractive/MasterDeck/pull/8) is stacked on B008, with the existing external gates explicit. No merge was performed.
 
 ## Risks, limits and next ticket
 
