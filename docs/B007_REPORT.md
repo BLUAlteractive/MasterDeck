@@ -1,6 +1,6 @@
 # B007 — Idempotent starter deck report
 
-28 October 2026. Backend implemented; local validation passed. Hosted confirmation pending. B005 actual-provider acceptance and authorized publication of an eligible starter series remain open deployment/onboarding gates.
+28 October 2026. Backend implemented and validated locally and on GitHub. B005 actual-provider acceptance and authorized publication of an eligible starter series remain open deployment/onboarding gates.
 
 ## Changed files
 
@@ -21,7 +21,7 @@
 - `pnpm ci:audit`: passed the high/critical threshold; one inherited low advisory remains.
 - `pnpm --package=@redocly/cli@2.72.0 dlx redocly lint architecture/API_CONTRACT.yaml --extends spec`: passed.
 - `git diff --check`, local documentation links and a limited credential-pattern scan passed. API health returned ok and the running web app returned HTTP 200; both servers were left running. No UI change was made, so no new device/browser-rendering acceptance is claimed.
-- Hosted results are recorded after execution below.
+- Hosted [CI run 40798298635](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40798298635) passed Quality checks (including the real PostgreSQL suite) and Dependency audit for implementation commit `f8386a0`. [Draft PR #6](https://github.com/BLUAlteractive/MasterDeck/pull/6) is stacked on B006; draft status preserves the outstanding provider/publication gates. No merge was performed.
 
 ## Remaining risks and next ticket
 
