@@ -185,6 +185,8 @@ export class AuthService {
   }
   async logout(principal: Principal) {
     await this.database.$transaction(async (tx) => {
+      // Serialize with grants/linking/deletion before locking a session or writing audit FKs.
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${principal.userId}::uuid FOR UPDATE`;
       const changed = await tx.authSession.updateMany({
         where: { id: principal.sessionId, revokedAt: null },
         data: { revokedAt: new Date() },

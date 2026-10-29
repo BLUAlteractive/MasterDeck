@@ -84,6 +84,7 @@ export const catalogSeriesSchema = z
     slug: z.string(),
     displayName: z.string(),
     version: z.number().int().positive(),
+    starterEligible: z.boolean(),
     cards: z
       .array(
         z
@@ -111,3 +112,32 @@ export const catalogQuerySchema = z
     limit: z.coerce.number().int().min(1).max(20).default(10),
   })
   .strict();
+
+export const starterGrantCommandSchema = z
+  .object({
+    seriesId: z.uuid(),
+    idempotencyKey: z.string().regex(/^[A-Za-z0-9_-]{10,128}$/),
+  })
+  .strict();
+export const starterGrantResponseSchema = z
+  .object({
+    grantId: z.uuid(),
+    seriesId: z.uuid(),
+    manifestVersion: z.number().int().positive(),
+    cards: privateCardsSchema.shape.items.length(52),
+  })
+  .strict()
+  .superRefine((result, ctx) => {
+    if (
+      new Set(result.cards.map((card) => card.instanceId)).size !== 52 ||
+      new Set(result.cards.map((card) => card.faceId)).size !== 52 ||
+      result.cards.some(
+        (card) =>
+          card.level !== 1 ||
+          card.branch !== 'BLUE' ||
+          card.rarity !== 'COMMON' ||
+          card.stateVersion !== 1,
+      )
+    )
+      ctx.addIssue({ code: 'custom', message: 'Invalid starter result' });
+  });
