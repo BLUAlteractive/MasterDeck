@@ -10,6 +10,7 @@ import { IdentityController } from './auth/controller';
 import type { PrismaClient } from '@deckforge/database';
 import { CatalogController } from './catalog';
 import { CardHistoryController } from './history';
+import { LoadoutController } from './loadouts';
 import { StarterController, StarterService } from './starter';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
@@ -44,6 +45,7 @@ export async function createApp(
         CatalogController,
         StarterController,
         CardHistoryController,
+        LoadoutController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },

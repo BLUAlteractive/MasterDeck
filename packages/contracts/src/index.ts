@@ -190,3 +190,100 @@ export const cardHistoryResponseSchema = z
   })
   .strict();
 export { historyStateSchema };
+
+const selectionKeySchema = z.string().regex(/^[A-Za-z0-9_-]{10,128}$/);
+export const faceSelectionSchema = z
+  .record(
+    z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
+    z.uuid().transform((value) => value.toLowerCase()),
+  )
+  .refine(
+    (value) => Object.keys(value).length === 52,
+    'Exactly 52 faces required',
+  );
+export const loadoutCommandSchema = z
+  .object({
+    expectedVersion: z.number().int().min(0),
+    idempotencyKey: selectionKeySchema,
+    faceToInstanceIds: faceSelectionSchema,
+  })
+  .strict();
+export const loadoutSavedSchema = z
+  .object({
+    id: z.uuid().transform((value) => value.toLowerCase()),
+    version: z.number().int().positive(),
+    faceToInstanceIds: faceSelectionSchema,
+  })
+  .strict();
+const loadoutValidationSchema = z
+  .object({
+    valid: z.boolean(),
+    issues: z.array(
+      z
+        .object({
+          code: z.enum([
+            'FACE_SET',
+            'DUPLICATE_INSTANCE',
+            'CARD_UNAVAILABLE',
+            'FACE_MISMATCH',
+          ]),
+          faceId: z.string().optional(),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+export const currentLoadoutSchema = z
+  .object({
+    loadout: loadoutSavedSchema
+      .extend({ validation: loadoutValidationSchema })
+      .strict()
+      .nullable(),
+  })
+  .strict();
+const managerSlotSchema = z
+  .object({
+    slot: z.number().int().min(1).max(100),
+    instanceId: z.uuid().transform((value) => value.toLowerCase()),
+  })
+  .strict();
+export const managerCommandSchema = z
+  .object({
+    expectedVersion: z.number().int().min(0),
+    idempotencyKey: selectionKeySchema,
+    slots: z.array(managerSlotSchema).max(100),
+  })
+  .strict()
+  .superRefine((input, ctx) => {
+    if (
+      new Set(input.slots.map((slot) => slot.slot)).size !==
+        input.slots.length ||
+      new Set(input.slots.map((slot) => slot.instanceId)).size !==
+        input.slots.length
+    )
+      ctx.addIssue({ code: 'custom', message: 'Duplicate manager selection' });
+  });
+export const managerSavedSchema = z
+  .object({
+    version: z.number().int().positive(),
+    slots: z.array(managerSlotSchema).max(100),
+  })
+  .strict();
+export const managerViewSchema = z
+  .object({
+    version: z.number().int().min(0),
+    maxSlots: z.literal(100),
+    activeInventoryCount: z.number().int().min(0),
+    unmanagedCount: z.number().int().min(0),
+    slots: z
+      .array(
+        managerSlotSchema
+          .extend({
+            status: z.enum(['OWNED', 'LOCKED', 'CONSUMED', 'REVOKED']),
+            active: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(100),
+  })
+  .strict();

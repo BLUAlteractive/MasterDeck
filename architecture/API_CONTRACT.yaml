@@ -119,6 +119,70 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/CardHistory'}
         default: {$ref: '#/components/responses/ApiError'}
+  /loadouts/current:
+    get:
+      operationId: getCurrentLoadout
+      x-implementation-status: implemented
+      summary: Read the owner's primary selection and current eligibility; no automatic repair
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Null or current primary loadout with revalidated card status
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CurrentLoadout'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /loadouts/{loadoutId}:
+    parameters:
+      - {in: path, name: loadoutId, required: true, schema: {type: string, format: uuid}}
+    put:
+      operationId: saveLoadout
+      x-implementation-status: implemented
+      summary: Save one owned available card for every canonical face
+      description: Version zero creates the primary selection; locks and versions serialize writes. This does not admit a match or deal cards.
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LoadoutCommand'}
+      responses:
+        '200':
+          description: Stable selection receipt; replay does not overwrite a newer selection
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LoadoutSaved'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /collection/manager:
+    get:
+      operationId: getCollectionManager
+      x-implementation-status: implemented
+      summary: Owner display references plus uncapped active-inventory count
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: At most 100 references; unmanaged cards remain owned
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ManagerView'}
+        default: {$ref: '#/components/responses/ApiError'}
+    put:
+      operationId: saveCollectionManager
+      x-implementation-status: implemented
+      summary: Replace display references without deleting card instances or history
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ManagerCommand'}
+      responses:
+        '200':
+          description: Stable manager receipt
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ManagerSaved'}
+        default: {$ref: '#/components/responses/ApiError'}
   /evolutions/preview:
     post:
       x-implementation-status: planned
@@ -487,6 +551,106 @@ components:
                   level: {type: integer, minimum: 1, maximum: 6}
                   branch: {type: string, enum: [BLUE, RED]}
                   rarity: {type: string, enum: [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY]}
+    FaceSelection:
+      type: object
+      minProperties: 52
+      maxProperties: 52
+      description: Exactly the 52 canonical rank-suit keys; strict Zod validation rejects other keys; server validation rejects repeated instance IDs.
+      additionalProperties: {type: string, format: uuid}
+    LoadoutCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, idempotencyKey, faceToInstanceIds]
+      properties:
+        expectedVersion: {type: integer, minimum: 0}
+        idempotencyKey: {type: string, pattern: '^[A-Za-z0-9_-]{10,128}$'}
+        faceToInstanceIds: {$ref: '#/components/schemas/FaceSelection'}
+    LoadoutSaved:
+      type: object
+      additionalProperties: false
+      required: [id, version, faceToInstanceIds]
+      properties:
+        id: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+        faceToInstanceIds: {$ref: '#/components/schemas/FaceSelection'}
+    CurrentLoadout:
+      type: object
+      additionalProperties: false
+      required: [loadout]
+      properties:
+        loadout:
+          type: object
+          nullable: true
+          additionalProperties: false
+          required: [id, version, faceToInstanceIds, validation]
+          properties:
+            id: {type: string, format: uuid}
+            version: {type: integer, minimum: 1}
+            faceToInstanceIds: {$ref: '#/components/schemas/FaceSelection'}
+            validation:
+              type: object
+              additionalProperties: false
+              required: [valid, issues]
+              properties:
+                valid: {type: boolean}
+                issues:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [code]
+                    properties:
+                      code: {type: string, enum: [FACE_SET, DUPLICATE_INSTANCE, CARD_UNAVAILABLE, FACE_MISMATCH]}
+                      faceId: {type: string}
+    ManagerSlot:
+      type: object
+      additionalProperties: false
+      required: [slot, instanceId]
+      properties:
+        slot: {type: integer, minimum: 1, maximum: 100}
+        instanceId: {type: string, format: uuid}
+    ManagerCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, idempotencyKey, slots]
+      properties:
+        expectedVersion: {type: integer, minimum: 0}
+        idempotencyKey: {type: string, pattern: '^[A-Za-z0-9_-]{10,128}$'}
+        slots:
+          type: array
+          maxItems: 100
+          items: {$ref: '#/components/schemas/ManagerSlot'}
+    ManagerSaved:
+      type: object
+      additionalProperties: false
+      required: [version, slots]
+      properties:
+        version: {type: integer, minimum: 1}
+        slots:
+          type: array
+          maxItems: 100
+          items: {$ref: '#/components/schemas/ManagerSlot'}
+    ManagerView:
+      type: object
+      additionalProperties: false
+      required: [version, maxSlots, activeInventoryCount, unmanagedCount, slots]
+      properties:
+        version: {type: integer, minimum: 0}
+        maxSlots: {type: integer, enum: [100]}
+        activeInventoryCount: {type: integer, minimum: 0}
+        unmanagedCount: {type: integer, minimum: 0}
+        slots:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required: [slot, instanceId, status, active]
+            properties:
+              slot: {type: integer, minimum: 1, maximum: 100}
+              instanceId: {type: string, format: uuid}
+              status: {type: string, enum: [OWNED, LOCKED, CONSUMED, REVOKED]}
+              active: {type: boolean}
     EmptyCommand:
       type: object
       additionalProperties: false
