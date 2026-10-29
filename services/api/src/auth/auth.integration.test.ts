@@ -11,7 +11,11 @@ import {
   deletionResponseSchema,
 } from '@deckforge/contracts';
 import { io, type Socket } from 'socket.io-client';
-import { createDatabase, type PrismaClient } from '@deckforge/database';
+import {
+  createDatabase,
+  createCardWithOrigin,
+  type PrismaClient,
+} from '@deckforge/database';
 import { createApp } from '../app';
 import { AuthService } from './service';
 import { createTokenVerifier } from './token-verifier';
@@ -110,14 +114,23 @@ async function card(ownerId: string) {
     },
     update: {},
   });
-  return database.cardInstance.create({
-    data: {
-      ownerId,
-      templateId: template.id,
-      seriesId: template.seriesId,
-      faceId: template.faceId,
-    },
-  });
+  return database.$transaction((tx) =>
+    createCardWithOrigin(
+      tx,
+      {
+        ownerId,
+        templateId: template.id,
+        seriesId: template.seriesId,
+        faceId: template.faceId,
+      },
+      {
+        operatorId: 'test.auth',
+        actorUserId: ownerId,
+        sourceKey: randomUUID(),
+        reason: 'AUTH_FIXTURE',
+      },
+    ),
+  );
 }
 function socket(bearer?: string) {
   const client = io(`${base}/rooms`, {

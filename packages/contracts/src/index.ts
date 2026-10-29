@@ -141,3 +141,52 @@ export const starterGrantResponseSchema = z
     )
       ctx.addIssue({ code: 'custom', message: 'Invalid starter result' });
   });
+
+export const cardHistoryQuerySchema = z
+  .object({
+    afterVersion: z.coerce.number().int().min(0).default(0),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+const historyStateSchema = z
+  .object({
+    status: z.enum(['OWNED', 'LOCKED', 'CONSUMED', 'REVOKED']),
+    level: z.number().int().min(1).max(6),
+    branch: z.enum(['BLUE', 'RED']),
+    rarity: raritySchema,
+  })
+  .strict();
+export const cardHistoryResponseSchema = z
+  .object({
+    instanceId: z.uuid(),
+    faceId: z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
+    seriesId: z.uuid(),
+    editionSerial: z.number().int().positive().nullable(),
+    originEventId: z.uuid().nullable(),
+    currentStatus: historyStateSchema.shape.status,
+    currentVersion: z.number().int().positive(),
+    events: z.array(
+      z
+        .object({
+          eventId: z.uuid(),
+          action: z.enum([
+            'MINT',
+            'GRANT',
+            'FUSION_CONSUME',
+            'FUSION_CREATE',
+            'PRESS_EVOLVE',
+            'LOCK',
+            'UNLOCK',
+            'REVOKE',
+          ]),
+          stateVersion: z.number().int().positive(),
+          recordedAt: z.iso.datetime(),
+          actor: z.enum(['SELF', 'OPERATOR', 'SYSTEM', 'UNKNOWN']),
+          state: historyStateSchema.nullable(),
+        })
+        .strict(),
+    ),
+    nextVersion: z.number().int().positive().nullable(),
+  })
+  .strict();
+export { historyStateSchema };

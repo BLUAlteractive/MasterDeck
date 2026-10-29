@@ -162,6 +162,10 @@ model CardInstance {
   owner          User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   template       CardTemplate     @relation(fields: [templateId, seriesId, faceId], references: [id, seriesId, faceId], onDelete: Restrict)
   events         OwnershipEvent[]
+  originEventId  String?          @db.Uuid
+  originEvent    OwnershipEvent?  @relation("CardOrigin", fields: [originEventId, id], references: [id, instanceId], onDelete: Restrict, onUpdate: NoAction)
+  lockToken      String?          @db.Uuid
+  lockReason     String?
   starterGrantId String?          @db.Uuid
   starterGrant   StarterGrant?    @relation(fields: [starterGrantId], references: [id], onDelete: Restrict)
 
@@ -182,7 +186,12 @@ model OwnershipEvent {
   recordedAt   DateTime        @default(now()) @db.Timestamptz(3)
   instance     CardInstance    @relation(fields: [instanceId], references: [id], onDelete: Restrict)
   actor        User?           @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  operatorId   String?
+  origins      CardInstance[]  @relation("CardOrigin")
 
+  @@unique([id, instanceId])
+  @@unique([instanceId, stateVersion])
+  @@index([instanceId, stateVersion, id])
   @@index([instanceId, recordedAt])
 }
 

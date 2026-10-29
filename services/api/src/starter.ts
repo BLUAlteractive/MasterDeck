@@ -139,6 +139,7 @@ export class StarterService {
             result,
           },
         });
+        const origins = cards.map(() => randomUUID());
         await tx.cardInstance.createMany({
           data: cards.map((card, index) => ({
             id: card.instanceId,
@@ -152,10 +153,13 @@ export class StarterService {
             status: 'OWNED',
             stateVersion: 1,
             starterGrantId: grantId,
+            originEventId: origins[index]!,
           })),
         });
         await tx.ownershipEvent.createMany({
-          data: cards.map((card) => ({
+          data: cards.map((card, index) => ({
+            id: origins[index]!,
+            operatorId: 'inventory.starter',
             instanceId: card.instanceId,
             actorUserId: user.id,
             action: 'GRANT',
@@ -164,6 +168,9 @@ export class StarterService {
             stateVersion: 1,
             snapshot: {
               ownerId: user.id,
+              status: 'OWNED',
+              lockToken: null,
+              lockReason: null,
               grantId,
               seriesId: series.id,
               ...card,

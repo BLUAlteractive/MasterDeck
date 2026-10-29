@@ -7,3 +7,9 @@ export function createDatabase(connectionString: string) {
   return new PrismaClient({ adapter, log: [] });
 }
 export { Prisma, PrismaClient } from './generated/client';
+export {
+  createCardWithOrigin,
+  cardSnapshot,
+  writeCardTransition,
+  InventoryConflict,
+} from './inventory';

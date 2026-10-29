@@ -4,7 +4,11 @@ import { once } from 'node:events';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, afterAll, describe, it, expect } from 'vitest';
-import { createDatabase, type PrismaClient } from '@deckforge/database';
+import {
+  createDatabase,
+  writeCardTransition,
+  type PrismaClient,
+} from '@deckforge/database';
 import { developmentCatalog } from '@deckforge/card-domain';
 import { starterGrantResponseSchema } from '@deckforge/contracts';
 import { createApp } from './app';
@@ -222,11 +226,23 @@ describe('starter grant transaction and authorization', () => {
       (await request('cards/starter', user.bearer, command(key, randomUUID())))
         .status,
     ).toBe(409);
-    // Replays remain the immutable original grant even after catalog retirement or card evolution.
-    await db.cardInstance.update({
-      where: { id: cards[0]!.id },
-      data: { level: 3, stateVersion: 2 },
-    });
+    // Replays remain the immutable original grant even after catalog retirement or card status changes.
+    await db.$transaction((tx) =>
+      writeCardTransition(tx, {
+        instanceId: cards[0]!.id,
+        ownerId: user.userId,
+        expectedVersion: 1,
+        command: {
+          action: 'LOCK',
+          lockToken: randomUUID(),
+          lockReason: 'TEST_MATCH',
+        },
+        actorUserId: user.userId,
+        operatorId: 'test.starter',
+        sourceKey: randomUUID(),
+        reason: 'REPLAY_FIXTURE',
+      }),
+    );
     await draft();
     const replay = await request('cards/starter', user.bearer, command());
     expect(replay.status).toBe(200);
