@@ -30,22 +30,30 @@ export const inventoryQuerySchema = z
     limit: z.coerce.number().int().min(1).max(100).default(50),
   })
   .strict();
-export const privateCardsSchema = z
+export const ownedCardSchema = z
   .object({
-    items: z.array(
-      z
-        .object({
-          instanceId: z.uuid(),
-          faceId: z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
-          level: z.number().int().min(1).max(6),
-          branch: z.enum(['BLUE', 'RED']),
-          rarity: raritySchema,
-          stateVersion: z.number().int().positive(),
-        })
-        .strict(),
-    ),
-    nextCursor: z.uuid().nullable(),
+    instanceId: z.uuid(),
+    faceId: z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
+    level: z.number().int().min(1).max(6),
+    branch: z.enum(['BLUE', 'RED']),
+    rarity: raritySchema,
+    stateVersion: z.number().int().positive(),
+    status: z.enum(['OWNED', 'LOCKED']),
+    seriesId: z.uuid(),
+    seriesName: z.string().min(1).max(120),
+    templateVersion: z.number().int().positive(),
+    favorite: z.boolean(),
   })
+  .strict();
+export type OwnedCard = z.infer<typeof ownedCardSchema>;
+export const privateCardsSchema = z
+  .object({ items: z.array(ownedCardSchema), nextCursor: z.uuid().nullable() })
+  .strict();
+export const favoriteCommandSchema = z
+  .object({ favorite: z.boolean() })
+  .strict();
+export const favoriteResponseSchema = z
+  .object({ instanceId: z.uuid(), favorite: z.boolean() })
   .strict();
 
 export const apiErrorSchema = z
@@ -124,7 +132,20 @@ export const starterGrantResponseSchema = z
     grantId: z.uuid(),
     seriesId: z.uuid(),
     manifestVersion: z.number().int().positive(),
-    cards: privateCardsSchema.shape.items.length(52),
+    cards: z
+      .array(
+        z
+          .object({
+            instanceId: z.uuid(),
+            faceId: z.string().regex(/^(?:[2-9]|10|J|Q|K|A)-[CDHS]$/),
+            level: z.literal(1),
+            branch: z.literal('BLUE'),
+            rarity: z.literal('COMMON'),
+            stateVersion: z.literal(1),
+          })
+          .strict(),
+      )
+      .length(52),
   })
   .strict()
   .superRefine((result, ctx) => {

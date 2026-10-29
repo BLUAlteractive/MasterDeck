@@ -19,7 +19,7 @@ pnpm setup:local
 pnpm dev
 ```
 
-`setup:local` copies each `.env.example` to an ignored `.env` **without overwriting existing files**. `dev` builds shared packages and starts API, jobs, admin and Expo together. Open the admin at <http://localhost:3000>. Open the Expo web preview at <http://localhost:8081> (or run the explicit web command below). The API liveness response is at <http://localhost:3001/health>. Use **Check API connection** in the mobile shell to verify its public contract. Stop the dev processes with Ctrl+C.
+`setup:local` copies each `.env.example` to an ignored `.env` **without overwriting existing files**. `dev` builds shared packages and starts API, jobs, admin and Expo together. Open the admin at <http://localhost:3000>. Open the Expo web preview at <http://localhost:8081> (or run the explicit web command below). The API liveness response is at <http://localhost:3001/health>. The gallery opens in clearly labeled artwork preview mode; use the API health URL to check liveness. Stop the dev processes with Ctrl+C.
 
 For an explicit browser-only mobile launch, use two terminals:
 
@@ -100,7 +100,7 @@ The game/domain packages may not import UI, network, database or server framewor
 
 ## Catalog preview
 
-B006 displays an original 52-face vector study and one blue back in the mobile/web shell. It is draft artwork, not an owned starter grant. Run `pnpm dev:api` and `pnpm dev:web`; see [catalog and art guide](docs/CATALOG.md). The public server catalog excludes the default draft seed. Gameplay and purchases are not part of the preview.
+B010 replaces the static B006 study with a virtualized gallery: search, suit/series filters, rank sorting, front/back inspection and session-only preview favorites. It is draft artwork, not an owned starter grant. Run `pnpm dev:api` and `pnpm dev:web`; see [catalog and art guide](docs/CATALOG.md). The public server catalog excludes the default draft seed. Gameplay and purchases are not part of the preview.
 
 ## Product and delivery references
 
@@ -111,3 +111,5 @@ B006 displays an original 52-face vector study and one blue back in the mobile/w
 - [Execution prompts](prompts/START_HERE.md), [acceptance matrix](tests/ACCEPTANCE_MATRIX.md), [launch gates](legal/LAUNCH_GATES.md).
 
 The files under `architecture/` are draft reference contracts; OpenAPI explicitly marks implemented health and planned business operations. They are not deployed schemas or proof of implemented features.
+
+The owned gallery accepts a verified session connection from the managed-auth host; the default root does not fabricate a connection or accept pasted tokens. With public Supabase configuration the root provides managed guest/restore/refresh and secure native storage. Actual provider/linking/MFA and physical-device acceptance are still pending. See [gallery integration and verification](docs/COLLECTION_GALLERY.md).

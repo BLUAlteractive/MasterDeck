@@ -171,6 +171,7 @@ model CardInstance {
   starterGrantId String?          @db.Uuid
   starterGrant   StarterGrant?    @relation(fields: [starterGrantId], references: [id], onDelete: Restrict)
 
+  favorites    CardFavorite[]
   loadoutCards LoadoutCard[]
   managerSlots CollectionManagerSlot[]
 
@@ -320,4 +321,14 @@ model CollectionManagerSlot {
 
   @@id([userId, slot])
   @@unique([userId, instanceId])
+}
+
+// Presentation preference only; does not confer ownership or gameplay eligibility.
+model CardFavorite {
+  userId     String       @db.Uuid
+  instanceId String       @db.Uuid
+  favorite   Boolean      @default(false)
+  instance   CardInstance @relation(fields: [instanceId, userId], references: [id, ownerId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([userId, instanceId])
 }
