@@ -74,19 +74,21 @@ enum OwnershipAction {
 }
 
 model User {
-  id              String             @id @default(uuid()) @db.Uuid
-  status          UserStatus         @default(ACTIVE)
-  role            UserRole           @default(PLAYER)
-  isGuest         Boolean            @default(true)
-  createdAt       DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime           @updatedAt @db.Timestamptz(3)
-  identities      ExternalIdentity[]
-  cards           CardInstance[]
-  events          OwnershipEvent[]
-  operations      OperationRecord[]
-  authAudit       AuthAudit[]
-  deletionRequest DeletionRequest?
-  starterGrant    StarterGrant?
+  id                String             @id @default(uuid()) @db.Uuid
+  status            UserStatus         @default(ACTIVE)
+  role              UserRole           @default(PLAYER)
+  isGuest           Boolean            @default(true)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+  identities        ExternalIdentity[]
+  cards             CardInstance[]
+  events            OwnershipEvent[]
+  operations        OperationRecord[]
+  authAudit         AuthAudit[]
+  deletionRequest   DeletionRequest?
+  starterGrant      StarterGrant?
+  loadout           Loadout?
+  collectionManager CollectionManager?
 }
 
 model ExternalIdentity {
@@ -169,6 +171,11 @@ model CardInstance {
   starterGrantId String?          @db.Uuid
   starterGrant   StarterGrant?    @relation(fields: [starterGrantId], references: [id], onDelete: Restrict)
 
+  loadoutCards LoadoutCard[]
+  managerSlots CollectionManagerSlot[]
+
+  @@unique([id, ownerId, faceId])
+  @@unique([id, ownerId])
   @@unique([starterGrantId, faceId])
   @@unique([seriesId, editionSerial])
   @@index([ownerId, status, faceId])
@@ -269,4 +276,48 @@ model StarterGrant {
   user            User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   series          CardSeries     @relation(fields: [seriesId], references: [id], onDelete: Restrict)
   cards           CardInstance[]
+}
+
+model Loadout {
+  id      String        @id @db.Uuid
+  userId  String        @unique @db.Uuid
+  version Int           @default(1)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  cards   LoadoutCard[]
+
+  @@unique([id, userId, version])
+}
+
+model LoadoutCard {
+  loadoutId      String       @db.Uuid
+  userId         String       @db.Uuid
+  loadoutVersion Int
+  faceId         String
+  instanceId     String       @db.Uuid
+  loadout        Loadout      @relation(fields: [loadoutId, userId, loadoutVersion], references: [id, userId, version], onDelete: Restrict, onUpdate: NoAction)
+  instance       CardInstance @relation(fields: [instanceId, userId, faceId], references: [id, ownerId, faceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([loadoutId, faceId])
+  @@unique([loadoutId, instanceId])
+}
+
+model CollectionManager {
+  userId  String                  @id @db.Uuid
+  version Int                     @default(1)
+  user    User                    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  slots   CollectionManagerSlot[]
+
+  @@unique([userId, version])
+}
+
+model CollectionManagerSlot {
+  userId         String            @db.Uuid
+  managerVersion Int
+  slot           Int
+  instanceId     String            @db.Uuid
+  manager        CollectionManager @relation(fields: [userId, managerVersion], references: [userId, version], onDelete: Restrict, onUpdate: NoAction)
+  instance       CardInstance      @relation(fields: [instanceId, userId], references: [id, ownerId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([userId, slot])
+  @@unique([userId, instanceId])
 }
