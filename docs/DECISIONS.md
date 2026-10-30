@@ -202,3 +202,8 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Minimum raises and player-specific cumulative short-all-in reopening follow [Poker TDA rules 36, 45 and 49](https://www.pokertda.com/view-poker-tda-rules/). A prior check counts as action; an incomplete opening all-in alone does not reopen it. An unacted player may raise by the last full increment. No lone player may build a dry side pot.
 - The pure reducer accepts one validated 52-face deck or injected bounded draws. Production CSPRNG selection belongs to B018. Contributions remain in the pot until B015 allocation; no wallet settlement occurs here.
 - R-11 remains open: no shuffle seed or private replay is disclosed after closure, since it could reconstruct folded holes. Retain private replay evidence; public fairness proof requires cryptographic/privacy review. This restricts disclosure and does not approve a new public proof policy.
+
+## B015 pure pot allocation — 29 October 2026
+
+- Build ascending contribution layers, return unmatched single-contributor excess, and rank only non-folded contributors to each pot. Allocate integer tie shares separately per pot; remainder chips go clockwise from the first winning seat left of the button, consistent with the linked TDA odd-chip/side-pot rules.
+- Return deeply frozen payout/refund/final-stack calculations without mutating hands or wallets. Invalid terminal accounting fails closed. B022 must still provide transactional wallet settlement, idempotency and reconciliation; this library result authorizes no client balance.

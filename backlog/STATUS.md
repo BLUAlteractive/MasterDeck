@@ -19,3 +19,5 @@
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
 
 | B014 — Poker state machine | Implemented; local validation recorded in report | [B014 report](../docs/B014_REPORT.md) | Private engine only; no wallet settlement or public seed disclosure. |
+
+| B015 — Side-pots and splits | Implemented; local validation recorded in report | [B015 report](../docs/B015_REPORT.md) | Pure allocation; transactional wallet settlement remains B022. |
