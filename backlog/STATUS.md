@@ -21,3 +21,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B014 — Poker state machine | Implemented; local validation recorded in report | [B014 report](../docs/B014_REPORT.md) | Private engine only; no wallet settlement or public seed disclosure. |
 
 | B015 — Side-pots and splits | Implemented; local validation recorded in report | [B015 report](../docs/B015_REPORT.md) | Pure allocation; transactional wallet settlement remains B022. |
+
+| B016 — Poker bot/test harness | Implemented; local validation recorded in report | [B016 report](../docs/B016_REPORT.md) | 1,000 complete hands, replay and allocation; no tournament or production RNG claim. |
