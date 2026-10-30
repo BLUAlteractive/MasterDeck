@@ -1,6 +1,6 @@
 # B013 — Best five of seven implementation report
 
-29 October 2026. **Implemented and locally validated; hosted validation pending.** This is a pure engine library change, not a playable table or settlement feature. Existing provider/device/product acceptance gaps remain open.
+29 October 2026. **Implemented and validated locally and on hosted CI; ready for review.** Implementation `7ec53c6` is in [draft PR #12](https://github.com/BLUAlteractive/MasterDeck/pull/12); [hosted CI](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41003424270) passed both required jobs. This is a pure engine library change, not a playable table or settlement feature. Existing provider/device/product acceptance gaps remain open.
 
 ## Changed files
 
@@ -19,9 +19,10 @@
 - `pnpm ci:audit`: passed the high/critical gate; one inherited low finding remains.
 - Compiled-package consumer smoke (`pnpm --filter @deckforge/game-poker exec node -e ...`): loaded real package exports, verified legacy five-card wheel behavior, three equally best seven-card quad/kicker choices and a shared-board royal tie. Passed.
 - A direct source-byte comparison against the previous Git revision confirmed B012's implementation was moved without changes. All prior B012 cases remain passing.
+- Hosted logs confirm **149 cases in 22 files**, **11 builds** and **51 database cases in eight files before and after rollback/reset/reseed**. Quality checks and Dependency audit both passed.
 - Final whitespace and local documentation-link checks passed. Existing local API health returned ok and web preview returned HTTP 200; no new game screen or live visual acceptance is claimed.
 
-No local database suite, native export/compile or live browser/device run is claimed for this pure library ticket. No API, mobile flow, schema, persisted state, runtime RNG or platform integration changes. Hosted CI will independently run its existing isolated database regression suite; that does not imply a local DB rerun. No migration/data rollback is needed; revert this code/export/script change to remove B013.
+No local database suite, native export/compile or live browser/device run is claimed for this pure library ticket. No API, mobile flow, schema, persisted state, runtime RNG or platform integration changes. Hosted CI independently ran its existing isolated database regression suite; that does not imply a local DB rerun. No migration/data rollback is needed; revert this code/export/script change to remove B013.
 
 ## Semantics, risks and next work
 
