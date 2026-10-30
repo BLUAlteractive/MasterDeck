@@ -363,3 +363,4 @@ export * from './poker';
 export * from './lobby';
 export * from './chips';
 export * from './evolved';
+export * from './spades';

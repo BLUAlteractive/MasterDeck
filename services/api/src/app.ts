@@ -1,3 +1,4 @@
+import { GameRooms } from './rooms/router';
 import 'reflect-metadata';
 import { Controller, Get, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -51,6 +52,7 @@ export async function createApp(
   let stopTimeouts = async () => {};
   let stopSettlements = async () => {};
   const pokerRooms = auth ? new PokerRoomService(auth.database) : null;
+  const gameRooms = auth ? new GameRooms(auth.database) : null;
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
@@ -70,7 +72,7 @@ export async function createApp(
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
-        { provide: 'POKER_ROOMS', useValue: pokerRooms },
+        { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',
           useValue: auth ? new StarterService(auth) : null,
@@ -103,7 +105,7 @@ export async function createApp(
     app.getHttpServer(),
     auth,
     origins,
-    pokerRooms,
+    gameRooms,
   );
   if (pokerRooms) stopTimeouts = startTimeoutWorker(pokerRooms);
   if (auth)

@@ -40,4 +40,6 @@
 
 | B026 — Fairness simulation | Diagnostic implementation validated; balance approval withheld | [B026 report](../docs/B026_REPORT.md), [balance findings](../docs/EVOLVED_BALANCE_REPORT.md) | 100,000 paired showdowns; material earned advantage needs review. No live Evolved or approved threshold. |
 
+| B029 — Spades realtime actor | Implementation and validation in report | [B029 report](../docs/B029_REPORT.md) | Scripted four-client evidence; real four-device/provider and public admission acceptance remain separate. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.

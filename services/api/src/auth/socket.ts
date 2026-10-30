@@ -5,7 +5,8 @@ import { z } from 'zod';
 import type { AuthService } from './service';
 import { pokerRoomJoinSchema, pokerResumeSchema } from '@deckforge/contracts';
 import { ApiFailure } from './errors';
-import { PokerRoomService, StaleRoomVersion } from '../rooms/service';
+import type { RoomProtocol } from '../rooms/router';
+import { RoomVersionConflict } from '../rooms/shared';
 
 const handshakeSchema = z
   .object({ token: z.string().min(1).max(16384) })
@@ -15,7 +16,7 @@ export async function attachAuthSocket(
   server: HttpServer,
   auth: AuthService | null,
   origins: string[],
-  roomService: PokerRoomService | null = null,
+  roomService: RoomProtocol | null = null,
 ) {
   const attempts = new Map<string, { count: number; started: number }>();
   const cleanup = setInterval(() => {
@@ -196,7 +197,7 @@ export async function attachAuthSocket(
             code:
               error instanceof ApiFailure ? error.code : 'SERVICE_UNAVAILABLE',
           },
-          ...(error instanceof StaleRoomVersion
+          ...(error instanceof RoomVersionConflict
             ? { resync: error.resync }
             : {}),
         });
