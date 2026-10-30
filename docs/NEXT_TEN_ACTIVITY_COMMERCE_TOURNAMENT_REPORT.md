@@ -2,18 +2,18 @@
 
 30 October 2026. Continued from B033 (`c2762a2`). Implemented the code and automated acceptance paths for these ten tickets, with the external and dependent-feature acceptance gates below still open. Each ticket has its own branch, commit and stacked draft review; no PR was merged or production service activated. The 82-ticket CSV scope is unchanged.
 
-| Ticket | Result                                                                                                 | Evidence / draft PR                                                                     |
-| ------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| B034   | Foreground read-only HealthKit/Health Connect adapters and local activity review                       | [Report](B034_REPORT.md), [PR 33](https://github.com/BLUAlteractive/MasterDeck/pull/33) |
-| B035   | Opt-in nonwalking quests, verified server facts, capped atomic Trail Credit and distinct Press proof   | [Report](B035_REPORT.md), [PR 37](https://github.com/BLUAlteractive/MasterDeck/pull/37) |
-| B036   | Server-result achievement projection and idempotent prestige awards                                    | [Report](B036_REPORT.md), [PR 34](https://github.com/BLUAlteractive/MasterDeck/pull/34) |
-| B037   | Published daily/weekly/season windows and durable mission recovery                                     | [Report](B037_REPORT.md), [PR 35](https://github.com/BLUAlteractive/MasterDeck/pull/35) |
-| B038   | Separate restricted wallets and closed currency-purpose matrix                                         | [Report](B038_REPORT.md), [PR 36](https://github.com/BLUAlteractive/MasterDeck/pull/36) |
-| B039   | Approved fixed cosmetic catalog, nonfunctional presentation and storefront                             | [Report](B039_REPORT.md), [PR 38](https://github.com/BLUAlteractive/MasterDeck/pull/38) |
-| B040   | Bound Apple/Google server verification, encrypted evidence, durable inbox/ack and cosmetic-only grants | [Report](B040_REPORT.md), [PR 39](https://github.com/BLUAlteractive/MasterDeck/pull/39) |
-| B041   | Owner restore/history and durable missed-refund/void recovery                                          | [Report](B041_REPORT.md), [PR 40](https://github.com/BLUAlteractive/MasterDeck/pull/40) |
-| B042   | Scheduled gated Classic brackets, pre-deal binding, server replay, one title and audited reports       | [Report](B042_REPORT.md), [PR 41](https://github.com/BLUAlteractive/MasterDeck/pull/41) |
-| B043   | Mobile schedule/join/next action, private hand controls, archive and scoped result reports             | [Report](B043_REPORT.md), branch `codex/b043-tournament-mobile-ui`                      |
+| Ticket | Result                                                                                                 | Evidence / draft PR                                                                                                         |
+| ------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| B034   | Foreground read-only HealthKit/Health Connect adapters and local activity review                       | [Report](B034_REPORT.md), [PR 33](https://github.com/BLUAlteractive/MasterDeck/pull/33)                                     |
+| B035   | Opt-in nonwalking quests, verified server facts, capped atomic Trail Credit and distinct Press proof   | [Report](B035_REPORT.md), [PR 37](https://github.com/BLUAlteractive/MasterDeck/pull/37)                                     |
+| B036   | Server-result achievement projection and idempotent prestige awards                                    | [Report](B036_REPORT.md), [PR 34](https://github.com/BLUAlteractive/MasterDeck/pull/34)                                     |
+| B037   | Published daily/weekly/season windows and durable mission recovery                                     | [Report](B037_REPORT.md), [PR 35](https://github.com/BLUAlteractive/MasterDeck/pull/35)                                     |
+| B038   | Separate restricted wallets and closed currency-purpose matrix                                         | [Report](B038_REPORT.md), [PR 36](https://github.com/BLUAlteractive/MasterDeck/pull/36)                                     |
+| B039   | Approved fixed cosmetic catalog, nonfunctional presentation and storefront                             | [Report](B039_REPORT.md), [PR 38](https://github.com/BLUAlteractive/MasterDeck/pull/38)                                     |
+| B040   | Bound Apple/Google server verification, encrypted evidence, durable inbox/ack and cosmetic-only grants | [Report](B040_REPORT.md), [PR 39](https://github.com/BLUAlteractive/MasterDeck/pull/39)                                     |
+| B041   | Owner restore/history and durable missed-refund/void recovery                                          | [Report](B041_REPORT.md), [PR 40](https://github.com/BLUAlteractive/MasterDeck/pull/40)                                     |
+| B042   | Scheduled gated Classic brackets, pre-deal binding, server replay, one title and audited reports       | [Report](B042_REPORT.md), [PR 41](https://github.com/BLUAlteractive/MasterDeck/pull/41)                                     |
+| B043   | Mobile schedule/join/next action, private hand controls, archive and scoped result reports             | [Report](B043_REPORT.md), [PR 42](https://github.com/BLUAlteractive/MasterDeck/pull/42) (`codex/b043-tournament-mobile-ui`) |
 
 B036/B037/B038 precede B035 because the accessible path needs published missions and the canonical restricted wallet. B060 must reuse that wallet; B061 remains responsible for the canonical trusted activity ledger. Implementation choices and unresolved gates are recorded in [DECISIONS](DECISIONS.md), [billing operations](BILLING.md), [commerce review](COMMERCE_REVIEW.md) and [tournament operations](TOURNAMENTS.md). The status table was normalized into a single rendered table without weakening earlier acceptance.
 
@@ -21,7 +21,7 @@ B036/B037/B038 precede B035 because the accessible path needs published missions
 
 Meaningful commands actually executed across the batch include `pnpm add` with pinned official Apple/Google server dependencies; `pnpm exec prisma format`; schema-to-schema `pnpm exec prisma migrate diff --script`; `pnpm db:generate`; targeted Prettier writes; `pnpm build:packages`; API/mobile strict typechecks; `pnpm ci:quality`; `pnpm ci:audit`; and `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION='do the next 10 tickets' pnpm ci:database`. Health checks additionally used `xcrun swiftc -frontend -parse` and Expo Apple/Android autolinking resolution. Git branches/commits/pushes and `gh pr create --draft` produce the stacked reviews linked above. Reports record per-ticket counts and logs, including failures corrected before final validation.
 
-Final `pnpm ci:quality` passed **295 unit tests in 53 files**, formatting/lint/strict typing and **all 11 builds** (`/tmp/deckforge-b043-quality-final.log`). `pnpm ci:audit` passed the high/critical gate with the inherited **one low advisory** (`/tmp/deckforge-b043-audit.log`). HTTP verification returned **200** for API health, the web root and the actual **5,114,303-byte JavaScript bundle**, which contains the new tournament navigation. Existing workspace-owned dev servers were reused; no duplicate listener or browser-policy bypass was needed. This verifies serving/bundling, not visual/native device acceptance. Earlier hosted drafts passed; the final draft CI status is reported with the review link. Database acceptance passed **140 integration cases in 25 files twice**, including Prisma validation/deployment, all owned reverse migrations, reset/reseed and a second acceptance run (`/tmp/deckforge-b043-database.log`). Tests never reset the developer/production database. Ten-person/worker concurrency cases are injected actors or workers, not claimed physical devices.
+Final `pnpm ci:quality` passed **295 unit tests in 53 files**, formatting/lint/strict typing and **all 11 builds** (`/tmp/deckforge-b043-quality-final.log`). `pnpm ci:audit` passed the high/critical gate with the inherited **one low advisory** (`/tmp/deckforge-b043-audit.log`). HTTP verification returned **200** for API health, the web root and the actual **5,114,303-byte JavaScript bundle**, which contains the new tournament navigation. Existing workspace-owned dev servers were reused; no duplicate listener or browser-policy bypass was needed. This verifies serving/bundling, not visual/native device acceptance. Hosted checks for B034–B041 passed. B042/B043 hosted checks were still running at report time; see their draft PR checks. Local checks above are complete. Database acceptance passed **140 integration cases in 25 files twice**, including Prisma validation/deployment, all owned reverse migrations, reset/reseed and a second acceptance run (`/tmp/deckforge-b043-database.log`). Tests never reset the developer/production database. Concurrent requests use injected test identities/workers, not physical devices.
 
 Issues corrected during validation: a Prisma client-side upsert create race in concurrent mission registration (conflict-safe immutable insert and policy hash check; also repaired the earlier B037 draft), analogous wallet system-account initialization, temporary parallel generation/build type artifacts (gates now run sequentially), a refund crash-recovery event-key collision, delayed readiness crossing attempts, host-only admission retry display, and readonly domain/test wire typing. Formatting required a second pass on some tests. Actual platform-positive billing and native compile/device success are not inferred from green web/fixture tests.
 
@@ -181,3 +181,20 @@ services/api/test/cosmetic-fixture.ts
 services/api/test/fixtures/apple-root-g3.cer
 services/api/test/progress-fixture.ts
 ```
+
+## Implementation commits
+
+```text
+4230954 feat: add optional foreground HealthKit and Health Connect read bridge
+9b1cd5b feat: derive idempotent achievements from authoritative game and fusion results
+59de18f feat: add published daily weekly and season mission windows
+6f81dfc feat: enforce three-currency wallet purposes and balanced journals
+9d4802b feat: add consented nonwalking quests with atomic earned credit proofs
+27d01d8 feat: add approved fixed-cosmetic catalog and nonfunctional storefront previews
+d2b2b31 feat: verify bound platform purchases and fulfill fixed cosmetics exactly once
+1e3e726 feat: restore owner purchases and recover missed cosmetic refunds
+809c033 feat: schedule gated tournaments with pre-deal binding and replayable titles
+ad99061 feat: add tournament mobile flow with private live hands and stable retries
+```
+
+B037 also has the scoped hosted-race repair `8024dd8` on its own draft branch. Its managed repair worktree was archived after pushing; the equivalent conflict-safe insert already exists in the later stack. No unrelated worktree was removed.
