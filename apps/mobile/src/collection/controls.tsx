@@ -32,6 +32,7 @@ export function Action({
 }
 const styles = StyleSheet.create({
   button: {
+    backgroundColor: shellTheme.surface,
     minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: 12,

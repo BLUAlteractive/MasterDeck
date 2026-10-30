@@ -98,7 +98,13 @@ export const spadesViewSchema = z
       ])
       .nullable(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (view) =>
+      view.players.filter((player) => player.hand !== null).length === 1 &&
+      view.rulesetVersion === view.rules.version,
+    'Expected one recipient hand and matching rules version.',
+  );
 export const spadesRoomViewSchema = z
   .object({
     gameId: z.uuid(),

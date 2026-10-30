@@ -42,4 +42,6 @@
 
 | B029 — Spades realtime actor | Implementation and validation in report | [B029 report](../docs/B029_REPORT.md) | Scripted four-client evidence; real four-device/provider and public admission acceptance remain separate. |
 
+| B030 — Spades UX | Implemented; quality validation in report | [B030 report](../docs/B030_REPORT.md) | Semantic controls, retry/cancellation tested; real screen-reader/device/focus acceptance remains open. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
