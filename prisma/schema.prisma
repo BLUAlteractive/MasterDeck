@@ -103,6 +103,7 @@ model User {
   progressEvents     ProgressEvent[]
   progressCounters   ProgressCounter[]
   progressAwards     ProgressAward[]
+  restrictedAccounts RestrictedAccount[]
 }
 
 model ExternalIdentity {
@@ -690,4 +691,40 @@ model ProgressAward {
   goal      ProgressGoal @relation(fields: [goalId], references: [id], onDelete: Restrict)
 
   @@unique([userId, goalId, windowKey])
+}
+
+model RestrictedAccount {
+  id       String            @id @db.Uuid
+  userId   String?           @db.Uuid
+  currency String
+  kind     String
+  balance  BigInt            @default(0)
+  user     User?             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  entries  RestrictedEntry[]
+
+  @@unique([userId, currency])
+}
+
+model RestrictedTransfer {
+  id             String            @id @db.Uuid
+  sourceKey      String            @unique
+  requestHash    String
+  currency       String
+  purpose        String
+  operatorId     String
+  proofReference String
+  policyVersion  String
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  entries        RestrictedEntry[]
+}
+
+model RestrictedEntry {
+  transferId String             @db.Uuid
+  accountId  String             @db.Uuid
+  amount     BigInt
+  transfer   RestrictedTransfer @relation(fields: [transferId], references: [id], onDelete: Restrict)
+  account    RestrictedAccount  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@id([transferId, accountId])
+  @@index([accountId, transferId])
 }

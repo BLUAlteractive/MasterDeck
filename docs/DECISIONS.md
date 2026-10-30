@@ -344,3 +344,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 
 - Reuse versioned progression goals/consumption/grants for daily, Monday-week and bounded-season prestige missions. Timed definitions require explicit start/end; UTC boundaries and inclusive-start/exclusive-end are documented engineering policy and frozen in goal definitions. Original result timestamps determine windows, not processing or client clocks.
 - Recover missed event projections after restart; dedupe per goal/window/event and grant. Only backfill facts accepted under the same permanent/opponent/command eligibility. SQL verifies the same window, counters and reward completeness. Main configuration remains disabled until content/eligibility/reward review; no monetary or card reward values invented.
+
+### B038 — Canonical wallet restrictions and B060 overlap
+
+- Keep earned Play Chips in B022 and one separate balanced journal per Trail Credits/Store Gems currency. A closed purpose matrix forbids exchanges, user transfers, cashout, purchased chips, paid screens/earned packs and paid power. No public credit/debit/grant endpoint is added. Internal primitives require feature-verified decisions; fixtures are not activity/payment proofs.
+- Resolve R-12 overlap by implementing the three-balance persistence and reconciliation here for dependent accessibility work. B060 reuses this ledger rather than introducing a second canonical activity balance; remaining legacy/integration acceptance stays with B060/B061. No executable legacy Credits table exists to migrate.
+- Source-key replay returns the original journal reference; modified decisions conflict. SQL enforces same-currency two-account balanced directions, materialized balance reconciliation, immutable identities/history and nonnegative player/sink balances. No numeric earn/spend policy is selected or activated.

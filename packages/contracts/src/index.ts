@@ -371,3 +371,5 @@ export * from './fusion';
 export * from './activity';
 
 export * from './progression';
+
+export * from './wallets';
