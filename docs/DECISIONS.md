@@ -327,3 +327,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 
 - Show five source losses, exact new child and selection effects before separate acknowledgement/confirmation. Retain the same command on ambiguous failures; prevent cancellation/new selection until its receipt is recovered. Verify child, parents, effects and preview identity before success. Keep pending state across tab navigation, abort/reset it on account changes; full process restart needs collection/archive reconciliation.
 - Honor the OS reduced-motion preference; preference read failure defaults to a fully visible static result. Semantic/transport tests and web compilation are not physical-device accessibility acceptance. Main's fusion policy remains disabled pending R-10 review.
+
+### B034 — Optional native activity read boundary
+
+- Use a local read-only Expo HealthKit/Health Connect module. No GPS, health writes, background or historical-wide access. Explicit foreground permission/read actions only; no reward endpoint trusts a client total. Source IDs, revisions, origins and bounded intervals are retained only in transient local review. B061 must establish canonical server ingestion/verification, corrections and one-Press allocation before earning.
+- HealthKit read denial is intentionally opaque: READ_REQUESTED and empty data are not GRANTED or proof of denial. Exclude manual, overlapping, conflicting-revision and implausible local records without awarding anything. A local filter is not a trusted anti-cheat verifier.
+- Native acceptance remains open: installed Xcode 26.3 is below documented 26.4+, Android adb/toolchain absent and no physical-device observations. Syntax/autolinking/web/TS tests do not satisfy B034's device definition of done. B035 depends on B037, so implement B036/B037 before its quest integration.

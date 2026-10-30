@@ -9,7 +9,13 @@
       "bundler": "metro"
     },
     "ios": {
-      "bundleIdentifier": "com.deckforge.dev"
+      "bundleIdentifier": "com.deckforge.dev",
+      "entitlements": {
+        "com.apple.developer.healthkit": true
+      },
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Optional foreground step reads for activity review. Games and accessible quests do not require health access."
+      }
     },
     "android": {
       "package": "com.deckforge.dev"

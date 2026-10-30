@@ -1,3 +1,4 @@
+import { Activity } from './activity/Activity';
 import { Fusion } from './fusion/Fusion';
 import { SpadesLobby } from './play/SpadesLobby';
 import { useMemo, useState } from 'react';
@@ -37,7 +38,7 @@ export function CollectionApp({
 }
 function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
   const [view, setView] = useState<
-    'gallery' | 'archive' | 'play' | 'spades' | 'fusion'
+    'gallery' | 'archive' | 'play' | 'spades' | 'fusion' | 'activity'
   >('gallery');
   return (
     <View style={{ flex: 1 }}>
@@ -58,6 +59,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           label="Spades"
           selected={view === 'spades'}
           onPress={() => setView('spades')}
+        />
+        <Action
+          label="Activity"
+          selected={view === 'activity'}
+          onPress={() => setView('activity')}
         />
         <Action
           label="Fusion"
@@ -88,6 +94,7 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
       >
         <Fusion client={client} makeId={randomUUID} />
       </View>
+      {view === 'activity' ? <Activity /> : null}
       {view === 'archive' ? <Archive client={client} /> : null}
       {view === 'spades' ? (
         <SpadesLobby client={client} makeId={randomUUID} />
