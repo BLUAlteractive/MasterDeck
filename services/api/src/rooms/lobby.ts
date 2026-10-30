@@ -11,6 +11,7 @@ import type { Request } from 'express';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import {
   lobbyCommandSchema,
+  pokerRulesVersions,
   lobbyResultSchema,
   type LobbyResult,
 } from '@deckforge/contracts';
@@ -36,12 +37,18 @@ export class LobbyService {
     });
     if (!own) return { lobby: null, invite: null };
     const l = own.lobby;
+    const admission = await tx.gameAdmission.findUnique({
+      where: { lobbyId: l.id },
+      select: { roomId: true },
+    });
     const accounts = this.policy
       ? await tx.playChipAccount.findMany({
           where: { userId: { in: l.seats.map((s) => s.userId) } },
         })
       : [];
     const canStart =
+      l.mode === 'CLASSIC' &&
+      l.rulesetVersion === pokerRulesVersions.CLASSIC &&
       !!this.policy &&
       l.status === 'OPEN' &&
       l.hostId === userId &&
@@ -59,6 +66,14 @@ export class LobbyService {
         id: l.id,
         kind: l.kind,
         mode: l.mode,
+        status: l.status,
+        rulesetVersion: l.rulesetVersion,
+        admission:
+          l.mode === 'EVOLVED'
+            ? 'BALANCE_REVIEW_REQUIRED'
+            : this.policy
+              ? 'AVAILABLE'
+              : 'POLICY_NOT_CONFIGURED',
         capacity: l.capacity,
         hostId: l.hostId,
         version: l.version,
@@ -68,6 +83,7 @@ export class LobbyService {
           ready: s.ready,
         })),
         canStart,
+        gameId: admission?.roomId ?? null,
       },
       invite: null,
     });
@@ -177,6 +193,8 @@ export class LobbyService {
               data: {
                 id: randomUUID(),
                 kind: 'PRIVATE',
+                mode: input.mode ?? 'CLASSIC',
+                rulesetVersion: pokerRulesVersions[input.mode ?? 'CLASSIC'],
                 capacity: input.capacity,
                 hostId: p.userId,
                 inviteHash: inviteHash(invite),
@@ -192,15 +210,19 @@ export class LobbyService {
             });
             if (!lobby) throw new ApiFailure('LOBBY_UNAVAILABLE', 404);
           } else {
+            const mode = input.mode ?? 'CLASSIC';
+            const rulesetVersion = pokerRulesVersions[mode];
             const free = await tx.$queryRaw<
               { id: string }[]
-            >`SELECT l."id" FROM "Lobby" l WHERE l."kind"='PUBLIC' AND l."mode"='CLASSIC' AND l."status"='OPEN' AND (SELECT count(*) FROM "LobbySeat" s WHERE s."lobbyId"=l."id") < l."capacity" ORDER BY l."createdAt",l."id" LIMIT 1`;
+            >`SELECT l."id" FROM "Lobby" l WHERE l."kind"='PUBLIC' AND l."mode"=${mode} AND l."rulesetVersion"=${rulesetVersion} AND l."status"='OPEN' AND (SELECT count(*) FROM "LobbySeat" s WHERE s."lobbyId"=l."id") < l."capacity" ORDER BY l."createdAt",l."id" LIMIT 1`;
             lobby = free[0]
               ? await tx.lobby.findUniqueOrThrow({ where: { id: free[0].id } })
               : await tx.lobby.create({
                   data: {
                     id: randomUUID(),
                     kind: 'PUBLIC',
+                    mode,
+                    rulesetVersion,
                     capacity: 2,
                     hostId: p.userId,
                   },

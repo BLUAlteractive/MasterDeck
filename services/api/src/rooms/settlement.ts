@@ -117,6 +117,7 @@ export class MatchSettlementService {
         if (
           lobby.status !== 'OPEN' ||
           lobby.mode !== 'CLASSIC' ||
+          lobby.rulesetVersion !== 'CLASSIC_NLHE_V1' ||
           lobby.seats.length < 2 ||
           !lobby.seats.every((s) => s.ready) ||
           lobby.seats.some(

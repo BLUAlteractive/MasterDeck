@@ -389,18 +389,20 @@ model GameEvent {
 }
 
 model Lobby {
-  id         String      @id @db.Uuid
-  kind       String
-  mode       String      @default("CLASSIC")
-  capacity   Int
-  hostId     String      @db.Uuid
-  inviteHash String?     @unique
-  version    Int         @default(1)
-  status     String      @default("OPEN")
-  createdAt  DateTime    @default(now()) @db.Timestamptz(3)
-  seats      LobbySeat[]
+  id             String      @id @db.Uuid
+  kind           String
+  mode           String      @default("CLASSIC")
+  rulesetVersion String      @default("CLASSIC_NLHE_V1")
+  capacity       Int
+  hostId         String      @db.Uuid
+  inviteHash     String?     @unique
+  version        Int         @default(1)
+  status         String      @default("OPEN")
+  createdAt      DateTime    @default(now()) @db.Timestamptz(3)
+  seats          LobbySeat[]
 
   @@index([kind, mode, status, createdAt])
+  @@index([kind, mode, rulesetVersion, status, createdAt], map: "Lobby_queue_rules_idx")
 }
 
 model LobbySeat {
