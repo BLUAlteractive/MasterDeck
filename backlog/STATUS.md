@@ -30,12 +30,14 @@
 
 | B028 — Spades scoring | Implementation and validation in report | [B028 report](../docs/B028_REPORT.md) | Explicit required policy; launch rules approval, realtime and device acceptance remain open. |
 
-| B023–B026 — Evolved scoring, explanations, modes and simulation | Option A approved; implementation underway | [Policy options](../docs/EVOLVED_POLICY_PROPOSAL.md), [batch report](../docs/NEXT_TEN_REPORT.md) | Owner selected Option A; live Evolved stays disabled pending balance review. |
+| B023–B026 — Evolved scoring, explanations, modes and simulation | Experimental implementation validated; release gates remain | [Policy options](../docs/EVOLVED_POLICY_PROPOSAL.md), [batch report](../docs/NEXT_TEN_REPORT.md) | Option A implemented; material earned advantage and activation integration require review. |
 
 | B023 — Evolved scoring engine | Experimental Option A implemented; validation in report | [B023 report](../docs/B023_REPORT.md) | Live Evolved remains disabled pending balancing review. |
 
 | B024 — Transparent bonus breakdown | Implemented; validation in report | [B024 report](../docs/B024_REPORT.md) | Semantic accessibility and privacy tested; physical screen-reader/device acceptance remains open. |
 
 | B025 — Separate matchmaking modes | Implemented; validation in report | [B025 report](../docs/B025_REPORT.md) | Isolated queues/versions and labeled UI; live Evolved actor/settlement activation and device acceptance remain gated. |
+
+| B026 — Fairness simulation | Diagnostic implementation validated; balance approval withheld | [B026 report](../docs/B026_REPORT.md), [balance findings](../docs/EVOLVED_BALANCE_REPORT.md) | 100,000 paired showdowns; material earned advantage needs review. No live Evolved or approved threshold. |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
