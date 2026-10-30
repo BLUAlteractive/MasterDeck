@@ -13,12 +13,13 @@ import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import type { AuthService } from '../auth/service';
 import { ApiFailure } from '../auth/errors';
-import { PokerRoomService, StaleRoomVersion } from './service';
+import type { RoomProtocol } from './router';
+import { RoomVersionConflict } from './shared';
 @Controller('v1/games')
 export class PokerRoomController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly auth: AuthService | null,
-    @Inject('POKER_ROOMS') private readonly rooms: PokerRoomService | null,
+    @Inject('POKER_ROOMS') private readonly rooms: RoomProtocol | null,
   ) {}
   @Get(':gameId')
   async read(@Req() req: Request, @Param('gameId') gameId: string) {
@@ -54,7 +55,7 @@ export class PokerRoomController {
         body,
       );
     } catch (error) {
-      if (error instanceof StaleRoomVersion) {
+      if (error instanceof RoomVersionConflict) {
         response.status(409);
         return {
           error: {

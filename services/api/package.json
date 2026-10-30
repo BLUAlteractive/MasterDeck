@@ -23,6 +23,7 @@
     "socket.io": "4.8.4",
     "zod": "4.6.7",
     "@deckforge/game-poker": "workspace:*",
-    "@deckforge/game-core": "workspace:*"
+    "@deckforge/game-core": "workspace:*",
+    "@deckforge/game-spades": "workspace:*"
   }
 }

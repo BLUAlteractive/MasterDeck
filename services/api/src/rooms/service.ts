@@ -1,3 +1,4 @@
+import { RoomVersionConflict } from './shared';
 import { randomInt, randomUUID } from 'node:crypto';
 import { type Prisma, type PrismaClient } from '@deckforge/database';
 import { shuffleFaces, type FaceId } from '@deckforge/game-core';
@@ -61,9 +62,9 @@ function view(
     settled,
   });
 }
-export class StaleRoomVersion extends ApiFailure {
+export class StaleRoomVersion extends RoomVersionConflict {
   constructor(readonly resync: z.infer<typeof pokerRoomViewSchema>) {
-    super('STALE_VERSION', 409);
+    super(resync);
   }
 }
 /** Internal only; funded/loadout admission must precede this lifecycle primitive. */

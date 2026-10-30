@@ -40,3 +40,9 @@ export async function lockPrincipal(
   )
     throw new ApiFailure('UNAUTHORIZED', 401);
 }
+
+export class RoomVersionConflict extends ApiFailure {
+  constructor(readonly resync: unknown) {
+    super('STALE_VERSION', 409);
+  }
+}

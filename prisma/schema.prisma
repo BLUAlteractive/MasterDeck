@@ -94,6 +94,8 @@ model User {
   lobbySeat         LobbySeat?
   gameParticipants  GameParticipant[]
   gameEvents        GameEvent[]
+  spadesSeats       SpadesSeat[]
+  spadesEvents      SpadesEvent[]
 }
 
 model ExternalIdentity {
@@ -475,4 +477,57 @@ model GameResult {
   allocation     Json
   createdAt      DateTime @default(now()) @db.Timestamptz(3)
   room           GameRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+}
+
+model SpadesRoom {
+  id             String        @id @db.Uuid
+  rulesetVersion String
+  stateVersion   Int           @default(0)
+  phase          String
+  initial        Json
+  snapshot       Json
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  seats          SpadesSeat[]
+  events         SpadesEvent[]
+  result         SpadesResult?
+}
+
+model SpadesSeat {
+  roomId String     @db.Uuid
+  userId String     @db.Uuid
+  seat   Int
+  room   SpadesRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([roomId, userId])
+  @@unique([roomId, seat])
+  @@index([userId, roomId])
+}
+
+model SpadesEvent {
+  id           String     @id @db.Uuid
+  roomId       String     @db.Uuid
+  stateVersion Int
+  actorUserId  String?    @db.Uuid
+  commandId    String?
+  requestHash  String?
+  command      Json
+  snapshot     Json
+  receipt      Json?
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  room         SpadesRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  actor        User?      @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@unique([roomId, stateVersion])
+  @@unique([actorUserId, commandId])
+}
+
+model SpadesResult {
+  roomId         String     @id @db.Uuid
+  stateVersion   Int
+  rulesetVersion String
+  winner         Int
+  teams          Json
+  createdAt      DateTime   @default(now()) @db.Timestamptz(3)
+  room           SpadesRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
 }
