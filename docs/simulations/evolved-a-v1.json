@@ -1,0 +1,162 @@
+{
+  "fixtureVersion": "EVOLVED_SIM_FIXTURES_V1",
+  "rulesetVersion": "EVOLVED_A_EXPERIMENTAL_V1",
+  "effectsVersion": "SIMULATION_FIXTURE_ONLY_V1",
+  "seed": 230026,
+  "hands": 100000,
+  "scenario": "HEADS_UP_SHOWDOWN_NO_BETTING",
+  "launchApproved": false,
+  "technical": {
+    "neutralMismatches": 0,
+    "cosmeticMismatches": 0,
+    "twoCategoryUpsets": 0,
+    "nonIntegerScores": 0,
+    "invalidDecks": 0
+  },
+  "cohorts": [
+    {
+      "name": "NEUTRAL_CONTROL",
+      "samples": 16667,
+      "wins": 8031,
+      "ties": 671,
+      "losses": 7965,
+      "classicWins": 8031,
+      "classicTies": 671,
+      "rankReversals": 0,
+      "classicTiesResolved": 0,
+      "newTies": 0,
+      "upsetsByClassicCategoryDeficit": {
+        "sameCategory": 0,
+        "oneCategory": 0,
+        "twoOrMore": 0
+      },
+      "maximumObservedBonus": 0,
+      "chosenCategories": [2834, 7351, 3905, 849, 757, 482, 458, 26, 5],
+      "equity": 0.50197996,
+      "classicEquity": 0.50197996,
+      "pairedEquityAdvantage": 0,
+      "outrightWinWilson95": [0.47426959, 0.4894395],
+      "reversalRate": 0
+    },
+    {
+      "name": "COSMETIC_CONTROL",
+      "samples": 16667,
+      "wins": 8266,
+      "ties": 279,
+      "losses": 8122,
+      "classicWins": 8052,
+      "classicTies": 644,
+      "rankReversals": 163,
+      "classicTiesResolved": 365,
+      "newTies": 0,
+      "upsetsByClassicCategoryDeficit": {
+        "sameCategory": 163,
+        "oneCategory": 0,
+        "twoOrMore": 0
+      },
+      "maximumObservedBonus": 200,
+      "chosenCategories": [2826, 7346, 3997, 806, 717, 501, 433, 36, 5],
+      "equity": 0.50431991,
+      "classicEquity": 0.50242995,
+      "pairedEquityAdvantage": 0.00188996,
+      "outrightWinWilson95": [0.48836131, 0.50354072],
+      "reversalRate": 0.0097798
+    },
+    {
+      "name": "EARLY_EARNED",
+      "samples": 16667,
+      "wins": 11207,
+      "ties": 40,
+      "losses": 5420,
+      "classicWins": 7860,
+      "classicTies": 676,
+      "rankReversals": 2725,
+      "classicTiesResolved": 636,
+      "newTies": 0,
+      "upsetsByClassicCategoryDeficit": {
+        "sameCategory": 2725,
+        "oneCategory": 0,
+        "twoOrMore": 0
+      },
+      "maximumObservedBonus": 540,
+      "chosenCategories": [2991, 7370, 3710, 853, 769, 486, 455, 31, 2],
+      "equity": 0.67360653,
+      "classicEquity": 0.49187016,
+      "pairedEquityAdvantage": 0.18173637,
+      "outrightWinWilson95": [0.66524224, 0.67949141],
+      "reversalRate": 0.16349673
+    },
+    {
+      "name": "MIXED_EARNED",
+      "samples": 16667,
+      "wins": 11216,
+      "ties": 44,
+      "losses": 5407,
+      "classicWins": 7968,
+      "classicTies": 679,
+      "rankReversals": 2651,
+      "classicTiesResolved": 635,
+      "newTies": 0,
+      "upsetsByClassicCategoryDeficit": {
+        "sameCategory": 2614,
+        "oneCategory": 37,
+        "twoOrMore": 0
+      },
+      "maximumObservedBonus": 1200,
+      "chosenCategories": [2838, 7367, 3948, 775, 771, 529, 408, 24, 7],
+      "equity": 0.67426651,
+      "classicEquity": 0.49844003,
+      "pairedEquityAdvantage": 0.17582648,
+      "outrightWinWilson95": [0.66578512, 0.68002826],
+      "reversalRate": 0.15905682
+    },
+    {
+      "name": "MAX_EARNED",
+      "samples": 16666,
+      "wins": 13470,
+      "ties": 33,
+      "losses": 3163,
+      "classicWins": 8044,
+      "classicTies": 689,
+      "rankReversals": 4774,
+      "classicTiesResolved": 656,
+      "newTies": 0,
+      "upsetsByClassicCategoryDeficit": {
+        "sameCategory": 2839,
+        "oneCategory": 1935,
+        "twoOrMore": 0
+      },
+      "maximumObservedBonus": 1200,
+      "chosenCategories": [2899, 7347, 3892, 820, 782, 497, 400, 27, 2],
+      "equity": 0.80922237,
+      "classicEquity": 0.50333013,
+      "pairedEquityAdvantage": 0.30589224,
+      "outrightWinWilson95": [0.8021845, 0.8141381],
+      "reversalRate": 0.28645146
+    },
+    {
+      "name": "EARNED_PARITY",
+      "samples": 16666,
+      "wins": 8137,
+      "ties": 210,
+      "losses": 8319,
+      "classicWins": 7905,
+      "classicTies": 687,
+      "rankReversals": 139,
+      "classicTiesResolved": 477,
+      "newTies": 0,
+      "upsetsByClassicCategoryDeficit": {
+        "sameCategory": 137,
+        "oneCategory": 2,
+        "twoOrMore": 0
+      },
+      "maximumObservedBonus": 1200,
+      "chosenCategories": [2931, 7286, 3874, 838, 773, 495, 432, 35, 2],
+      "equity": 0.49453978,
+      "classicEquity": 0.4949298,
+      "pairedEquityAdvantage": -0.00039002,
+      "outrightWinWilson95": [0.48065415, 0.49583033],
+      "reversalRate": 0.00834033
+    }
+  ]
+}
