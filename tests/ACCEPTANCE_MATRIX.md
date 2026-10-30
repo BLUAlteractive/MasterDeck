@@ -9,7 +9,12 @@ B012 evidence and limits: [five-card report](../docs/B012_REPORT.md); `pnpm test
 - [x] A-2-3-4-5 = 5-high straight; 10-J-Q-K-A suited = highest straight flush.
 - [x] Full house > flush > straight in Classic; kickers and pair ordering correct.
 - [x] Seven-card ranking chooses best among 21 five-card combinations; exact ties and board-only hands (B013).
-- [ ] Actual split-pot allocation and settlement, including board-only ties (B015/B022).
+- [x] Pure contribution-layer allocation, fold eligibility, refunds, integer tie/odd-chip splits and conservation (B015).
+- [ ] Transactional wallet settlement and reconciliation, including board-only ties (B022).
+- [x] Legal Classic turns/bets/streets and deterministic private event replay (B014).
+- [x] 1,000 complete deterministic simulated hands in ordinary CI (B016).
+- [x] Safe outcome fields reproduce standard ranks and pot winners from visible showdown cards (B017).
+- [x] Durable room concurrency, retry, atomic event persistence and restart replay (B018 isolated DB/HTTP/socket verification).
 - [ ] Poker betting rounds, blinds, min raise, all-in, side pots, folded players, pot conservation.
 - [ ] Face map never duplicates any (rank, suit) at one table; collector appearance never affects shuffle chance.
 - [ ] A purchased display skin never modifies earned rarity, level or playStyleFamily, or changes Evolved outcome.

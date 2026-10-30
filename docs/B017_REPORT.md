@@ -7,3 +7,5 @@ Outcome includes standard category/tie ranks, every best five, per-pot eligibili
 Changed: the two modules, two exports, two test files, decisions, backlog status and this report. Commands: targeted Vitest and full `pnpm ci:quality` commit gate. No migrations, dependencies or UI screens. No wallet mutation. Full broadcast/reconnect integration and device acceptance are later tickets. Next: B018 durable authoritative room actor.
 
 Local gate passed: four targeted privacy/schema cases; full suite 172 cases in 27 files, formatting/lint/strict types and 11 builds.
+
+Hosted validation: [draft PR #16](https://github.com/BLUAlteractive/MasterDeck/pull/16), [CI run](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41006265461) — Quality checks and Dependency audit passed.

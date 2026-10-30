@@ -19,3 +19,25 @@ it('accepts safe terminal projections and rejects private state or extra nested 
     expect(pokerViewSchema.safeParse(state).success).toBe(false);
   }
 });
+
+it('strictly validates declarative command identity, versions and wager payloads', async () => {
+  const { pokerCommandSchema } = await import('./poker');
+  const valid = {
+    gameId: '55555555-5555-4555-8555-555555555555',
+    commandId: 'command_12345',
+    stateVersion: 0,
+    payload: { action: 'CALL' },
+  };
+  expect(pokerCommandSchema.safeParse(valid).success).toBe(true);
+  for (const body of [
+    { ...valid, playerId: 'spoofed' },
+    { ...valid, stateVersion: -1 },
+    { ...valid, stateVersion: 0.5 },
+    { ...valid, commandId: 'short' },
+    { ...valid, payload: { action: 'CALL', target: 1 } },
+    { ...valid, payload: { action: 'BET_TO', target: 0 } },
+    { ...valid, payload: { action: 'BET_TO', target: Infinity } },
+    { ...valid, payload: { action: 'WIN' } },
+  ])
+    expect(pokerCommandSchema.safeParse(body).success).toBe(false);
+});

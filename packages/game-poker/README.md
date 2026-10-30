@@ -1,6 +1,6 @@
-# Classic poker ranking — B012/B013
+# Classic poker engine — B012–B018
 
-`@deckforge/game-poker` provides exact five-card ranking and best-five-of-seven selection using canonical face IDs from `@deckforge/game-core`. It is pure TypeScript with no UI, network, database, randomness, ownership or rarity input. A future server actor must establish the dealt faces and authority; a client result never authorizes settlement or rewards.
+`@deckforge/game-poker` provides exact five-card ranking, best-five-of-seven selection and a pure Classic hand lifecycle using canonical face IDs from `@deckforge/game-core`. Ranking accepts faces only; lifecycle functions accept server-established seats, chips and a canonical deck or injected bounded random source. The package has no UI, network or database dependencies and no production random source of its own. B018’s API actor establishes dealt faces and authority; a client result never authorizes settlement or rewards.
 
 ```ts
 import {
@@ -106,3 +106,9 @@ The fixture sampler is deterministic and noncryptographic, test-only and exclude
 ## Scope and recovery
 
 B012/B013 cover ranking and selection only. B014 onward own shuffling/dealing, legal commands, betting, replay, privacy, pots and authoritative rooms. This ticket cannot play or settle a match and adds no mobile screen, persisted state, API, environment setting, dependency or migration. Reverting the code/export/script removes it; no data rollback or database reset is needed.
+
+## Hand lifecycle, allocations and safe outcomes — B014–B017
+
+The package now also exports immutable `createPokerHand`/`startPokerHand`, `reducePokerHand`, `legalPokerActions`, private `replayPokerHand`, `allocatePokerPots` and allow-list `projectPokerHand`. The ranking APIs above remain unchanged. Engine state/replay includes secret holes and deck order and must never be sent to clients. Production CSPRNG and database authority are API responsibilities. Injected fixture randomness is not a production proof source.
+
+Run `pnpm test:poker:harness` for the deterministic 1,000-hand regression, or append `--seed 874` to reproduce a single case. The generator lives outside runtime output. See [engine/room contract](../../docs/POKER_ROOMS.md) for action semantics, safe outcome fields, persistence boundaries and remaining admission/settlement gates.

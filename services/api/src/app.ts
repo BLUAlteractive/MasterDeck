@@ -13,6 +13,8 @@ import { CardHistoryController } from './history';
 import { LoadoutController } from './loadouts';
 import { FavoriteController } from './favorites';
 import { ArchiveController } from './archive';
+import { PokerRoomController } from './rooms/controller';
+import { PokerRoomService } from './rooms/service';
 import { StarterController, StarterService } from './starter';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
@@ -38,6 +40,7 @@ export async function createApp(
   catalogDatabase: PrismaClient | null = auth?.database ?? null,
 ) {
   let stopSocket = () => {};
+  const pokerRooms = auth ? new PokerRoomService(auth.database) : null;
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
@@ -50,9 +53,11 @@ export async function createApp(
         LoadoutController,
         FavoriteController,
         ArchiveController,
+        PokerRoomController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
+        { provide: 'POKER_ROOMS', useValue: pokerRooms },
         {
           provide: 'STARTER_SERVICE',
           useValue: auth ? new StarterService(auth) : null,
@@ -77,7 +82,7 @@ export async function createApp(
   );
   app.useBodyParser('json', { limit: '16kb' });
   app.useGlobalFilters(new SafeErrorFilter());
-  stopSocket = attachAuthSocket(app.getHttpServer(), auth, origins);
+  stopSocket = attachAuthSocket(app.getHttpServer(), auth, origins, pokerRooms);
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({

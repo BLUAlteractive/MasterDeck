@@ -119,3 +119,5 @@ B011 adds **Album & archive** navigation with owner-only retained records, seria
 B012 provides the pure [Classic five-card evaluator](packages/game-poker/README.md). Run `pnpm test:poker:exhaustive` to check all 2,598,960 hands and 7,462 exact rank classes. No playable table is added by this library ticket.
 
 B013 adds validated best-five-of-seven selection with every equivalent best choice, plus `pnpm test:poker:seven` for generated/reference tests. See [B013 evidence and limits](docs/B013_REPORT.md). A complete playable poker game is still future work.
+
+B014–B018 add the pure Classic hand reducer, side pots, 1,000-hand deterministic harness, safe result payloads and a durable authoritative room command kernel. Run `pnpm test:poker:harness`; see [poker engine and room setup](docs/POKER_ROOMS.md). Public table admission, live game UI and wallet settlement remain later tickets.

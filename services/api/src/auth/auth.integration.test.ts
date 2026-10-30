@@ -412,9 +412,12 @@ describe('signed identity and authorization over HTTP and sockets', () => {
         .emitWithAck('room.join', { gameId: randomUUID() }),
     ).toEqual({ error: { code: 'ROOM_UNAVAILABLE' } });
     expect(
-      await client
-        .timeout(2000)
-        .emitWithAck('game.command', { stateVersion: 0 }),
+      await client.timeout(2000).emitWithAck('game.command', {
+        gameId: randomUUID(),
+        commandId: randomUUID(),
+        stateVersion: 0,
+        payload: { action: 'FOLD' },
+      }),
     ).toEqual({ error: { code: 'ROOM_UNAVAILABLE' } });
     await request('auth/logout', user.bearer, {});
     const denied = socketEvent(client, 'auth.error');

@@ -89,6 +89,8 @@ model User {
   starterGrant      StarterGrant?
   loadout           Loadout?
   collectionManager CollectionManager?
+  gameParticipants  GameParticipant[]
+  gameEvents        GameEvent[]
 }
 
 model ExternalIdentity {
@@ -331,4 +333,47 @@ model CardFavorite {
   instance   CardInstance @relation(fields: [instanceId, userId], references: [id, ownerId], onDelete: Restrict, onUpdate: Restrict)
 
   @@id([userId, instanceId])
+}
+
+// Server-private poker aggregate. Never expose JSON snapshots or events directly.
+model GameRoom {
+  id             String            @id @db.Uuid
+  rulesetVersion String
+  stateVersion   Int               @default(0)
+  status         String
+  initial        Json
+  snapshot       Json
+  commitment     String
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  participants   GameParticipant[]
+  events         GameEvent[]
+}
+
+model GameParticipant {
+  roomId String   @db.Uuid
+  userId String   @db.Uuid
+  seat   Int
+  room   GameRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([roomId, userId])
+  @@unique([roomId, seat])
+  @@index([userId, roomId])
+}
+
+model GameEvent {
+  id           String   @id @db.Uuid
+  roomId       String   @db.Uuid
+  stateVersion Int
+  actorUserId  String?  @db.Uuid
+  commandId    String?
+  requestHash  String?
+  command      Json
+  snapshot     Json
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  room         GameRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  actor        User?    @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@unique([roomId, stateVersion])
+  @@unique([actorUserId, commandId])
 }
