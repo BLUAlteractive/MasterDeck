@@ -4,6 +4,7 @@ import { Action } from './collection/controls';
 import { Archive } from './collection/Archive';
 import type { CollectionClient } from './collection/client';
 import { randomUUID } from 'expo-crypto';
+import { PlayLobby } from './play/PlayLobby';
 import { Gallery } from './collection/Gallery';
 import {
   createCollectionClient,
@@ -33,7 +34,7 @@ export function CollectionApp({
   );
 }
 function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
-  const [view, setView] = useState<'gallery' | 'archive'>('gallery');
+  const [view, setView] = useState<'gallery' | 'archive' | 'play'>('gallery');
   return (
     <View style={{ flex: 1 }}>
       <View
@@ -43,6 +44,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           label="Card gallery"
           selected={view === 'gallery'}
           onPress={() => setView('gallery')}
+        />
+        <Action
+          label="Play"
+          selected={view === 'play'}
+          onPress={() => setView('play')}
         />
         <Action
           label="Album & archive"
@@ -60,6 +66,9 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
         <Gallery client={client} makeId={randomUUID} />
       </View>
       {view === 'archive' ? <Archive client={client} /> : null}
+      {view === 'play' ? (
+        <PlayLobby client={client} makeId={randomUUID} />
+      ) : null}
     </View>
   );
 }

@@ -23,3 +23,5 @@ export const gameResultSchema = z
     allocation: pokerViewSchema.shape.outcome.unwrap().shape.allocation,
   })
   .strict();
+
+export const gameStartResponseSchema = z.object({ gameId: z.uuid() }).strict();

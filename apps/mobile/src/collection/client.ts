@@ -1,5 +1,11 @@
 import {
   privateCardsSchema,
+  lobbyResultSchema,
+  gameStartSchema,
+  gameStartResponseSchema,
+  lobbyCommandSchema,
+  pokerRoomViewSchema,
+  type LobbyCommand,
   profileSchema,
   cardHistoryResponseSchema,
   currentLoadoutSchema,
@@ -74,6 +80,42 @@ export function createCollectionClient(
   }
 
   return {
+    async startGame(lobbyId: string, commandId: string, signal?: AbortSignal) {
+      return gameStartResponseSchema.parse(
+        await request(
+          '/v1/games/start',
+          'POST',
+          gameStartSchema.parse({ lobbyId, commandId }),
+          signal,
+        ),
+      );
+    },
+    async lobby(signal?: AbortSignal) {
+      return lobbyResultSchema.parse(
+        await request('/v1/lobby', 'GET', undefined, signal),
+      );
+    },
+    async lobbyCommand(command: LobbyCommand, signal?: AbortSignal) {
+      return lobbyResultSchema.parse(
+        await request(
+          '/v1/lobby/commands',
+          'POST',
+          lobbyCommandSchema.parse(command),
+          signal,
+        ),
+      );
+    },
+    async game(gameId: string, signal?: AbortSignal) {
+      if (!/^[a-f0-9-]{36}$/i.test(gameId)) throw new Error('Invalid game ID');
+      return pokerRoomViewSchema.parse(
+        await request(
+          '/v1/games/' + encodeURIComponent(gameId),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
     async bootstrap(signal?: AbortSignal) {
       return profileSchema.parse(
         await request('/v1/auth/session', 'POST', {}, signal),
