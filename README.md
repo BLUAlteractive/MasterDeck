@@ -1,6 +1,6 @@
 # DeckForge
 
-A collectible playing-card platform. **The application is in incremental development.** Gameplay, card grants, purchases and activity/location integrations are not implemented. B005 adds backend identity/permission boundaries; actual provider-flow acceptance remains pending development configuration. DeckForge remains a working title.
+A collectible playing-card platform in incremental development. The repository now includes reusable Classic/Evolved poker and Spades engines, authenticated room and inventory infrastructure, collection screens, private Spades admission/rematches, and preview-bound five-card fusion with a confirmation UI. Live rules/economy activation requires reviewed server configuration; the default local app remains an artwork preview without an identity connection. Evolved play, real purchases and activity/location integrations remain gated or unimplemented. DeckForge remains a working title.
 
 ## Prerequisites
 
@@ -87,7 +87,7 @@ services/api/         NestJS public liveness endpoint
 services/jobs/        Node worker lifecycle shell
 packages/game-core/   Pure shared engine boundary (no rules yet)
 packages/game-poker/  Pure Classic five-card ranking and best-five-of-seven selection
-packages/game-spades/ Future Spades rules, independent of poker
+packages/game-spades/ Pure Spades rules, scoring and safe recipient projections
 packages/card-domain/ Pure collection/evolution boundary
 packages/contracts/  Zod public API contract
 packages/ui/         Platform-neutral presentation tokens
@@ -121,3 +121,16 @@ B012 provides the pure [Classic five-card evaluator](packages/game-poker/README.
 B013 adds validated best-five-of-seven selection with every equivalent best choice, plus `pnpm test:poker:seven` for generated/reference tests. See [B013 evidence and limits](docs/B013_REPORT.md). A complete playable poker game is still future work.
 
 B014–B018 add the pure Classic hand reducer, side pots, 1,000-hand deterministic harness, safe result payloads and a durable authoritative room command kernel. Run `pnpm test:poker:harness`; see [poker engine and room setup](docs/POKER_ROOMS.md). Public table admission, live game UI and wallet settlement remain later tickets.
+
+## Spades and fusion development gates
+
+The mobile tabs expose private Spades and five-card fusion flows when an authenticated collection connection and reviewed server policy are supplied. The API entry point supplies neither a Spades policy nor a fusion policy by default. Test approval references, short Spades targets and fixture grants are not production configuration. Review `docs/B031_REPORT.md` and `docs/B032_REPORT.md` before activation. Ordinary preview mode changes no inventory. Fusion requires a server preview, separate acknowledgement and confirmation; interrupted confirmations retry their original request. Source history and five-parent lineage remain available after consumption.
+
+If Metro reports a missing dependency after installing or relinking packages, stop that Expo process and run:
+
+```bash
+pnpm build:packages
+pnpm --filter @deckforge/mobile exec expo start --web --clear --port 8081
+```
+
+A web root returning 200 does not prove the app bundle compiled. Check the browser error and Metro terminal as well. See the ticket reports for automated evidence and the remaining native/provider acceptance work.
