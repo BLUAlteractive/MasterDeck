@@ -181,14 +181,18 @@ export class ProgressionService {
             });
             for (const goal of policy.goals) {
               const goalId = policy.version + ':' + goal.id;
-              const existing = await tx.progressGoal.upsert({
+              await tx.progressGoal.createMany({
+                data: [
+                  {
+                    id: goalId,
+                    definition: json(goal),
+                    policyHash: hash(policy),
+                  },
+                ],
+                skipDuplicates: true,
+              });
+              const existing = await tx.progressGoal.findUniqueOrThrow({
                 where: { id: goalId },
-                create: {
-                  id: goalId,
-                  definition: json(goal),
-                  policyHash: hash(policy),
-                },
-                update: {},
               });
               if (existing.policyHash !== hash(policy))
                 throw new ApiFailure('PROGRESSION_POLICY_CHANGED', 409);
@@ -234,14 +238,14 @@ export class ProgressionService {
     for (const goal of policy.goals) {
       if (stopping()) return;
       const goalId = policy.version + ':' + goal.id;
-      const stored = await this.db.progressGoal.upsert({
+      await this.db.progressGoal.createMany({
+        data: [
+          { id: goalId, definition: json(goal), policyHash: hash(policy) },
+        ],
+        skipDuplicates: true,
+      });
+      const stored = await this.db.progressGoal.findUniqueOrThrow({
         where: { id: goalId },
-        create: {
-          id: goalId,
-          definition: json(goal),
-          policyHash: hash(policy),
-        },
-        update: {},
       });
       if (stored.policyHash !== hash(policy))
         throw new ApiFailure('PROGRESSION_POLICY_CHANGED', 409);

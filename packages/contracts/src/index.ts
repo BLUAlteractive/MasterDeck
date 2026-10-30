@@ -373,3 +373,5 @@ export * from './activity';
 export * from './progression';
 
 export * from './wallets';
+
+export * from './accessibility';

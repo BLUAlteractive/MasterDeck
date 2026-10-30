@@ -94,7 +94,9 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
       >
         <Fusion client={client} makeId={randomUUID} />
       </View>
-      {view === 'activity' ? <Activity /> : null}
+      {view === 'activity' ? (
+        <Activity client={client} makeId={randomUUID} />
+      ) : null}
       {view === 'archive' ? <Archive client={client} /> : null}
       {view === 'spades' ? (
         <SpadesLobby client={client} makeId={randomUUID} />

@@ -1,3 +1,8 @@
+import { AccessibleQuestController } from './accessibility';
+import {
+  accessiblePolicySchema,
+  type AccessiblePolicy,
+} from '@deckforge/contracts';
 import { WalletController } from './wallets';
 import {
   ProgressionController,
@@ -63,8 +68,14 @@ export async function createApp(
   admissionPolicy: ClassicAdmissionPolicy | null = null,
   spadesPolicy: SpadesPolicy | null = null,
   fusionPolicy: FusionPolicy | null = null,
-  features: { progressionPolicy?: ProgressionPolicy } = {},
+  features: {
+    progressionPolicy?: ProgressionPolicy;
+    accessiblePolicy?: AccessiblePolicy;
+  } = {},
 ) {
+  const accessiblePolicy = features.accessiblePolicy
+    ? accessiblePolicySchema.parse(features.accessiblePolicy)
+    : null;
   const progressionPolicy = features.progressionPolicy
     ? progressionPolicySchema.parse(features.progressionPolicy)
     : null;
@@ -95,6 +106,7 @@ export async function createApp(
         FusionController,
         ProgressionController,
         WalletController,
+        AccessibleQuestController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
@@ -102,6 +114,7 @@ export async function createApp(
         { provide: 'SPADES_POLICY', useValue: spadesPolicy },
         { provide: 'FUSION_POLICY', useValue: fusionPolicy },
         { provide: 'PROGRESSION_POLICY', useValue: progressionPolicy },
+        { provide: 'ACCESSIBLE_POLICY', useValue: accessiblePolicy },
         { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',

@@ -66,7 +66,9 @@ it('recovers timed goals from persisted server events after restart and duplicat
     );
   const one = new ProgressionService(f.db, policy),
     two = new ProgressionService(f.secondDb, policy);
-  await Promise.all([one.recoverGoals(), two.recoverGoals()]);
+  await Promise.all(
+    Array.from({ length: 10 }, (_, i) => (i % 2 ? one : two).recoverGoals()),
+  );
   await new ProgressionService(f.secondDb, policy).recoverGoals();
   const awards = await f.db.progressAward.findMany({
     where: { userId: a.userId, goalId: { startsWith: policy.version + ':' } },

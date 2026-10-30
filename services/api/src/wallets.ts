@@ -82,10 +82,12 @@ export async function moveRestrictedCurrency(
   });
   const kind = direction === 'SPEND' ? 'SINK' : 'ISSUANCE',
     id = systemIds[input.currency][kind];
-  const system = await tx.restrictedAccount.upsert({
+  await tx.restrictedAccount.createMany({
+    data: [{ id, currency: input.currency, kind }],
+    skipDuplicates: true,
+  });
+  const system = await tx.restrictedAccount.findUniqueOrThrow({
     where: { id },
-    create: { id, currency: input.currency, kind },
-    update: {},
   });
   const accounts = [player.id, system.id].sort();
   await tx.$queryRaw`SELECT "id" FROM "RestrictedAccount" WHERE "id"=ANY(${accounts}::uuid[]) ORDER BY "id" FOR UPDATE`;
