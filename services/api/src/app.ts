@@ -1,3 +1,5 @@
+import { FusionController } from './fusion';
+import { fusionPolicySchema, type FusionPolicy } from '@deckforge/contracts';
 import { SpadesAdmissionController } from './rooms/spades-admission';
 import { spadesPolicySchema, type SpadesPolicy } from '@deckforge/contracts';
 import { GameRooms } from './rooms/router';
@@ -50,7 +52,9 @@ export async function createApp(
   catalogDatabase: PrismaClient | null = auth?.database ?? null,
   admissionPolicy: ClassicAdmissionPolicy | null = null,
   spadesPolicy: SpadesPolicy | null = null,
+  fusionPolicy: FusionPolicy | null = null,
 ) {
+  if (fusionPolicy) fusionPolicy = fusionPolicySchema.parse(fusionPolicy);
   if (spadesPolicy) spadesPolicy = spadesPolicySchema.parse(spadesPolicy);
   let stopSocket = async () => {};
   let stopTimeouts = async () => {};
@@ -73,11 +77,13 @@ export async function createApp(
         LobbyController,
         ChipController,
         SpadesAdmissionController,
+        FusionController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
         { provide: 'SPADES_POLICY', useValue: spadesPolicy },
+        { provide: 'FUSION_POLICY', useValue: fusionPolicy },
         { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',
