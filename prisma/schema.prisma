@@ -106,6 +106,7 @@ model User {
   restrictedAccounts    RestrictedAccount[]
   accessibleEnrollments AccessibleQuestEnrollment[]
   accessibleFacts       AccessibleQuestFact[]
+  cosmeticGrants        CosmeticGrant[]
 }
 
 model ExternalIdentity {
@@ -773,4 +774,55 @@ model AccessibleQuestCompletion {
   completedAt  DateTime                  @default(now()) @db.Timestamptz(3)
   enrollment   AccessibleQuestEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
   transfer     RestrictedTransfer        @relation(fields: [transferId], references: [id], onDelete: Restrict)
+}
+
+model CosmeticItem {
+  id                String                @id @db.Uuid
+  name              String
+  presentation      Json
+  rightsOwner       String
+  rightsBasis       String
+  approvalReference String?
+  createdAt         DateTime              @default(now()) @db.Timestamptz(3)
+  products          CosmeticProductItem[]
+  grants            CosmeticGrant[]
+}
+
+model CosmeticProduct {
+  id                String                @id @db.Uuid
+  version           Int
+  name              String
+  description       String
+  appleProductId    String                @unique
+  googleProductId   String                @unique
+  priceCurrency     String
+  priceMinor        Int
+  approvalReference String
+  status            String                @default("DRAFT")
+  createdAt         DateTime              @default(now()) @db.Timestamptz(3)
+  items             CosmeticProductItem[]
+  priceScale        Int                   @default(2)
+}
+
+model CosmeticProductItem {
+  productId String          @db.Uuid
+  itemId    String          @db.Uuid
+  product   CosmeticProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+  item      CosmeticItem    @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@id([productId, itemId])
+}
+
+model CosmeticGrant {
+  id        String       @id @db.Uuid
+  userId    String       @db.Uuid
+  itemId    String       @db.Uuid
+  sourceKey String       @unique
+  status    String       @default("ACTIVE")
+  version   Int          @default(1)
+  issuedAt  DateTime     @default(now()) @db.Timestamptz(3)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  item      CosmeticItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status, itemId])
 }

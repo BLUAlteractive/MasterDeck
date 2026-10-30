@@ -1,0 +1,12 @@
+# Commerce activation review — B039–B041
+
+Implementation assumptions, not product/legal approval:
+
+- Only fixed-content, nonconsumable, original presentation assets are supported in this slice. Exact contents are published with a version. No purchased rarity, level, earned style, fusion eligibility, press throughput, route reward, Evolved bonus, wagering chips or paid randomized item.
+- Reference catalog prices have explicit currency/minor-unit scale. They are not a checkout quote. A native store client must show the platform's localized price and require an intentional purchase action. No external payment link, automatic charge, subscription or gem conversion is provided here.
+- Private purchase operations require a linked permanent account and a server-created account binding. Platform transactions must be verified server-side, bound to that account and an approved fixed cosmetic SKU. Client success/price/quantity flags cannot grant an entitlement.
+- Main supplies no approved storefront/billing configuration, price, product SKU or verifier credentials. Fixture approvals are test evidence only. Account age/region eligibility, rights approval, product/price approval, health-data use, taxation, platform agreements and store policy require owner/specialist review before activation. This document does not supply that approval.
+- Platform secrets belong in protected operator configuration, never public Expo variables, URLs, commits or logs. Public root certificates are trust configuration, not credentials. Sandbox evidence must not be treated as a production purchase.
+- Refund/restore processing must preserve history, revoke only purchase-derived cosmetic benefits and avoid negative earned balances or any functional card mutation. Native StoreKit/Play Billing device purchase, pending, restore, refund and lifecycle observations remain required integration evidence.
+
+The product's three-currency/red-line rules come from MASTER_SPEC and AGENTS. Platform implementation references: [Apple review guidelines](https://developer.apple.com/app-store/review/guidelines/), [Apple's server verification SDK](https://github.com/apple/app-store-server-library-node), [Google one-time purchase lifecycle](https://developer.android.com/google/play/billing/lifecycle/one-time). Recheck these and obtain review before enabling real storefront or billing behavior. HealthKit data must not be reused for advertising/marketing; see [Apple's privacy guidance](https://developer.apple.com/documentation/healthkit/protecting-user-privacy).

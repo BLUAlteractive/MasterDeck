@@ -1,3 +1,8 @@
+import { StorefrontController } from './storefront';
+import {
+  storefrontPolicySchema,
+  type StorefrontPolicy,
+} from '@deckforge/contracts';
 import { AccessibleQuestController } from './accessibility';
 import {
   accessiblePolicySchema,
@@ -71,8 +76,12 @@ export async function createApp(
   features: {
     progressionPolicy?: ProgressionPolicy;
     accessiblePolicy?: AccessiblePolicy;
+    storefrontPolicy?: StorefrontPolicy;
   } = {},
 ) {
+  const storefrontPolicy = features.storefrontPolicy
+    ? storefrontPolicySchema.parse(features.storefrontPolicy)
+    : null;
   const accessiblePolicy = features.accessiblePolicy
     ? accessiblePolicySchema.parse(features.accessiblePolicy)
     : null;
@@ -107,6 +116,7 @@ export async function createApp(
         ProgressionController,
         WalletController,
         AccessibleQuestController,
+        StorefrontController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
@@ -115,6 +125,7 @@ export async function createApp(
         { provide: 'FUSION_POLICY', useValue: fusionPolicy },
         { provide: 'PROGRESSION_POLICY', useValue: progressionPolicy },
         { provide: 'ACCESSIBLE_POLICY', useValue: accessiblePolicy },
+        { provide: 'STOREFRONT_POLICY', useValue: storefrontPolicy },
         { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',
