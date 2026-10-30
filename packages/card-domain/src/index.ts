@@ -14,3 +14,5 @@ export { validateManagerSelection } from './loadout';
 
 export { fusionRecipe } from './fusion';
 export type { FusionSource } from './fusion';
+
+export { advanceProgress } from './progress';

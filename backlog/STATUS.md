@@ -53,3 +53,5 @@
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
 
 | B034 — Health steps bridge | Adapter implemented; automated boundary/syntax/autolinking checks pass | [B034 report](../docs/B034_REPORT.md) | Native compilation and real iOS/Android grant/denial/revoke acceptance remain blocked on toolchain/devices; no trusted activity reward source configured. |
+
+| B036 — Achievement engine | Server-source implementation and validation in report | [B036 report](../docs/B036_REPORT.md) | Badge grants and replay safety implemented; reviewed eligibility/reward policies and provider/device acceptance remain open. |
