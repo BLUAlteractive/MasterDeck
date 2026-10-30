@@ -229,7 +229,16 @@ it('locks the room for different users and processes, not only a per-user in-mem
     }),
   );
   try {
-    await new Promise((r) => setTimeout(r, 100));
+    let waiting = 0;
+    const deadline = Date.now() + 3000;
+    while (waiting < 2 && Date.now() < deadline) {
+      const rows = await db.$queryRaw<
+        { count: number }[]
+      >`SELECT count(*)::int AS count FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%"GameRoom"%'`;
+      waiting = rows[0]!.count;
+      if (waiting < 2) await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    expect(waiting).toBe(2);
     expect(finished).toBe(0);
   } finally {
     unlock();

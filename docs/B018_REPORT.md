@@ -32,4 +32,8 @@ Internal initialization does not fund a wallet, grant cards or admit arbitrary c
 
 Full private replay is O(command history) per operation; capacity/compaction and deployed DB/backup/retention controls require later evidence. See [room setup, protocol, metrics and recovery](POKER_ROOMS.md). The rollback SQL is destructive test-only; populated deployments require preserved evidence/backups and reviewed forward repair, not history deletion. No production migration, merge or deployment occurred.
 
-Next smallest ticket: **B019 — Matchmaking/lobby** (subject to real admission prerequisites and the existing auth/provider gates).
+Next smallest ticket: **B019 — Matchmaking and private rooms** (subject to real admission prerequisites and the existing auth/provider gates).
+
+Implementation commit `006eb8c`; [draft PR #17](https://github.com/BLUAlteractive/MasterDeck/pull/17) tracks both required hosted checks. A final test strengthening observes both PostgreSQL lock waiters explicitly, rather than relying on elapsed time alone. The compiled package consumer smoke passed CSPRNG deal, terminal allocation/conservation and safe projection exports.
+
+Final strengthened-lock rerun passed all 62 DB cases before and after rollback/reset/reseed again. Final test types, focused lint, repository formatting and whitespace checks passed.
