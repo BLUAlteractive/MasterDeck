@@ -26,4 +26,6 @@
 
 | B022 — Match results and chip ledger | Validated locally; ready for review | [B022 report](../docs/B022_REPORT.md) | 181 unit tests, 11 builds, 85 DB cases twice; live admission awaits reviewed policy and verified earned reward source. |
 
+| B027 — Spades deal and trick engine | Implementation and validation in report | [B027 report](../docs/B027_REPORT.md) | Pure engine; scoring B028, realtime/privacy/device acceptance B029–B030 remain separate. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
