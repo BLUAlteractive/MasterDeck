@@ -1,3 +1,12 @@
+import {
+  ProgressionController,
+  ProgressionService,
+  startProgressWorker,
+} from './progression';
+import {
+  progressionPolicySchema,
+  type ProgressionPolicy,
+} from '@deckforge/contracts';
 import { FusionController } from './fusion';
 import { fusionPolicySchema, type FusionPolicy } from '@deckforge/contracts';
 import { SpadesAdmissionController } from './rooms/spades-admission';
@@ -53,7 +62,12 @@ export async function createApp(
   admissionPolicy: ClassicAdmissionPolicy | null = null,
   spadesPolicy: SpadesPolicy | null = null,
   fusionPolicy: FusionPolicy | null = null,
+  features: { progressionPolicy?: ProgressionPolicy } = {},
 ) {
+  const progressionPolicy = features.progressionPolicy
+    ? progressionPolicySchema.parse(features.progressionPolicy)
+    : null;
+  let stopProgress = async () => {};
   if (fusionPolicy) fusionPolicy = fusionPolicySchema.parse(fusionPolicy);
   if (spadesPolicy) spadesPolicy = spadesPolicySchema.parse(spadesPolicy);
   let stopSocket = async () => {};
@@ -78,12 +92,14 @@ export async function createApp(
         ChipController,
         SpadesAdmissionController,
         FusionController,
+        ProgressionController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
         { provide: 'SPADES_POLICY', useValue: spadesPolicy },
         { provide: 'FUSION_POLICY', useValue: fusionPolicy },
+        { provide: 'PROGRESSION_POLICY', useValue: progressionPolicy },
         { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',
@@ -94,6 +110,7 @@ export async function createApp(
           provide: 'AUTH_SHUTDOWN',
           useValue: {
             beforeApplicationShutdown: async () => {
+              await stopProgress();
               await stopTimeouts();
               await stopSettlements();
               await stopSocket();
@@ -123,6 +140,10 @@ export async function createApp(
   if (auth)
     stopSettlements = startSettlementWorker(
       new MatchSettlementService(auth.database, admissionPolicy),
+    );
+  if (auth && progressionPolicy)
+    stopProgress = startProgressWorker(
+      new ProgressionService(auth.database, progressionPolicy),
     );
   app.enableCors({ origin: origins });
   app.use(

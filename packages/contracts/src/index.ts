@@ -369,3 +369,5 @@ export * from './spades-social';
 export * from './fusion';
 
 export * from './activity';
+
+export * from './progression';
