@@ -362,3 +362,4 @@ export const albumResponseSchema = z
 export * from './poker';
 export * from './lobby';
 export * from './chips';
+export * from './evolved';
