@@ -64,10 +64,19 @@ export function chunkedSecretStore(store: SecretStore) {
       }),
     removeItem: (key: string) =>
       run(async () => {
-        await store.removeItem(key + '.pointer');
+        let failed = false;
+        const remove = async (entry: string) => {
+          try {
+            await store.removeItem(entry);
+          } catch {
+            failed = true;
+          }
+        };
+        await remove(key + '.pointer');
         for (const bank of [0, 1])
           for (let i = 0; i < 32; i++)
-            await store.removeItem(key + '.b' + bank + '.' + i);
+            await remove(key + '.b' + bank + '.' + i);
+        if (failed) throw new Error('Session cleanup incomplete');
       }),
   };
 }

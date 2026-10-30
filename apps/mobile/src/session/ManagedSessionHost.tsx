@@ -8,6 +8,7 @@ import { Action } from '../collection/controls';
 import { CollectionApp } from '../CollectionApp';
 import { authStorageKey, credentialStorage } from './nativeStorage';
 import type { sessionConfiguration } from './storage';
+import { disconnectMessage, disconnectSession } from './disconnect';
 type Configuration = NonNullable<ReturnType<typeof sessionConfiguration>>;
 export function ManagedSessionHost({
   config,
@@ -41,6 +42,7 @@ export function ManagedSessionHost({
   const [busy, setBusy] = useState(true);
   const [message, setMessage] = useState('Restoring account…');
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [needsCleanup, setNeedsCleanup] = useState(false);
   useEffect(() => {
     let alive = true;
     const { data } = provider.auth.onAuthStateChange((event, next) => {
@@ -184,44 +186,56 @@ export function ManagedSessionHost({
     setBusy(true);
     setConfirmDisconnect(false);
     provider.auth.stopAutoRefresh();
-    let localRevoked = false;
-    try {
-      const { data } = await provider.auth.getSession();
-      if (data.session) {
-        const response = await fetch(
-          apiUrl.replace(/\/$/, '') + '/v1/auth/logout',
-          {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer ' + data.session.access_token,
-              'Content-Type': 'application/json',
+    const result = await disconnectSession({
+      revokeServer: async () => {
+        const { data, error } = await provider.auth.getSession();
+        if (error || !data.session) throw new Error('Session unavailable');
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10000);
+        try {
+          const response = await fetch(
+            apiUrl.replace(/\/$/, '') + '/v1/auth/logout',
+            {
+              method: 'POST',
+              headers: {
+                Authorization: 'Bearer ' + data.session.access_token,
+                'Content-Type': 'application/json',
+              },
+              body: '{}',
+              signal: controller.signal,
             },
-            body: '{}',
-            signal: AbortSignal.timeout(10000),
-          },
-        );
-        localRevoked = response.ok;
-      }
-      const { error } = await provider.auth.signOut({ scope: 'local' });
-      if (error) throw error;
-    } catch {
-      setMessage(
-        'Local view disconnected; provider/server revocation could not be confirmed.',
-      );
-    } finally {
-      await credentialStorage.removeItem(storageKey).catch(() => {});
-      setSession(null);
-      setReady(null);
-      setBusy(false);
-      if (localRevoked) setMessage('This session was revoked.');
-    }
+          );
+          if (!response.ok) throw new Error('Revocation unconfirmed');
+        } finally {
+          clearTimeout(timer);
+        }
+      },
+      signOutProvider: async () => {
+        const { error } = await provider.auth.signOut({ scope: 'local' });
+        if (error) throw error;
+      },
+      clearCredentials: () => credentialStorage.removeItem(storageKey),
+    });
+    setSession(null);
+    setReady(null);
+    setBusy(false);
+    setNeedsCleanup(!result.providerSignedOut || !result.credentialsCleared);
+    setMessage(disconnectMessage(result));
   }
+
   return (
     <View style={styles.page}>
       <View style={styles.account}>
         <Text accessibilityLiveRegion="polite" style={styles.text}>
           {message}
         </Text>
+        {needsCleanup ? (
+          <Action
+            label="Retry account cleanup"
+            disabled={busy}
+            onPress={() => void disconnect()}
+          />
+        ) : null}
         {!session ? (
           <>
             <Text style={styles.note}>
@@ -233,7 +247,7 @@ export function ManagedSessionHost({
             </Text>
             <Action
               label={busy ? 'Connecting…' : 'Start guest collection'}
-              disabled={busy}
+              disabled={busy || needsCleanup}
               onPress={() => void guest()}
             />
           </>

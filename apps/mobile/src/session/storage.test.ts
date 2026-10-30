@@ -49,6 +49,36 @@ describe('bounded secure session persistence', () => {
     await expect(storage.setItem('auth', 'new'.repeat(500))).rejects.toThrow();
     expect(await storage.getItem('auth')).toBe('old');
   });
+  it.each(['auth.pointer', 'auth.b0.0'])(
+    'continues cleanup after a failed deletion of %s and supports retry',
+    async (failedKey) => {
+      const { data, store } = memory();
+      let fail = false;
+      const attempted: string[] = [];
+      const storage = chunkedSecretStore({
+        ...store,
+        removeItem: async (key) => {
+          attempted.push(key);
+          if (fail && key === failedKey) throw new Error('Storage unavailable');
+          await store.removeItem(key);
+        },
+      });
+      await storage.setItem('auth', 'saved credential');
+      data.set('auth.b1.31', 'leftover credential');
+      attempted.length = 0;
+      fail = true;
+      await expect(storage.removeItem('auth')).rejects.toThrow(
+        'Session cleanup incomplete',
+      );
+      expect(attempted).toHaveLength(65);
+      expect(attempted).toContain('auth.b1.31');
+      expect([...data.keys()]).toEqual([failedKey]);
+      fail = false;
+      await storage.removeItem('auth');
+      expect(data.size).toBe(0);
+      expect(await storage.getItem('auth')).toBeNull();
+    },
+  );
   it('serializes concurrent writes, bounds payloads and rejects incomplete/corrupt saved sessions', async () => {
     const { data, store } = memory();
     const storage = chunkedSecretStore(store);

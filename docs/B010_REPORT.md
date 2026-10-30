@@ -34,3 +34,13 @@ SSR semantic tests validate labels/control markup, with the SVG bridge mocked; t
 Favorites are presentation-only and last-commit-wins; they do not change rarity/level/style/economy. Filters apply to explicitly loaded inventory pages. No gameplay, purchases, blockchain, health or location code is added.
 
 Next smallest work is to finish the real-provider session acceptance and B010 device/accessibility acceptance. Do not mark the ticket complete or skip those gates by moving to B011.
+
+## Disconnect failure-path follow-up — 29 October 2026
+
+Review found that a failed server logout skipped provider sign-out, and successful server revocation could hide provider/storage cleanup errors. `apps/mobile/src/session/disconnect.ts` now attempts all three boundaries independently and returns separate outcomes; `disconnect.test.ts` covers all eight success/failure combinations without exposing provider diagnostics. ManagedSessionHost clears the private view immediately, reports partial failure and offers Retry account cleanup; guest creation stays disabled while provider/local cleanup is incomplete. The logout HTTP timeout uses AbortController plus cleared timer for native compatibility.
+
+`storage.ts` now attempts the pointer and all 64 bank entries despite individual deletion errors, then reports incomplete cleanup. Two storage regression cases prove pointer/chunk failures do not stop later deletion and a retry removes the leftovers. No token/session/provenance is fabricated and no database schema or dependency changes are included.
+
+Validation actually executed: `pnpm ci:quality` passed **74 cases in 16 files**, formatting/lint/strict types and **11 builds**. The first sandboxed attempt could not bind the API test listener (EPERM); the rerun with local-listener permission passed without changing tests. `pnpm db:validate`, `git diff --check`, and both iOS/Android `expo export` commands passed. The earlier 47-case disposable database evidence remains above; no local database suite rerun is claimed for this mobile-only correction. Hosted results for the latest commit are available in [PR #9 checks](https://github.com/BLUAlteractive/MasterDeck/pull/9/checks).
+
+Provider settings were inspected by key presence only: neither mobile nor API has populated provider configuration. Real provider and physical-device acceptance remain open; this correction does not close B010 or advance B011.
