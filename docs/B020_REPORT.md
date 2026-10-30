@@ -1,0 +1,9 @@
+# B020 — Per-player projections
+
+Added committed cross-process room change notifications and authenticated per-recipient socket broadcasts. Every delivery revalidates authorization/membership and builds a fresh allow-list projection. Only room IDs cross the PostgreSQL notification channel; no deck, burns, replay, rank secrets or opponent holes before showdown. Folded opponents remain hidden after closure. Increasing versions and coalesced reads prevent stale duplicate delivery; a post-subscription read closes join races.
+
+Files: database factory/listener and direct pinned pg/types dependencies/lockfile; room command notification, socket subscription/delivery/shutdown, async app wiring; shared isolated fixture and three real-network privacy/revocation cases; decisions/status and this report. No persisted schema change; revert listener/wiring to roll back without deleting event evidence.
+
+Validation: `pnpm ci:quality` — 173 unit cases, lint/types/format and 11 builds passed. `pnpm ci:database` — **71 cases in eleven files passed twice**, before/after complete rollback/reset/reseed. Two independent API listeners deliver recipient-specific broadcasts after commands from another DB client; tests cover pre-showdown secrecy, fold secrecy, live terminal revelation, outsider denial and revocation. Final test types/focused lint pass. Runtime/exporter capacity and physical-device acceptance are not claimed.
+
+Operations: `game.notifications` logs reconnect status only; monitor reconnect count and delivery/DB latency. Notification loss is recovered by fresh state after listener reconnect or B021 client rejoin; events remain durable. No raw connection strings, tokens, invites or game state are logged. No production changes, public fairness-proof disclosure or arbitrary snapshots are introduced. Next: B021 reconnect/replay and server deadlines.
