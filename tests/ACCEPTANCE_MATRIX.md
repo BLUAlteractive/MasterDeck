@@ -1,10 +1,11 @@
 # Acceptance matrix and adversarial testing
 
 ## Poker engine
-- [ ] Enumerate all 52 choose 5 hands for category distributions; exact counts total 2,598,960.
-- [ ] Distinguish all 7,462 classical five-card rank equivalence classes.
-- [ ] A-2-3-4-5 = 5-high straight; 10-J-Q-K-A suited = highest straight flush.
-- [ ] Full house > flush > straight in Classic; kickers and pair ordering correct.
+B012 evidence and limits: [five-card report](../docs/B012_REPORT.md); `pnpm test:poker:exhaustive`. Other poker/room/settlement gates below remain open.
+- [x] Enumerate all 52 choose 5 hands for category distributions; exact counts total 2,598,960.
+- [x] Distinguish all 7,462 classical five-card rank equivalence classes.
+- [x] A-2-3-4-5 = 5-high straight; 10-J-Q-K-A suited = highest straight flush.
+- [x] Full house > flush > straight in Classic; kickers and pair ordering correct.
 - [ ] Seven-card ranking chooses best among 21 five-card combinations; ties/split pots and board-only hands.
 - [ ] Poker betting rounds, blinds, min raise, all-in, side pots, folded players, pot conservation.
 - [ ] Face map never duplicates any (rank, suit) at one table; collector appearance never affects shuffle chance.

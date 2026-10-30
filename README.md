@@ -86,7 +86,7 @@ apps/admin/           Next.js future administration shell
 services/api/         NestJS public liveness endpoint
 services/jobs/        Node worker lifecycle shell
 packages/game-core/   Pure shared engine boundary (no rules yet)
-packages/game-poker/  Future Hold'em rules
+packages/game-poker/  Pure Classic five-card evaluator; game state comes later
 packages/game-spades/ Future Spades rules, independent of poker
 packages/card-domain/ Pure collection/evolution boundary
 packages/contracts/  Zod public API contract
@@ -115,3 +115,5 @@ The files under `architecture/` are draft reference contracts; OpenAPI explicitl
 The owned gallery accepts a verified session connection from the managed-auth host; the default root does not fabricate a connection or accept pasted tokens. With public Supabase configuration the root provides managed guest/restore/refresh and secure native storage. Actual provider/linking/MFA and physical-device acceptance are still pending. See [gallery integration and verification](docs/COLLECTION_GALLERY.md).
 
 B011 adds **Album & archive** navigation with owner-only retained records, serial/origin inspection and independent current/historical series counts. Preview exposure creates no discoveries or achievements. See [archive behavior, setup and acceptance gaps](docs/ALBUM_ARCHIVE.md).
+
+B012 provides the pure [Classic five-card evaluator](packages/game-poker/README.md). Run `pnpm test:poker:exhaustive` to check all 2,598,960 hands and 7,462 exact rank classes. No playable table is added by this library ticket.
