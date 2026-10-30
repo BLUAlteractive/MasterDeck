@@ -164,6 +164,13 @@ export class LobbyService {
         });
         if (
           own &&
+          (await tx.tournamentBinding.findUnique({
+            where: { lobbyId: own.lobbyId },
+          }))
+        )
+          throw new ApiFailure('USE_TOURNAMENT_FLOW', 409);
+        if (
+          own &&
           (await tx.lobby.findUniqueOrThrow({ where: { id: own.lobbyId } }))
             .status !== 'OPEN' &&
           input.action !== 'SAY'

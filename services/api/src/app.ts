@@ -1,3 +1,12 @@
+import {
+  TournamentController,
+  TournamentService,
+  startTournamentWorker,
+} from './events/tournaments';
+import {
+  tournamentPolicySchema,
+  type TournamentPolicy,
+} from '@deckforge/contracts';
 import { PurchaseHistoryController } from './billing/history';
 import { BillingController } from './billing/controller';
 import { BillingService, startBillingWorker } from './billing/service';
@@ -82,8 +91,20 @@ export async function createApp(
     accessiblePolicy?: AccessiblePolicy;
     storefrontPolicy?: StorefrontPolicy;
     billing?: BillingConfig;
+    tournamentPolicy?: TournamentPolicy;
   } = {},
 ) {
+  const tournamentPolicy = features.tournamentPolicy
+    ? tournamentPolicySchema.parse(features.tournamentPolicy)
+    : null;
+  if (tournamentPolicy && (!auth || !admissionPolicy))
+    throw new Error(
+      'Tournaments require identity and reviewed Classic admission',
+    );
+  const tournaments = auth
+    ? new TournamentService(auth.database, tournamentPolicy, admissionPolicy)
+    : null;
+  let stopTournaments = async () => {};
   const storefrontPolicy = features.storefrontPolicy
     ? storefrontPolicySchema.parse(features.storefrontPolicy)
     : null;
@@ -133,8 +154,10 @@ export async function createApp(
         StorefrontController,
         BillingController,
         PurchaseHistoryController,
+        TournamentController,
       ],
       providers: [
+        { provide: 'TOURNAMENT_SERVICE', useValue: tournaments },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
         { provide: 'SPADES_POLICY', useValue: spadesPolicy },
@@ -157,6 +180,7 @@ export async function createApp(
           provide: 'AUTH_SHUTDOWN',
           useValue: {
             beforeApplicationShutdown: async () => {
+              await stopTournaments();
               await stopBilling();
               await stopProgress();
               await stopTimeouts();
@@ -195,6 +219,8 @@ export async function createApp(
     );
   if (billing && features.billing?.workers !== false)
     stopBilling = startBillingWorker(billing);
+  if (tournaments && tournamentPolicy?.workers)
+    stopTournaments = startTournamentWorker(tournaments);
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({

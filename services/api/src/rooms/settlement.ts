@@ -1,3 +1,4 @@
+import { bindTournamentRoom } from '../events/binding';
 import { randomUUID } from 'node:crypto';
 import { type PrismaClient, writeCardTransition } from '@deckforge/database';
 import { validateLoadout } from '@deckforge/card-domain';
@@ -177,6 +178,13 @@ export class MatchSettlementService {
             bigBlind: policy.bigBlind,
           },
           policy.turnTimeoutMs,
+        );
+        await bindTournamentRoom(
+          tx,
+          lobby.id,
+          gameId,
+          lobby.seats.map((s) => s.userId),
+          policy,
         );
         const escrow = await tx.playChipAccount.create({
           data: { id: randomUUID(), kind: 'ESCROW', roomId: gameId },

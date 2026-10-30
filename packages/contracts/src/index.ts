@@ -379,3 +379,4 @@ export * from './accessibility';
 export * from './commerce';
 
 export * from './billing';
+export * from './tournaments';

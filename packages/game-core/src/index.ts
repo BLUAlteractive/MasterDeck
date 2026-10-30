@@ -73,3 +73,8 @@ export function getFace(id: string): CardFace {
 }
 
 export { shuffleFaces, validateDeck } from './deck';
+export {
+  tournamentSeeds,
+  tournamentBracket,
+  tournamentWinner,
+} from './tournament';

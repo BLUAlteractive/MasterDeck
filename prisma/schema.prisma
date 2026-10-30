@@ -108,6 +108,7 @@ model User {
   accessibleFacts       AccessibleQuestFact[]
   cosmeticGrants        CosmeticGrant[]
   billingBinding        BillingBinding?
+  tournamentEntries     TournamentEntry[]
   purchases             VerifiedPurchase[]
 }
 
@@ -934,4 +935,122 @@ model BillingVoidScan {
   lastCompletedAt DateTime? @db.Timestamptz(3)
   nextAttemptAt   DateTime  @default(now()) @db.Timestamptz(3)
   coverageGap     Boolean   @default(false)
+}
+
+model Tournament {
+  id              String            @id @db.Uuid
+  name            String
+  capacity        Int
+  startsAt        DateTime          @db.Timestamptz(3)
+  title           String
+  policy          Json
+  admissionPolicy Json
+  status          String            @default("REGISTRATION")
+  championEntryId String?           @db.Uuid
+  createdAt       DateTime          @default(now()) @db.Timestamptz(3)
+  completedAt     DateTime?         @db.Timestamptz(3)
+  entries         TournamentEntry[]
+  matches         TournamentMatch[]
+  award           TournamentAward?
+
+  @@index([status, startsAt])
+}
+
+model TournamentEntry {
+  id           String     @id @db.Uuid
+  tournamentId String     @db.Uuid
+  userId       String     @db.Uuid
+  seed         Int
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Restrict)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([tournamentId, userId])
+  @@unique([tournamentId, seed])
+}
+
+model TournamentMatch {
+  id            String              @id @db.Uuid
+  tournamentId  String              @db.Uuid
+  round         Int
+  slot          Int
+  leftEntryId   String?             @db.Uuid
+  rightEntryId  String?             @db.Uuid
+  winnerEntryId String?             @db.Uuid
+  status        String              @default("WAITING")
+  attempt       Int                 @default(1)
+  tournament    Tournament          @relation(fields: [tournamentId], references: [id], onDelete: Restrict)
+  ready         TournamentReady[]
+  bindings      TournamentBinding[]
+  results       TournamentResult[]
+
+  @@unique([tournamentId, round, slot])
+}
+
+model TournamentReady {
+  matchId   String          @db.Uuid
+  attempt   Int
+  userId    String          @db.Uuid
+  createdAt DateTime        @default(now()) @db.Timestamptz(3)
+  match     TournamentMatch @relation(fields: [matchId], references: [id], onDelete: Restrict)
+
+  @@id([matchId, attempt, userId])
+}
+
+model TournamentBinding {
+  lobbyId   String          @id @db.Uuid
+  matchId   String          @db.Uuid
+  attempt   Int
+  roomId    String?         @unique @db.Uuid
+  createdAt DateTime        @default(now()) @db.Timestamptz(3)
+  match     TournamentMatch @relation(fields: [matchId], references: [id], onDelete: Restrict)
+
+  @@unique([matchId, attempt])
+}
+
+model TournamentResult {
+  roomId         String          @id @db.Uuid
+  matchId        String          @db.Uuid
+  attempt        Int
+  winnerEntryId  String?         @db.Uuid
+  allocationHash String
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  match          TournamentMatch @relation(fields: [matchId], references: [id], onDelete: Restrict)
+
+  @@unique([matchId, attempt])
+}
+
+model TournamentAward {
+  tournamentId String     @id @db.Uuid
+  entryId      String     @db.Uuid
+  title        String
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Restrict)
+}
+
+model TournamentAudit {
+  id           String   @id @db.Uuid
+  actorId      String   @db.Uuid
+  commandId    String   @db.Uuid
+  tournamentId String   @db.Uuid
+  action       String
+  reason       String
+  requestHash  String
+  result       Json
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([actorId, commandId])
+}
+
+model TournamentDispute {
+  id           String   @id @db.Uuid
+  tournamentId String   @db.Uuid
+  matchId      String   @db.Uuid
+  userId       String   @db.Uuid
+  commandId    String   @db.Uuid
+  code         String
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, commandId])
+  @@index([tournamentId, createdAt])
 }
