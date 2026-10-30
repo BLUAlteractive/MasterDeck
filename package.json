@@ -38,7 +38,8 @@
     "db:test": "node scripts/ci-database.mjs",
     "catalog:export": "pnpm build:packages && tsx scripts/export-card-art.mts && prettier --write packages/card-domain/src/development-catalog.ts assets/foundation/manifest.json",
     "test:poker:exhaustive": "pnpm build:packages && vitest run packages/game-poker/src/evaluator.exhaustive.test.ts",
-    "test:poker:seven": "pnpm build:packages && vitest run packages/game-poker/src/seven.test.ts"
+    "test:poker:seven": "pnpm build:packages && vitest run packages/game-poker/src/seven.test.ts",
+    "test:poker:harness": "pnpm build:packages && tsx scripts/poker-harness.mts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

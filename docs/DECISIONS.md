@@ -207,3 +207,8 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 
 - Build ascending contribution layers, return unmatched single-contributor excess, and rank only non-folded contributors to each pot. Allocate integer tie shares separately per pot; remainder chips go clockwise from the first winning seat left of the button, consistent with the linked TDA odd-chip/side-pot rules.
 - Return deeply frozen payout/refund/final-stack calculations without mutating hands or wallets. Invalid terminal accounting fails closed. B022 must still provide transactional wallet settlement, idempotency and reconciliation; this library result authorizes no client balance.
+
+## B016 repeatable simulations — 29 October 2026
+
+- Add a test/development-only seeded xorshift fixture source outside runtime builds, plus explicit check/call scripts and legal-action bots. It is not cryptographic and is never imported by the API or production reducer.
+- Ordinary CI finishes 1,000 complete hands and verifies replay, stack/contribution conservation and terminal pot allocation with a 2,000-action fail-fast bound. Require all 2–6 seat counts, five command kinds, all streets, fold/showdown endings and actual side pots in the corpus. A first sampler failed seat coverage; changing its fixture generator fixed the corpus rather than weakening the assertion.
