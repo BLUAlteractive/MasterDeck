@@ -1,6 +1,6 @@
 # B012 — Pure five-card evaluator implementation report
 
-29 October 2026. **Implementation and local acceptance validated; hosted evidence pending.** This is the five-card library, not a complete playable poker game. Existing B005/B010/B011 external/product acceptance gaps remain open.
+29 October 2026. **Implemented and validated locally and on hosted CI; ready for review.** Implementation `0007ef2` is in [draft PR #11](https://github.com/BLUAlteractive/MasterDeck/pull/11); [hosted CI](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41000211835) passed both required jobs. This is the five-card library, not a complete playable poker game. Existing B005/B010/B011 external/product acceptance gaps remain open.
 
 ## Changed files
 
@@ -21,6 +21,8 @@
 - `pnpm ci:audit` passed the high/critical gate; the inherited single low advisory remains.
 - A compiled-package consumer smoke (`pnpm --filter @deckforge/game-poker exec node -e ...`) loaded the actual CommonJS export, verified royal-flush classification and wheel-versus-six comparison, and passed. Production build output contains only `index.js` and `index.d.ts`; the test oracle is not emitted.
 - Whitespace and local documentation-link checks passed.
+- Hosted logs confirm **122 cases in 21 files**, **11 builds**, and **51 database regression cases in eight files before and after rollback/reset/reseed**. Quality checks and Dependency audit both passed. The exhaustive test runs inside that hosted unit suite; no local database rerun is inferred from these hosted results.
+- The running local API health check passed and web preview returned HTTP 200. No new game screen or live visual/device test is claimed.
 
 No local database-suite rerun or native device/export run is claimed for this pure library ticket. No schema, stored feature, platform binding or mobile UI changed. Existing hosted CI still runs the isolated database regression suite in addition to quality/audit. No migrations, persisted-state rollback, private credentials or external production mutation are involved.
 
