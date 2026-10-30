@@ -98,6 +98,8 @@ model User {
   spadesEvents       SpadesEvent[]
   spadesReservations SpadesReservation[]
   tableMessages      TableMessage[]
+  fusionPreviews     FusionPreview[]
+  fusionJobs         FusionJob[]
 }
 
 model ExternalIdentity {
@@ -180,9 +182,11 @@ model CardInstance {
   starterGrantId String?          @db.Uuid
   starterGrant   StarterGrant?    @relation(fields: [starterGrantId], references: [id], onDelete: Restrict)
 
-  favorites    CardFavorite[]
-  loadoutCards LoadoutCard[]
-  managerSlots CollectionManagerSlot[]
+  fusionChild      FusionJob?
+  fusionIngredient FusionIngredient?
+  favorites        CardFavorite[]
+  loadoutCards     LoadoutCard[]
+  managerSlots     CollectionManagerSlot[]
 
   @@unique([id, ownerId, faceId])
   @@unique([id, ownerId])
@@ -577,4 +581,41 @@ model TableMessage {
 
   @@index([lobbyId, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+model FusionPreview {
+  id          String     @id @db.Uuid
+  ownerId     String     @db.Uuid
+  childId     String     @unique @db.Uuid
+  snapshot    Json
+  fingerprint String
+  expiresAt   DateTime   @db.Timestamptz(3)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  job         FusionJob?
+}
+
+model FusionJob {
+  id          String             @id @db.Uuid
+  previewId   String             @unique @db.Uuid
+  ownerId     String             @db.Uuid
+  childId     String             @unique @db.Uuid
+  receipt     Json
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+  preview     FusionPreview      @relation(fields: [previewId], references: [id], onDelete: Restrict)
+  owner       User               @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  child       CardInstance       @relation(fields: [childId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  ingredients FusionIngredient[]
+
+  @@unique([childId, ownerId])
+}
+
+model FusionIngredient {
+  parentId        String       @id @db.Uuid
+  jobId           String       @db.Uuid
+  expectedVersion Int
+  parent          CardInstance @relation(fields: [parentId], references: [id], onDelete: Restrict)
+  job             FusionJob    @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  @@index([jobId])
 }

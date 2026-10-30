@@ -11,3 +11,6 @@ export type { CardState, CardTransition } from './lifecycle';
 export { MANAGER_SLOT_LIMIT, validateLoadout } from './loadout';
 export type { LoadoutCardView, LoadoutIssue } from './loadout';
 export { validateManagerSelection } from './loadout';
+
+export { fusionRecipe } from './fusion';
+export type { FusionSource } from './fusion';

@@ -1,4 +1,4 @@
-import type { SpadesPolicy } from '@deckforge/contracts';
+import type { FusionPolicy, SpadesPolicy } from '@deckforge/contracts';
 import { createServer, type Server } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
@@ -19,6 +19,7 @@ const { generateKeyPair, exportJWK, SignJWT } = (await import(
 export async function identityFixture(
   policy: ClassicAdmissionPolicy | null = null,
   spadesPolicy: SpadesPolicy | null = null,
+  fusionPolicy: FusionPolicy | null = null,
 ) {
   let db!: PrismaClient;
   let app!: Awaited<ReturnType<typeof createApp>>;
@@ -104,7 +105,14 @@ export async function identityFixture(
         jwksUrl: issuer + '/.well-known/jwks.json',
       }),
     );
-    app = await createApp([], auth, undefined, policy, spadesPolicy);
+    app = await createApp(
+      [],
+      auth,
+      undefined,
+      policy,
+      spadesPolicy,
+      fusionPolicy,
+    );
     await app.listen(0, '127.0.0.1');
     base = await app.getUrl();
     secondDb = createDatabase(url.toString());

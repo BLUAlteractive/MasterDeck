@@ -46,4 +46,6 @@
 
 | B031 — Spades friends/rematch | Implemented; validation in report | [B031 report](../docs/B031_REPORT.md) | Two scripted four-client matches pass; reviewed policy, abandonment recovery and physical-device acceptance remain open. |
 
+| B032 — Fusion transaction | Implemented; validation in report | [B032 report](../docs/B032_REPORT.md) | Runtime disabled without reviewed policy; capped-edition recipe and physical-device acceptance remain open. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
