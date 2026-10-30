@@ -1,3 +1,4 @@
+import { releaseSpadesReservations } from './spades-reservations';
 import { randomUUID, randomInt } from 'node:crypto';
 import { z } from 'zod';
 import { shuffleFaces, getFace, type FaceId } from '@deckforge/game-core';
@@ -226,6 +227,13 @@ export class SpadesRoomService {
     const input = parsed.data;
     const result = await this.database.$transaction(
       async (tx) => {
+        const seats = await tx.spadesSeat.findMany({
+          where: { roomId: input.gameId },
+        });
+        const userIds = [
+          ...new Set([...seats.map((seat) => seat.userId), p.userId]),
+        ].sort();
+        await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id"=ANY(${userIds}::uuid[]) ORDER BY "id" FOR UPDATE`;
         await lockPrincipal(tx, p);
         const prior = await tx.spadesEvent.findUnique({
           where: {
@@ -281,7 +289,7 @@ export class SpadesRoomService {
             receipt: json(receipt),
           },
         });
-        if (next.phase === 'MATCH_COMPLETE')
+        if (next.phase === 'MATCH_COMPLETE') {
           await tx.spadesResult.create({
             data: {
               roomId: input.gameId,
@@ -291,6 +299,8 @@ export class SpadesRoomService {
               teams: json(next.teams),
             },
           });
+          await releaseSpadesReservations(tx, input.gameId);
+        }
         await tx.$queryRaw`SELECT pg_notify('deckforge_game_updates',${input.gameId})::text`;
         return receipt;
       },

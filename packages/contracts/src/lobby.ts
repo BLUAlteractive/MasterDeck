@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { spadesRulesSchema } from './spades';
+import { safeTableCodeSchema } from './spades-social';
+const lobbyModeSchema = z.enum(['CLASSIC', 'EVOLVED', 'SPADES']);
 export const pokerModeSchema = z.enum(['CLASSIC', 'EVOLVED']);
 export type PokerMode = z.infer<typeof pokerModeSchema>;
 export const pokerRulesVersions = Object.freeze({
@@ -12,7 +15,7 @@ export const lobbyCommandSchema = z.discriminatedUnion('action', [
       action: z.literal('CREATE_PRIVATE'),
       commandId: key,
       capacity: z.number().int().min(2).max(6),
-      mode: pokerModeSchema.optional(),
+      mode: lobbyModeSchema.optional(),
     })
     .strict(),
   z
@@ -29,6 +32,13 @@ export const lobbyCommandSchema = z.discriminatedUnion('action', [
       mode: pokerModeSchema.optional(),
     })
     .strict(),
+  z
+    .object({
+      action: z.literal('SAY'),
+      commandId: key,
+      code: safeTableCodeSchema,
+    })
+    .strict(),
   z.object({ action: z.literal('LEAVE'), commandId: key }).strict(),
   z
     .object({ action: z.literal('READY'), commandId: key, ready: z.boolean() })
@@ -38,10 +48,8 @@ export const lobbyViewSchema = z
   .object({
     id: z.uuid(),
     kind: z.enum(['PUBLIC', 'PRIVATE']),
-    mode: pokerModeSchema,
-    rulesetVersion: z
-      .enum(['CLASSIC_NLHE_V1', 'EVOLVED_A_EXPERIMENTAL_V1'])
-      .default('CLASSIC_NLHE_V1'),
+    mode: lobbyModeSchema,
+    rulesetVersion: z.string().min(1).max(128).default('CLASSIC_NLHE_V1'),
     admission: z
       .enum(['AVAILABLE', 'POLICY_NOT_CONFIGURED', 'BALANCE_REVIEW_REQUIRED'])
       .default('POLICY_NOT_CONFIGURED'),
@@ -62,6 +70,20 @@ export const lobbyViewSchema = z
       .max(6),
     canStart: z.boolean(),
     gameId: z.uuid().nullable().default(null),
+    spadesRules: spadesRulesSchema.nullable().default(null),
+    messages: z
+      .array(
+        z
+          .object({
+            id: z.uuid(),
+            seat: z.number().int().min(0).max(3),
+            code: safeTableCodeSchema,
+            createdAt: z.iso.datetime(),
+          })
+          .strict(),
+      )
+      .max(20)
+      .default([]),
   })
   .strict();
 export type LobbyCommand = z.infer<typeof lobbyCommandSchema>;
@@ -70,7 +92,11 @@ export const lobbyResultSchema = z
     lobby: lobbyViewSchema
       .refine(
         (lobby) =>
-          lobby.rulesetVersion === pokerRulesVersions[lobby.mode] &&
+          (lobby.mode === 'SPADES'
+            ? lobby.kind === 'PRIVATE' &&
+              lobby.capacity === 4 &&
+              lobby.spadesRules?.version === lobby.rulesetVersion
+            : lobby.rulesetVersion === pokerRulesVersions[lobby.mode]) &&
           (lobby.mode !== 'EVOLVED' ||
             (!lobby.canStart && lobby.admission === 'BALANCE_REVIEW_REQUIRED')),
         'Mismatched mode/rules or unreviewed admission.',

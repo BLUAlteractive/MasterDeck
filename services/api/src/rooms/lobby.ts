@@ -12,8 +12,10 @@ import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import {
   lobbyCommandSchema,
   pokerRulesVersions,
+  spadesPolicySchema,
   lobbyResultSchema,
   type LobbyResult,
+  type SpadesPolicy,
 } from '@deckforge/contracts';
 import { validateLoadout } from '@deckforge/card-domain';
 import type { Prisma, PrismaClient } from '@deckforge/database';
@@ -26,6 +28,7 @@ export class LobbyService {
   constructor(
     readonly database: PrismaClient,
     readonly policy: ClassicAdmissionPolicy | null = null,
+    readonly spadesPolicy: SpadesPolicy | null = null,
   ) {}
   private async view(
     tx: Prisma.TransactionClient,
@@ -41,26 +44,49 @@ export class LobbyService {
       where: { lobbyId: l.id },
       select: { roomId: true },
     });
+    const spadesAdmission =
+      l.mode === 'SPADES'
+        ? await tx.spadesAdmission.findFirst({
+            where: { lobbyId: l.id },
+            orderBy: { sequence: 'desc' },
+          })
+        : null;
+    const messages =
+      l.mode === 'SPADES'
+        ? await tx.tableMessage.findMany({
+            where: { lobbyId: l.id },
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+            take: 20,
+          })
+        : [];
     const accounts = this.policy
       ? await tx.playChipAccount.findMany({
           where: { userId: { in: l.seats.map((s) => s.userId) } },
         })
       : [];
     const canStart =
-      l.mode === 'CLASSIC' &&
-      l.rulesetVersion === pokerRulesVersions.CLASSIC &&
-      !!this.policy &&
-      l.status === 'OPEN' &&
-      l.hostId === userId &&
-      l.seats.length >= 2 &&
-      l.seats.every(
-        (s) =>
-          s.ready &&
-          accounts.some(
-            (a) =>
-              a.userId === s.userId && a.balance >= BigInt(this.policy!.buyIn),
-          ),
-      );
+      (l.mode === 'SPADES' &&
+        !!this.spadesPolicy &&
+        hash(l.rulesConfig) === hash(this.spadesPolicy) &&
+        l.status === 'OPEN' &&
+        l.hostId === userId &&
+        l.seats.length === 4 &&
+        l.seats.every((seat) => seat.ready)) ||
+      (l.mode === 'CLASSIC' &&
+        l.rulesetVersion === pokerRulesVersions.CLASSIC &&
+        !!this.policy &&
+        l.status === 'OPEN' &&
+        l.hostId === userId &&
+        l.seats.length >= 2 &&
+        l.seats.every(
+          (s) =>
+            s.ready &&
+            accounts.some(
+              (a) =>
+                a.userId === s.userId &&
+                a.balance >= BigInt(this.policy!.buyIn),
+            ),
+        ));
     return lobbyResultSchema.parse({
       lobby: {
         id: l.id,
@@ -69,11 +95,16 @@ export class LobbyService {
         status: l.status,
         rulesetVersion: l.rulesetVersion,
         admission:
-          l.mode === 'EVOLVED'
-            ? 'BALANCE_REVIEW_REQUIRED'
-            : this.policy
+          l.mode === 'SPADES'
+            ? this.spadesPolicy &&
+              hash(l.rulesConfig) === hash(this.spadesPolicy)
               ? 'AVAILABLE'
-              : 'POLICY_NOT_CONFIGURED',
+              : 'POLICY_NOT_CONFIGURED'
+            : l.mode === 'EVOLVED'
+              ? 'BALANCE_REVIEW_REQUIRED'
+              : this.policy
+                ? 'AVAILABLE'
+                : 'POLICY_NOT_CONFIGURED',
         capacity: l.capacity,
         hostId: l.hostId,
         version: l.version,
@@ -83,7 +114,17 @@ export class LobbyService {
           ready: s.ready,
         })),
         canStart,
-        gameId: admission?.roomId ?? null,
+        gameId: spadesAdmission?.roomId ?? admission?.roomId ?? null,
+        spadesRules:
+          l.mode === 'SPADES'
+            ? spadesPolicySchema.parse(l.rulesConfig).rules
+            : null,
+        messages: messages.reverse().map((message) => ({
+          id: message.id,
+          seat: message.seat,
+          code: message.code,
+          createdAt: message.createdAt.toISOString(),
+        })),
       },
       invite: null,
     });
@@ -124,12 +165,52 @@ export class LobbyService {
         if (
           own &&
           (await tx.lobby.findUniqueOrThrow({ where: { id: own.lobbyId } }))
-            .status !== 'OPEN'
+            .status !== 'OPEN' &&
+          input.action !== 'SAY'
         )
           throw new ApiFailure('GAME_IN_PROGRESS', 409);
 
         let invite: string | null = null;
-        if (input.action === 'LEAVE') {
+        if (input.action === 'SAY') {
+          if (!own) throw new ApiFailure('LOBBY_UNAVAILABLE', 404);
+          const lobby = await tx.lobby.findUniqueOrThrow({
+            where: { id: own.lobbyId },
+          });
+          if (lobby.mode !== 'SPADES' || lobby.status === 'CLOSED')
+            throw new ApiFailure('LOBBY_UNAVAILABLE', 404);
+          const admission = await tx.spadesAdmission.findFirst({
+            where: { lobbyId: lobby.id },
+            orderBy: { sequence: 'desc' },
+            include: { room: true },
+          });
+          if (
+            admission &&
+            ['BIDDING', 'PLAYING'].includes(admission.room.phase)
+          )
+            throw new ApiFailure('TABLE_MESSAGES_PAUSED', 409);
+          const recent = await tx.$queryRaw<
+            { recent: boolean }[]
+          >`SELECT EXISTS(SELECT 1 FROM "TableMessage" WHERE "actorUserId"=${p.userId}::uuid AND "createdAt">clock_timestamp()-interval '5 seconds') AS recent`;
+          if (recent[0]?.recent) throw new ApiFailure('RATE_LIMITED', 429);
+          if (
+            (await tx.tableMessage.count({ where: { lobbyId: lobby.id } })) >=
+            100
+          )
+            throw new ApiFailure('TABLE_MESSAGES_FULL', 409);
+          await tx.tableMessage.create({
+            data: {
+              id: randomUUID(),
+              lobbyId: lobby.id,
+              actorUserId: p.userId,
+              seat: own.seat,
+              code: input.code,
+            },
+          });
+          await tx.lobby.update({
+            where: { id: lobby.id },
+            data: { version: { increment: 1 } },
+          });
+        } else if (input.action === 'LEAVE') {
           if (own) {
             const lobby = await tx.lobby.findUniqueOrThrow({
               where: { id: own.lobbyId },
@@ -188,13 +269,31 @@ export class LobbyService {
           if (own) throw new ApiFailure('ALREADY_SEATED', 409);
           let lobby;
           if (input.action === 'CREATE_PRIVATE') {
+            const mode = input.mode ?? 'CLASSIC';
+            if (
+              mode === 'SPADES' &&
+              (!this.spadesPolicy || input.capacity !== 4)
+            )
+              throw new ApiFailure(
+                this.spadesPolicy
+                  ? 'INVALID_REQUEST'
+                  : 'SPADES_POLICY_NOT_CONFIGURED',
+                this.spadesPolicy ? 400 : 503,
+              );
+            const rulesetVersion =
+              mode === 'SPADES'
+                ? this.spadesPolicy!.rules.version
+                : pokerRulesVersions[mode];
             invite = randomBytes(32).toString('hex');
             lobby = await tx.lobby.create({
               data: {
                 id: randomUUID(),
                 kind: 'PRIVATE',
-                mode: input.mode ?? 'CLASSIC',
-                rulesetVersion: pokerRulesVersions[input.mode ?? 'CLASSIC'],
+                mode,
+                rulesetVersion,
+                ...(mode === 'SPADES'
+                  ? { rulesConfig: json(this.spadesPolicy) }
+                  : {}),
                 capacity: input.capacity,
                 hostId: p.userId,
                 inviteHash: inviteHash(invite),
@@ -271,21 +370,25 @@ export class LobbyController {
     @Inject('AUTH_SERVICE') private readonly auth: AuthService | null,
     @Inject('ADMISSION_POLICY')
     private readonly policy: ClassicAdmissionPolicy | null,
+    @Inject('SPADES_POLICY') private readonly spadesPolicy: SpadesPolicy | null,
   ) {}
   @Get() async read(@Req() req: Request) {
     if (!this.auth) throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
-    return new LobbyService(this.auth.database, this.policy).read(
-      await this.auth.authenticate(req.headers.authorization),
-    );
+    return new LobbyService(
+      this.auth.database,
+      this.policy,
+      this.spadesPolicy,
+    ).read(await this.auth.authenticate(req.headers.authorization));
   }
   @Post('commands') @HttpCode(200) async command(
     @Req() req: Request,
     @Body() body: unknown,
   ) {
     if (!this.auth) throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
-    return new LobbyService(this.auth.database, this.policy).command(
-      await this.auth.authenticate(req.headers.authorization),
-      body,
-    );
+    return new LobbyService(
+      this.auth.database,
+      this.policy,
+      this.spadesPolicy,
+    ).command(await this.auth.authenticate(req.headers.authorization), body);
   }
 }

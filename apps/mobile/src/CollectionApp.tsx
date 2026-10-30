@@ -1,3 +1,4 @@
+import { SpadesLobby } from './play/SpadesLobby';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { Action } from './collection/controls';
@@ -34,7 +35,9 @@ export function CollectionApp({
   );
 }
 function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
-  const [view, setView] = useState<'gallery' | 'archive' | 'play'>('gallery');
+  const [view, setView] = useState<'gallery' | 'archive' | 'play' | 'spades'>(
+    'gallery',
+  );
   return (
     <View style={{ flex: 1 }}>
       <View
@@ -49,6 +52,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           label="Play"
           selected={view === 'play'}
           onPress={() => setView('play')}
+        />
+        <Action
+          label="Spades"
+          selected={view === 'spades'}
+          onPress={() => setView('spades')}
         />
         <Action
           label="Album & archive"
@@ -66,6 +74,9 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
         <Gallery client={client} makeId={randomUUID} />
       </View>
       {view === 'archive' ? <Archive client={client} /> : null}
+      {view === 'spades' ? (
+        <SpadesLobby client={client} makeId={randomUUID} />
+      ) : null}
       {view === 'play' ? (
         <PlayLobby client={client} makeId={randomUUID} />
       ) : null}

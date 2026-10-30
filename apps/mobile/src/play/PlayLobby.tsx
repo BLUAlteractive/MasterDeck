@@ -28,7 +28,7 @@ export function PlayLobby({
   useEffect(() => {
     const controller = new AbortController();
     setGame(undefined);
-    if (client && result.lobby?.gameId)
+    if (client && result.lobby?.gameId && result.lobby.mode !== 'SPADES')
       void client
         .game(result.lobby.gameId, controller.signal)
         .then((value) => {
@@ -137,8 +137,19 @@ export function PlayLobby({
       if (!signal?.aborted) setBusy(false);
     }
   }
-  const lobby = result.lobby,
-    shownMode = lobby?.mode ?? mode;
+  const lobby = result.lobby;
+  if (lobby?.mode === 'SPADES')
+    return (
+      <View>
+        <Text>Your private Spades room is open. Use the Spades tab.</Text>
+        <Action
+          label="Refresh lobby"
+          disabled={busy}
+          onPress={() => void refresh()}
+        />
+      </View>
+    );
+  const shownMode = lobby?.mode ?? mode;
   return (
     <View style={{ padding: 16, gap: 12 }}>
       <PokerMatchScreen
