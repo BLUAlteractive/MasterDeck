@@ -48,4 +48,6 @@
 
 | B032 — Fusion transaction | Implemented; validation in report | [B032 report](../docs/B032_REPORT.md) | Runtime disabled without reviewed policy; capped-edition recipe and physical-device acceptance remain open. |
 
+| B033 — Fusion UI and preview | Implemented; quality validation in report | [B033 report](../docs/B033_REPORT.md) | Exact-result and retry semantics tested; real-device accessibility and reviewed policy activation remain open. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.

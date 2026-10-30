@@ -1,3 +1,4 @@
+import { Fusion } from './fusion/Fusion';
 import { SpadesLobby } from './play/SpadesLobby';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -35,9 +36,9 @@ export function CollectionApp({
   );
 }
 function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
-  const [view, setView] = useState<'gallery' | 'archive' | 'play' | 'spades'>(
-    'gallery',
-  );
+  const [view, setView] = useState<
+    'gallery' | 'archive' | 'play' | 'spades' | 'fusion'
+  >('gallery');
   return (
     <View style={{ flex: 1 }}>
       <View
@@ -59,6 +60,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           onPress={() => setView('spades')}
         />
         <Action
+          label="Fusion"
+          selected={view === 'fusion'}
+          onPress={() => setView('fusion')}
+        />
+        <Action
           label="Album & archive"
           selected={view === 'archive'}
           onPress={() => setView('archive')}
@@ -72,6 +78,15 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
         }
       >
         <Gallery client={client} makeId={randomUUID} />
+      </View>
+      <View
+        style={{ flex: 1, display: view === 'fusion' ? 'flex' : 'none' }}
+        accessibilityElementsHidden={view !== 'fusion'}
+        importantForAccessibility={
+          view === 'fusion' ? 'auto' : 'no-hide-descendants'
+        }
+      >
+        <Fusion client={client} makeId={randomUUID} />
       </View>
       {view === 'archive' ? <Archive client={client} /> : null}
       {view === 'spades' ? (

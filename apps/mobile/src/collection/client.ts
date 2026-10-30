@@ -1,6 +1,12 @@
 import { watchSpades } from '../play/spades-watch';
 import {
   privateCardsSchema,
+  fusionPolicyResponseSchema,
+  fusionSelectionSchema,
+  fusionPreviewSchema,
+  fusionConfirmSchema,
+  fusionReceiptSchema,
+  fusionLineageSchema,
   spadesRoomViewSchema,
   spadesPolicyResponseSchema,
   spadesStartSchema,
@@ -88,6 +94,49 @@ export function createCollectionClient(
   }
 
   return {
+    async fusionPolicy(signal?: AbortSignal) {
+      return fusionPolicyResponseSchema.parse(
+        await request('/v1/fusion/policy', 'GET', undefined, signal),
+      );
+    },
+    async previewFusion(sourceIds: string[], signal?: AbortSignal) {
+      return fusionPreviewSchema.parse(
+        await request(
+          '/v1/fusion/preview',
+          'POST',
+          fusionSelectionSchema.parse({ sourceIds }),
+          signal,
+        ),
+      );
+    },
+    async confirmFusion(
+      command: {
+        previewId: string;
+        previewHash: string;
+        commandId: string;
+        confirm: true;
+      },
+      signal?: AbortSignal,
+    ) {
+      return fusionReceiptSchema.parse(
+        await request(
+          '/v1/fusion/confirm',
+          'POST',
+          fusionConfirmSchema.parse(command),
+          signal,
+        ),
+      );
+    },
+    async fusionLineage(instanceId: string, signal?: AbortSignal) {
+      return fusionLineageSchema.parse(
+        await request(
+          '/v1/fusion/lineage/' + encodeURIComponent(instanceId),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
     async spadesPolicy(signal?: AbortSignal) {
       return spadesPolicyResponseSchema.parse(
         await request('/v1/spades/policy', 'GET', undefined, signal),
