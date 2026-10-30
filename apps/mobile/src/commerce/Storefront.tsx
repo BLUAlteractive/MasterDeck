@@ -1,3 +1,4 @@
+import { PurchaseHistory } from './PurchaseHistory';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View, Platform } from 'react-native';
 import type {
@@ -143,6 +144,7 @@ export function Storefront({ client }: { client: CollectionClient | null }) {
       }}
     >
       <StorefrontBoard view={view} />
+      {client ? <PurchaseHistory client={client} /> : null}
       <Text style={{ color: shellTheme.text }} accessibilityLiveRegion="polite">
         {notice}
       </Text>

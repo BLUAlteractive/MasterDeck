@@ -4,6 +4,7 @@ import {
   billingContextSchema,
   billingReceiptSchema,
   cosmeticProductViewSchema,
+  purchaseViewSchema,
   type BillingProof,
   type StorefrontPolicy,
 } from '@deckforge/contracts';
@@ -13,7 +14,11 @@ import { ApiFailure } from '../auth/errors';
 import { hash, json, lockPrincipal } from '../rooms/shared';
 import { approvedCosmeticProduct } from '../storefront';
 import { openBilling, sealBilling } from './vault';
-import { verifiedPurchaseSchema, type BillingConfig } from './providers';
+import {
+  verifiedPurchaseSchema,
+  verifiedVoidSchema,
+  type BillingConfig,
+} from './providers';
 export class BillingService {
   constructor(
     readonly db: PrismaClient,
@@ -122,8 +127,15 @@ export class BillingService {
             purchase.proofKey !== proofKey)
         )
           throw new ApiFailure('PURCHASE_CONFLICT', 409);
+        const tombstone = await tx.billingRevocation.findUnique({
+          where: { proofKey },
+        });
+        if (tombstone && tombstone.transactionId !== verified.transactionId)
+          throw new ApiFailure('REVOCATION_CONFLICT', 409);
         const status =
-          purchase?.status === 'REVOKED' || verified.state === 'REVOKED'
+          purchase?.status === 'REVOKED' ||
+          verified.state === 'REVOKED' ||
+          tombstone !== null
             ? 'REVOKED'
             : 'ACTIVE';
         if (!purchase) {
@@ -164,6 +176,12 @@ export class BillingService {
               status,
             })),
           });
+          await tx.purchaseReconciliation.create({
+            data: {
+              purchaseId: id,
+              nextAttemptAt: new Date(Date.now() + 3600000),
+            },
+          });
           if (verified.platform === 'GOOGLE')
             await tx.billingAcknowledgement.create({
               data: {
@@ -190,11 +208,11 @@ export class BillingService {
             {
               id: randomUUID(),
               purchaseId: purchase.id,
-              sourceKey,
-              observedState: verified.state,
+              sourceKey: tombstone ? 'void:' + tombstone.id : sourceKey,
+              observedState: tombstone ? 'REVOKED' : verified.state,
               effectiveState: status,
               stateVersion: purchase.version,
-              proofHash: observedHash,
+              proofHash: tombstone ? tombstone.evidenceHash : observedHash,
             },
           ],
           skipDuplicates: true,
@@ -332,17 +350,209 @@ export class BillingService {
       }
     }
   }
-  async currentPurchase(userId: string, id: string) {
-    const purchase = await this.db.verifiedPurchase.findUnique({
-      where: { id },
+  async reconcile(userId?: string, stopping: () => boolean = () => false) {
+    const rows = await this.db.purchaseReconciliation.findMany({
+      where: {
+        nextAttemptAt: { lte: new Date() },
+        purchase: {
+          environment: this.config.environment,
+          status: 'ACTIVE',
+          ...(userId ? { userId } : {}),
+        },
+      },
+      include: { purchase: true },
+      orderBy: { nextAttemptAt: 'asc' },
+      take: 20,
     });
-    if (!purchase || purchase.userId !== userId)
-      throw new ApiFailure('PURCHASE_NOT_FOUND', 404);
-    return {
-      id: purchase.id,
-      status: purchase.status,
-      product: cosmeticProductViewSchema.parse(purchase.snapshot),
-    };
+    for (const row of rows) {
+      if (stopping()) return;
+      try {
+        const proof = billingProofSchema.parse(
+          openBilling(
+            row.purchase.evidenceBox,
+            this.config.encryptionKey,
+            'purchase:' + row.purchaseId,
+          ),
+        );
+        await this.record(proof, undefined, 'reconcile:' + row.purchaseId);
+        await this.db.purchaseReconciliation.update({
+          where: { purchaseId: row.purchaseId },
+          data: {
+            lastCheckedAt: new Date(),
+            nextAttemptAt: new Date(Date.now() + 3600000),
+            attempts: 0,
+          },
+        });
+      } catch {
+        await this.db.purchaseReconciliation.update({
+          where: { purchaseId: row.purchaseId },
+          data: {
+            attempts: { increment: 1 },
+            nextAttemptAt: new Date(
+              Date.now() +
+                Math.min(300000, 1000 * 2 ** Math.min(row.attempts, 8)),
+            ),
+          },
+        });
+        console.warn(
+          JSON.stringify({ event: 'billing.reconcile', status: 'retry' }),
+        );
+      }
+    }
+  }
+  async scanVoids(stopping: () => boolean = () => false) {
+    const provider = this.config.providers.GOOGLE;
+    if (!provider?.voids) return;
+    const key = this.config.environment + ':GOOGLE',
+      now = new Date(),
+      start = new Date(now.getTime() - 30 * 86400000);
+    await this.db.billingVoidScan.createMany({
+      data: [
+        { key, windowStart: start, windowEnd: now, nextAttemptAt: new Date(0) },
+      ],
+      skipDuplicates: true,
+    });
+    const scan = await this.db.billingVoidScan.findUniqueOrThrow({
+      where: { key },
+    });
+    if (scan.nextAttemptAt > now) return;
+    const cursor = scan.cursorBox
+      ? openBilling(
+          scan.cursorBox,
+          this.config.encryptionKey,
+          'voidscan:' + key,
+        )
+      : null;
+    if (cursor !== null && typeof cursor !== 'string')
+      throw new Error('INVALID_SCAN_CURSOR');
+    let page;
+    try {
+      page = await provider.voids(scan.windowStart, scan.windowEnd, cursor);
+    } catch {
+      await this.db.billingVoidScan.updateMany({
+        where: { key, version: scan.version },
+        data: {
+          cursorBox: null,
+          windowStart: start,
+          windowEnd: now,
+          version: { increment: 1 },
+          nextAttemptAt: new Date(Date.now() + 60000),
+          coverageGap:
+            scan.coverageGap ||
+            (!!scan.lastCompletedAt &&
+              now.getTime() - scan.lastCompletedAt.getTime() > 30 * 86400000),
+        },
+      });
+      throw new ApiFailure('BILLING_PROVIDER_UNAVAILABLE', 503);
+    }
+    for (const raw of page.items) {
+      if (stopping()) return;
+      const value = verifiedVoidSchema.parse(raw),
+        proofKey =
+          this.config.environment + ':GOOGLE:' + hash(value.purchaseToken),
+        evidenceHash = hash(value);
+      await this.db.billingRevocation.createMany({
+        data: [
+          {
+            id: randomUUID(),
+            proofKey,
+            platform: 'GOOGLE',
+            environment: this.config.environment,
+            transactionId: value.transactionId,
+            evidenceHash,
+            revokedAt: new Date(value.revokedAt),
+          },
+        ],
+        skipDuplicates: true,
+      });
+      const tombstone = await this.db.billingRevocation.findUniqueOrThrow({
+        where: { proofKey },
+      });
+      if (tombstone.transactionId !== value.transactionId)
+        throw new ApiFailure('REVOCATION_CONFLICT', 409);
+      const purchase = await this.db.verifiedPurchase.findUnique({
+        where: { proofKey },
+      });
+      if (!purchase) continue;
+      await this.db.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id"=${purchase.userId}::uuid FOR UPDATE`;
+        const current = await tx.verifiedPurchase.findUniqueOrThrow({
+          where: { id: purchase.id },
+        });
+        if (current.status === 'REVOKED') return;
+        if (current.transactionId !== tombstone.transactionId)
+          throw new ApiFailure('REVOCATION_CONFLICT', 409);
+        const next = await tx.verifiedPurchase.update({
+          where: { id: current.id },
+          data: { status: 'REVOKED', version: { increment: 1 } },
+        });
+        await tx.cosmeticGrant.updateMany({
+          where: { purchaseId: next.id, status: 'ACTIVE' },
+          data: { status: 'REVOKED', version: { increment: 1 } },
+        });
+        await tx.purchaseEvent.create({
+          data: {
+            id: randomUUID(),
+            purchaseId: next.id,
+            sourceKey: 'void:' + tombstone.id,
+            observedState: 'REVOKED',
+            effectiveState: 'REVOKED',
+            stateVersion: next.version,
+            proofHash: tombstone.evidenceHash,
+          },
+        });
+      });
+    }
+    await this.db.billingVoidScan.updateMany({
+      where: { key, version: scan.version },
+      data: {
+        version: { increment: 1 },
+        cursorBox: page.nextCursor
+          ? sealBilling(
+              page.nextCursor,
+              this.config.encryptionKey,
+              'voidscan:' + key,
+            )
+          : null,
+        ...(page.nextCursor
+          ? {}
+          : { lastCompletedAt: now, windowStart: start, windowEnd: now }),
+        nextAttemptAt: page.nextCursor
+          ? now
+          : new Date(now.getTime() + 3600000),
+        coverageGap:
+          scan.coverageGap ||
+          (!!scan.lastCompletedAt &&
+            now.getTime() - scan.lastCompletedAt.getTime() > 30 * 86400000),
+      },
+    });
+    if (scan.coverageGap)
+      console.warn(
+        JSON.stringify({
+          event: 'billing.void_scan',
+          status: 'coverage_review_required',
+        }),
+      );
+  }
+  async currentPurchase(p: Principal, id: string) {
+    return this.db.$transaction(async (tx) => {
+      await lockPrincipal(tx, p);
+      const row = await tx.verifiedPurchase.findUnique({ where: { id } });
+      if (
+        !row ||
+        row.userId !== p.userId ||
+        row.environment !== this.config.environment
+      )
+        throw new ApiFailure('PURCHASE_NOT_FOUND', 404);
+      return purchaseViewSchema.parse({
+        id: row.id,
+        status: row.status,
+        version: row.version,
+        environment: row.environment,
+        purchasedAt: row.createdAt.toISOString(),
+        product: cosmeticProductViewSchema.parse(row.snapshot),
+      });
+    });
   }
 }
 export function startBillingWorker(service: BillingService) {
@@ -352,6 +562,8 @@ export function startBillingWorker(service: BillingService) {
     if (closed || running) return;
     running = service
       .recover(() => closed)
+      .then(() => service.reconcile(undefined, () => closed))
+      .then(() => service.scanVoids(() => closed))
       .catch(() => {
         console.warn(
           JSON.stringify({ event: 'billing.worker', status: 'retry' }),

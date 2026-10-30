@@ -65,3 +65,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B039 — Direct cosmetics storefront | Fixed catalog/preview and private entitlement view implemented; validation in report | [B039 report](../docs/B039_REPORT.md) | Actual checkout/native localized prices, reviewed catalog activation and platform/product/legal acceptance remain gated. |
 
 | B040 — Apple/Google receipt verification | Server adapters and durable fulfillment implemented; validation in report | [B040 report](../docs/B040_REPORT.md), [billing guide](../docs/BILLING.md) | Real Apple/Google sandbox/device/console delivery and native client integration remain unverified; no live credentials or activation. |
+
+| B041 — Purchase restore/refund | Server restore/history and durable refund recovery implemented; validated | [B041 report](../docs/B041_REPORT.md) | Native store restore and real platform/device acceptance remain open; prolonged void-scan gaps require review. |

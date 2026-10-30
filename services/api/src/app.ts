@@ -1,3 +1,4 @@
+import { PurchaseHistoryController } from './billing/history';
 import { BillingController } from './billing/controller';
 import { BillingService, startBillingWorker } from './billing/service';
 import type { BillingConfig } from './billing/providers';
@@ -131,6 +132,7 @@ export async function createApp(
         AccessibleQuestController,
         StorefrontController,
         BillingController,
+        PurchaseHistoryController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },

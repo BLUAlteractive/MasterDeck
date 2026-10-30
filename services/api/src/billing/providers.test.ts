@@ -109,3 +109,35 @@ it('pins Google authenticated lookup to operator package and returns only comple
     { code: 'UNAUTHORIZED' },
   );
 });
+it('reads Google voided purchases through authenticated server lookup and preserves pagination', async () => {
+  const transport = vi.fn<typeof fetch>().mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        voidedPurchases: [
+          {
+            purchaseToken: 'TEST_VOID_TOKEN',
+            orderId: 'GPA.VOID',
+            voidedTimeMillis: '1767225600000',
+          },
+        ],
+        tokenPagination: { nextPageToken: 'next/server/page' },
+      }),
+    ),
+  );
+  const provider = googleBillingProvider({
+    packageName: 'com.deckforge.dev',
+    environment: 'SANDBOX',
+    notificationAudience: 'https://api.example.invalid/notifications',
+    notificationEmail: 'pubsub@example.invalid',
+    auth: { getAccessToken: async () => 'SERVER_TEST_TOKEN' },
+    transport,
+  });
+  const page = await provider.voids!(new Date(0), new Date(), 'cursor/server');
+  expect(page.items[0]?.transactionId).toBe('GPA.VOID');
+  expect(page.nextCursor).toBe('next/server/page');
+  const url = new URL(String(transport.mock.calls[0]?.[0]));
+  expect(url.origin).toBe('https://androidpublisher.googleapis.com');
+  expect(url.searchParams.get('type')).toBe('0');
+  expect(url.searchParams.get('token')).toBe('cursor/server');
+  expect(url.searchParams.has('startTime')).toBe(false);
+});
