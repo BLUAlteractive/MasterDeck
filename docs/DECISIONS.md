@@ -212,3 +212,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 
 - Add a test/development-only seeded xorshift fixture source outside runtime builds, plus explicit check/call scripts and legal-action bots. It is not cryptographic and is never imported by the API or production reducer.
 - Ordinary CI finishes 1,000 complete hands and verifies replay, stack/contribution conservation and terminal pot allocation with a 2,000-action fail-fast bound. Require all 2–6 seat counts, five command kinds, all streets, fold/showdown endings and actual side pots in the corpus. A first sampler failed seat coverage; changing its fixture generator fixed the corpus rather than weakening the assertion.
+
+## B017 safe Classic explanations — 29 October 2026
+
+- Allow-list recipient projections instead of serializing private hand state. A participant sees own holes; at completed showdown all non-folded hands are tabled for reproducibility. A fold-ending hand reveals no opponent holes or rank breakdown. Folded opponent holes, burns, remaining deck and private replay never leave the engine boundary.
+- Explain conventional outcomes with category, complete ordered tie vector, every equally best five and per-pot contributor/eligible/winner/award lists plus refunds. These are server calculations, not client settlement authority. Strict nested Zod schemas reject extra fields; a schema alone does not replace recipient filtering or room membership.
+- This is the privacy prerequisite for B018 acknowledgements; full room broadcasts, reconnect synchronization and the B020 realtime acceptance suite remain separate. No new game screen or optional muck/show policy is introduced.
