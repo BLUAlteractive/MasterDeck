@@ -34,4 +34,6 @@
 
 | B023 — Evolved scoring engine | Experimental Option A implemented; validation in report | [B023 report](../docs/B023_REPORT.md) | Live Evolved remains disabled pending balancing review. |
 
+| B024 — Transparent bonus breakdown | Implemented; validation in report | [B024 report](../docs/B024_REPORT.md) | Semantic accessibility and privacy tested; physical screen-reader/device acceptance remains open. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.

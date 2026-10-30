@@ -1,0 +1,11 @@
+# B024 — Transparent Evolved explanation
+
+Added a strict explanation payload, recipient-gated experimental projection and reusable mobile panel. All 21 candidates identify category/exact tiebreak, category tie value, base/power, eligible included instance IDs and earned attributes, each numeric bonus component, effect identity, raw/capped bonus, cap reduction and selected best candidates. Plain spoken descriptions explain exact-rank fallback and neutral board/unused holes. The panel renders server output; it imports no scoring engine and cannot settle chips.
+
+Changed files: game-poker `evolved-explanation.ts` and privacy/contract tests plus index; contracts `evolved.ts` and index; mobile `play/EvolvedExplanation.tsx` and semantic SSR tests; decisions, status and this report. No schema migration, endpoint or live enablement. The projector can analyze a private hand only for its owner at a complete board or an authorized viewer of non-folded showdown hands; it never changes the hand's existing Classic settlement. B025 owns mode presentation; live Evolved remains gated.
+
+Focused build/test passed five cases: all candidates/components, zero board-only bonus, own/opponent/outsider and folded-showdown privacy, nested schema pollution/inconsistent score rejection and mobile header/spoken score/version/candidate control semantics. Cross-package schema verification is test-only via source import; pure runtime code has no contracts/UI dependency. The initial render check exposed that native expanded state alone did not emit web aria-expanded; the control now supplies both. Full quality evidence follows below.
+
+No browser policy workaround or physical screen-reader/device claim. Actual VoiceOver/TalkBack and interactive focus behavior remain acceptance gates; SSR semantics and Expo web compilation are useful evidence, not substitutes. Published effect configuration/metadata must come from trusted server sources. Next ticket: B025 isolated modes and chosen rules versions.
+
+Final `pnpm ci:quality` passed **220 tests in 34 files**, **11 builds**, formatting, lint and strict/test types (`/tmp/deckforge-b024-quality.log`). `git diff --check` passed. No persisted implementation changed; the latest Prisma validation/B022 database acceptance remains applicable.
