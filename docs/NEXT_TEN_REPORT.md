@@ -2,18 +2,18 @@
 
 All ten tickets have implementation and validation evidence recorded below, each developed separately and committed for review. Product/device/release gates remain explicit; this is not a shipping approval. The owner explicitly selected experimental Evolved **Option A** after the initial six tickets. Independent B027/B028 therefore precede B023–B026 in the review stack. Nothing merged or deployed.
 
-| Ticket                      | Implementation commit | Draft PR / evidence                                                                                                    |
-| --------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| B019 queues/private lobbies | 5a95aae               | [PR18](https://github.com/BLUAlteractive/MasterDeck/pull/18), [report](B019_REPORT.md)                                 |
-| B020 recipient delivery     | fd9c2a6, 5d0659a      | [PR19](https://github.com/BLUAlteractive/MasterDeck/pull/19), [report](B020_REPORT.md)                                 |
-| B021 reconnect/deadlines    | 7cf8c40               | [PR20](https://github.com/BLUAlteractive/MasterDeck/pull/20), [report](B021_REPORT.md)                                 |
-| B022 earned chip ledger     | b4c8072               | [PR21](https://github.com/BLUAlteractive/MasterDeck/pull/21), [report](B022_REPORT.md)                                 |
-| B027 Spades tricks          | 72cd414               | [PR22](https://github.com/BLUAlteractive/MasterDeck/pull/22), [report](B027_REPORT.md)                                 |
-| B028 Spades scoring         | 2fb8811               | [PR23](https://github.com/BLUAlteractive/MasterDeck/pull/23), [report](B028_REPORT.md)                                 |
-| B023 Evolved scoring        | c20e5b3               | [PR24](https://github.com/BLUAlteractive/MasterDeck/pull/24), [report](B023_REPORT.md)                                 |
-| B024 bonus explanations     | 9ca1943               | [PR25](https://github.com/BLUAlteractive/MasterDeck/pull/25), [report](B024_REPORT.md)                                 |
-| B025 isolated modes         | 6413908               | [PR26](https://github.com/BLUAlteractive/MasterDeck/pull/26), [report](B025_REPORT.md)                                 |
-| B026 diagnostic simulation  | Current ticket branch | [report](B026_REPORT.md), [balance findings](EVOLVED_BALANCE_REPORT.md); draft attached to this chat after publication |
+| Ticket                      | Implementation commit | Draft PR / evidence                                                                                                                   |
+| --------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| B019 queues/private lobbies | 5a95aae               | [PR18](https://github.com/BLUAlteractive/MasterDeck/pull/18), [report](B019_REPORT.md)                                                |
+| B020 recipient delivery     | fd9c2a6, 5d0659a      | [PR19](https://github.com/BLUAlteractive/MasterDeck/pull/19), [report](B020_REPORT.md)                                                |
+| B021 reconnect/deadlines    | 7cf8c40               | [PR20](https://github.com/BLUAlteractive/MasterDeck/pull/20), [report](B021_REPORT.md)                                                |
+| B022 earned chip ledger     | b4c8072               | [PR21](https://github.com/BLUAlteractive/MasterDeck/pull/21), [report](B022_REPORT.md)                                                |
+| B027 Spades tricks          | 72cd414               | [PR22](https://github.com/BLUAlteractive/MasterDeck/pull/22), [report](B027_REPORT.md)                                                |
+| B028 Spades scoring         | 2fb8811               | [PR23](https://github.com/BLUAlteractive/MasterDeck/pull/23), [report](B028_REPORT.md)                                                |
+| B023 Evolved scoring        | c20e5b3               | [PR24](https://github.com/BLUAlteractive/MasterDeck/pull/24), [report](B023_REPORT.md)                                                |
+| B024 bonus explanations     | 9ca1943               | [PR25](https://github.com/BLUAlteractive/MasterDeck/pull/25), [report](B024_REPORT.md)                                                |
+| B025 isolated modes         | 6413908               | [PR26](https://github.com/BLUAlteractive/MasterDeck/pull/26), [report](B025_REPORT.md)                                                |
+| B026 diagnostic simulation  | 76d9d81               | [PR27](https://github.com/BLUAlteractive/MasterDeck/pull/27), [report](B026_REPORT.md), [balance findings](EVOLVED_BALANCE_REPORT.md) |
 
 Status/evidence changes are in backlog/STATUS.md; the 82-row CSV remains scope/dependency authority. [Option A approval](EVOLVED_POLICY_PROPOSAL.md) and MASTER_SPEC record the corrected 4,450 + 1,050 = 5,500 example and exact experimental table. The earlier pending policy gate is superseded by the owner's explicit “A”.
 
