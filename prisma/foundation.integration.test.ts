@@ -65,6 +65,7 @@ function cardData() {
 describe('PostgreSQL foundation constraints', () => {
   it('seeds all 52 canonical faces and one unpublished sample without grants or overwrite', async () => {
     const before = await database.cardInstance.count();
+    const seriesBefore = await database.cardSeries.count();
     await Promise.all([seedFoundation(database), seedFoundation(database)]);
     const faces = await database.faceDefinition.findMany();
     expect(faces).toHaveLength(52);
@@ -77,7 +78,8 @@ describe('PostgreSQL foundation constraints', () => {
           .sort((a, b) => a - b),
       ).toEqual(Array.from({ length: 13 }, (_, i) => i + 2));
     }
-    expect(await database.cardSeries.count()).toBe(1);
+    // Feature suites may add unrelated series; replay must not add any catalog rows.
+    expect(await database.cardSeries.count()).toBe(seriesBefore);
     expect(
       (
         await database.cardSeries.findUniqueOrThrow({

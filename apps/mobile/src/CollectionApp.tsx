@@ -1,4 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { View } from 'react-native';
+import { Action } from './collection/controls';
+import { Archive } from './collection/Archive';
+import type { CollectionClient } from './collection/client';
 import { randomUUID } from 'expo-crypto';
 import { Gallery } from './collection/Gallery';
 import {
@@ -22,10 +26,40 @@ export function CollectionApp({
     [collectionConnection],
   );
   return (
-    <Gallery
+    <CollectionWorkspace
       key={collectionConnection?.sessionKey ?? 'preview-only'}
       client={client}
-      makeId={randomUUID}
     />
+  );
+}
+function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
+  const [view, setView] = useState<'gallery' | 'archive'>('gallery');
+  return (
+    <View style={{ flex: 1 }}>
+      <View
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 }}
+      >
+        <Action
+          label="Card gallery"
+          selected={view === 'gallery'}
+          onPress={() => setView('gallery')}
+        />
+        <Action
+          label="Album & archive"
+          selected={view === 'archive'}
+          onPress={() => setView('archive')}
+        />
+      </View>
+      <View
+        style={{ flex: 1, display: view === 'gallery' ? 'flex' : 'none' }}
+        accessibilityElementsHidden={view !== 'gallery'}
+        importantForAccessibility={
+          view === 'gallery' ? 'auto' : 'no-hide-descendants'
+        }
+      >
+        <Gallery client={client} makeId={randomUUID} />
+      </View>
+      {view === 'archive' ? <Archive client={client} /> : null}
+    </View>
   );
 }

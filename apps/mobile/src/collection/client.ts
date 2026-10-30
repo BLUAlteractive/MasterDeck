@@ -5,6 +5,8 @@ import {
   currentLoadoutSchema,
   loadoutSavedSchema,
   favoriteResponseSchema,
+  archiveResponseSchema,
+  albumResponseSchema,
   type OwnedCard,
 } from '@deckforge/contracts';
 export class CollectionError extends Error {
@@ -75,6 +77,33 @@ export function createCollectionClient(
     async bootstrap(signal?: AbortSignal) {
       return profileSchema.parse(
         await request('/v1/auth/session', 'POST', {}, signal),
+      );
+    },
+    async archive(
+      view: 'all' | 'current' | 'former' = 'all',
+      cursor?: string,
+      signal?: AbortSignal,
+    ) {
+      return archiveResponseSchema.parse(
+        await request(
+          '/v1/collection/archive?limit=50&view=' +
+            view +
+            (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async album(cursor?: string, signal?: AbortSignal) {
+      return albumResponseSchema.parse(
+        await request(
+          '/v1/collection/album?limit=10' +
+            (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
+          'GET',
+          undefined,
+          signal,
+        ),
       );
     },
     async list(cursor?: string, signal?: AbortSignal) {

@@ -308,3 +308,53 @@ export const managerViewSchema = z
       .max(100),
   })
   .strict();
+
+/** Retained instances, including terminal rows. This is a private factual read model. */
+export const archiveQuerySchema = inventoryQuerySchema
+  .extend({
+    view: z.enum(['all', 'current', 'former']).default('all'),
+    seriesId: z.uuid().optional(),
+  })
+  .strict();
+export const archiveCardSchema = ownedCardSchema
+  .omit({ favorite: true })
+  .extend({
+    status: historyStateSchema.shape.status,
+    holding: z.enum(['OWNED_NOW', 'PREVIOUSLY_OWNED']),
+    editionSerial: z.number().int().positive().nullable(),
+    createdAt: z.iso.datetime(),
+    origin: z
+      .object({
+        eventId: z.uuid(),
+        action: z.enum(['MINT', 'GRANT', 'FUSION_CREATE']),
+        recordedAt: z.iso.datetime(),
+      })
+      .strict()
+      .nullable(),
+  })
+  .strict();
+export const archiveResponseSchema = z
+  .object({
+    items: z.array(archiveCardSchema),
+    nextCursor: z.uuid().nullable(),
+  })
+  .strict();
+export type ArchiveCard = z.infer<typeof archiveCardSchema>;
+export const albumSeriesSchema = z
+  .object({
+    seriesId: z.uuid(),
+    seriesName: z.string().min(1).max(120),
+    recordedInstances: z.number().int().nonnegative(),
+    currentInstances: z.number().int().nonnegative(),
+    recordedFaces: z.number().int().min(0).max(52),
+    currentFaces: z.number().int().min(0).max(52),
+    completeNow: z.boolean(),
+    completeRecorded: z.boolean(),
+  })
+  .strict();
+export const albumResponseSchema = z
+  .object({
+    items: z.array(albumSeriesSchema),
+    nextCursor: z.uuid().nullable(),
+  })
+  .strict();

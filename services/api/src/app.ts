@@ -12,6 +12,7 @@ import { CatalogController } from './catalog';
 import { CardHistoryController } from './history';
 import { LoadoutController } from './loadouts';
 import { FavoriteController } from './favorites';
+import { ArchiveController } from './archive';
 import { StarterController, StarterService } from './starter';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
@@ -48,6 +49,7 @@ export async function createApp(
         CardHistoryController,
         LoadoutController,
         FavoriteController,
+        ArchiveController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
