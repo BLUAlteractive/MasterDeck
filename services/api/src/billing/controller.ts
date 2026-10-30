@@ -36,6 +36,15 @@ export class BillingController {
     console.info(JSON.stringify({ event: 'billing.verify', status: 'ok' }));
     return result;
   }
+  @Post('restore') @HttpCode(200) async restore(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    const p = await this.principal(req),
+      service = this.enabled();
+    const receipt = await service.verify(p, body);
+    return service.currentPurchase(p, receipt.purchaseId);
+  }
   @Post('notifications/apple') @HttpCode(202) async apple(
     @Body() body: unknown,
   ) {

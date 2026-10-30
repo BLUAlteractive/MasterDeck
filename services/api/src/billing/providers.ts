@@ -24,6 +24,14 @@ export const verifiedPurchaseSchema = z
   })
   .strict();
 export type VerifiedPurchase = z.infer<typeof verifiedPurchaseSchema>;
+export const verifiedVoidSchema = z
+  .object({
+    purchaseToken: z.string().min(1).max(8192),
+    transactionId: z.string().min(1).max(200),
+    revokedAt: z.iso.datetime(),
+  })
+  .strict();
+export type VerifiedVoid = z.infer<typeof verifiedVoidSchema>;
 export interface BillingProvider {
   verify(proof: BillingProof): Promise<VerifiedPurchase>;
   notification(
@@ -31,6 +39,11 @@ export interface BillingProvider {
     authorization?: string,
   ): Promise<{ id: string; proof: BillingProof | null }>;
   acknowledge?(proof: BillingProof): Promise<void>;
+  voids?(
+    start: Date,
+    end: Date,
+    cursor: string | null,
+  ): Promise<{ items: VerifiedVoid[]; nextCursor: string | null }>;
 }
 export interface BillingConfig {
   environment: 'SANDBOX' | 'PRODUCTION';
@@ -280,6 +293,50 @@ export function googleBillingProvider(options: {
   };
   return {
     verify,
+    async voids(_start, _end, cursor) {
+      const query = new URLSearchParams({
+        type: '0',
+        maxResults: '1000',
+        // Use Google's full server-defined 30-day horizon; paging tokens retain its snapshot.
+      });
+      if (cursor) query.set('token', cursor);
+      const raw = (await (
+        await request('/purchases/voidedpurchases?' + query)
+      ).json()) as unknown;
+      const parsed = z
+        .object({
+          voidedPurchases: z
+            .array(
+              z
+                .object({
+                  purchaseToken: z.string(),
+                  orderId: z.string(),
+                  voidedTimeMillis: z.string().regex(/^\d+$/),
+                })
+                .passthrough(),
+            )
+            .max(1000)
+            .default([]),
+          tokenPagination: z
+            .object({ nextPageToken: z.string().nullable().optional() })
+            .passthrough()
+            .optional(),
+        })
+        .passthrough()
+        .safeParse(raw);
+      if (!parsed.success)
+        throw new ApiFailure('BILLING_PROVIDER_UNAVAILABLE', 503);
+      return {
+        items: parsed.data.voidedPurchases.map((v) =>
+          verifiedVoidSchema.parse({
+            purchaseToken: v.purchaseToken,
+            transactionId: v.orderId,
+            revokedAt: new Date(Number(v.voidedTimeMillis)).toISOString(),
+          }),
+        ),
+        nextCursor: parsed.data.tokenPagination?.nextPageToken ?? null,
+      };
+    },
     async acknowledge(proof) {
       if (proof.platform !== 'GOOGLE')
         throw new ApiFailure('PAYMENT_UNVERIFIED', 422);

@@ -861,6 +861,7 @@ model VerifiedPurchase {
   events          PurchaseEvent[]
   acknowledgement BillingAcknowledgement?
   environment     String
+  reconciliation  PurchaseReconciliation?
 
   @@unique([platform, environment, transactionId])
   @@index([userId, createdAt, id])
@@ -901,4 +902,36 @@ model BillingAcknowledgement {
   purchase      VerifiedPurchase @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
 
   @@index([status, nextAttemptAt])
+}
+
+model PurchaseReconciliation {
+  purchaseId    String           @id @db.Uuid
+  lastCheckedAt DateTime?        @db.Timestamptz(3)
+  nextAttemptAt DateTime         @default(now()) @db.Timestamptz(3)
+  attempts      Int              @default(0)
+  purchase      VerifiedPurchase @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+
+  @@index([nextAttemptAt])
+}
+
+model BillingRevocation {
+  id            String   @id @db.Uuid
+  proofKey      String   @unique
+  platform      String
+  environment   String
+  transactionId String
+  evidenceHash  String
+  revokedAt     DateTime @db.Timestamptz(3)
+  recordedAt    DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model BillingVoidScan {
+  key             String    @id
+  version         Int       @default(1)
+  cursorBox       String?
+  windowStart     DateTime  @db.Timestamptz(3)
+  windowEnd       DateTime  @db.Timestamptz(3)
+  lastCompletedAt DateTime? @db.Timestamptz(3)
+  nextAttemptAt   DateTime  @default(now()) @db.Timestamptz(3)
+  coverageGap     Boolean   @default(false)
 }

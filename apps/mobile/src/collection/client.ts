@@ -1,6 +1,12 @@
 import { watchSpades } from '../play/spades-watch';
 import {
   privateCardsSchema,
+  billingProofSchema,
+  billingContextSchema,
+  billingReceiptSchema,
+  purchaseViewSchema,
+  purchaseHistorySchema,
+  type BillingProof,
   storefrontViewSchema,
   cosmeticInventorySchema,
   accessibleViewSchema,
@@ -101,6 +107,42 @@ export function createCollectionClient(
   }
 
   return {
+    async billingContext(signal?: AbortSignal) {
+      return billingContextSchema.parse(
+        await request('/v1/billing/context', 'GET', undefined, signal),
+      );
+    },
+    async verifyPurchase(proof: BillingProof, signal?: AbortSignal) {
+      return billingReceiptSchema.parse(
+        await request(
+          '/v1/billing/verify',
+          'POST',
+          billingProofSchema.parse(proof),
+          signal,
+        ),
+      );
+    },
+    async restorePurchase(proof: BillingProof, signal?: AbortSignal) {
+      return purchaseViewSchema.parse(
+        await request(
+          '/v1/billing/restore',
+          'POST',
+          billingProofSchema.parse(proof),
+          signal,
+        ),
+      );
+    },
+    async purchaseHistory(cursor?: string, signal?: AbortSignal) {
+      return purchaseHistorySchema.parse(
+        await request(
+          '/v1/billing/purchases?limit=25' +
+            (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
     async storefront(platform: 'APPLE' | 'GOOGLE', signal?: AbortSignal) {
       return storefrontViewSchema.parse(
         await request(
