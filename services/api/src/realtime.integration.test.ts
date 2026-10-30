@@ -157,7 +157,7 @@ it('denies outsider subscriptions and disconnects a revoked recipient before new
   outsider.disconnect();
   const c = await connect(p.bearer);
   await c.timeout(5000).emitWithAck('room.join', { gameId });
-  let next = state(c, 1);
+  const next = state(c, 1);
   await service.command(p.principal, command(gameId, 0, 'CALL'));
   await next;
   await f.db.authSession.update({
