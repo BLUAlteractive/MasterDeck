@@ -106,3 +106,30 @@ export const pokerViewSchema = z
   })
   .strict();
 export type PokerViewResponse = z.infer<typeof pokerViewSchema>;
+
+export const pokerRoomJoinSchema = z
+  .object({ gameId: z.uuid().transform((v) => v.toLowerCase()) })
+  .strict();
+export const pokerCommandSchema = z
+  .object({
+    gameId: z.uuid().transform((v) => v.toLowerCase()),
+    commandId: z.string().regex(/^[A-Za-z0-9_-]{10,128}$/),
+    stateVersion: z.number().int().min(0).max(2147483646),
+    payload: z.discriminatedUnion('action', [
+      z.object({ action: z.literal('FOLD') }).strict(),
+      z.object({ action: z.literal('CHECK') }).strict(),
+      z.object({ action: z.literal('CALL') }).strict(),
+      z.object({ action: z.literal('ALL_IN') }).strict(),
+      z
+        .object({ action: z.literal('BET_TO'), target: chips.positive() })
+        .strict(),
+    ]),
+  })
+  .strict();
+export const pokerRoomViewSchema = z
+  .object({ gameId: z.uuid(), view: pokerViewSchema })
+  .strict();
+export const pokerCommandReceiptSchema = pokerRoomViewSchema
+  .extend({ commandId: z.string(), stateVersion: z.number().int().min(1) })
+  .strict();
+export type PokerRoomCommand = z.infer<typeof pokerCommandSchema>;

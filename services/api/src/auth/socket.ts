@@ -2,15 +2,19 @@ import { Server } from 'socket.io';
 import type { Server as HttpServer } from 'node:http';
 import { z } from 'zod';
 import type { AuthService } from './service';
+import { pokerRoomJoinSchema } from '@deckforge/contracts';
+import { ApiFailure } from './errors';
+import { PokerRoomService, StaleRoomVersion } from '../rooms/service';
 
 const handshakeSchema = z
   .object({ token: z.string().min(1).max(16384) })
   .strict();
-const joinSchema = z.object({ gameId: z.uuid() }).strict();
+const joinSchema = pokerRoomJoinSchema;
 export function attachAuthSocket(
   server: HttpServer,
   auth: AuthService | null,
   origins: string[],
+  roomService: PokerRoomService | null = null,
 ) {
   const attempts = new Map<string, { count: number; started: number }>();
   const cleanup = setInterval(() => {
@@ -89,20 +93,48 @@ export function attachAuthSocket(
         socket.disconnect(true);
       }
     });
-    socket.on('room.join', (input: unknown, ack: unknown) => {
+    const handle = async (
+      kind: 'join' | 'command',
+      input: unknown,
+      ack: unknown,
+    ) => {
       if (typeof ack !== 'function') return;
-      // Room membership/actors arrive in B018; no room access is granted by this scaffold.
-      ack({
-        error: {
-          code: joinSchema.safeParse(input).success
-            ? 'ROOM_UNAVAILABLE'
-            : 'INVALID_REQUEST',
-        },
-      });
+      try {
+        if (!roomService || !auth) {
+          ack({
+            error: {
+              code:
+                kind === 'join' && !joinSchema.safeParse(input).success
+                  ? 'INVALID_REQUEST'
+                  : 'ROOM_UNAVAILABLE',
+            },
+          });
+          return;
+        }
+        // Recheck in the handler as well as packet middleware; the DB service rechecks under locks.
+        const principal = await auth.authenticate(`Bearer ${token}`);
+        if (kind === 'join') {
+          const parsed = joinSchema.safeParse(input);
+          if (!parsed.success) throw new ApiFailure('INVALID_REQUEST', 400);
+          ack(await roomService.read(principal, parsed.data.gameId));
+        } else ack(await roomService.command(principal, input));
+      } catch (error) {
+        ack({
+          error: {
+            code:
+              error instanceof ApiFailure ? error.code : 'SERVICE_UNAVAILABLE',
+          },
+          ...(error instanceof StaleRoomVersion
+            ? { resync: error.resync }
+            : {}),
+        });
+      }
+    };
+    socket.on('room.join', (input: unknown, ack: unknown) => {
+      void handle('join', input, ack);
     });
-    socket.on('game.command', (_input: unknown, ack: unknown) => {
-      if (typeof ack === 'function')
-        ack({ error: { code: 'ROOM_UNAVAILABLE' } });
+    socket.on('game.command', (input: unknown, ack: unknown) => {
+      void handle('command', input, ack);
     });
   });
   return () => {

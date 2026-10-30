@@ -106,3 +106,9 @@ The fixture sampler is deterministic and noncryptographic, test-only and exclude
 ## Scope and recovery
 
 B012/B013 cover ranking and selection only. B014 onward own shuffling/dealing, legal commands, betting, replay, privacy, pots and authoritative rooms. This ticket cannot play or settle a match and adds no mobile screen, persisted state, API, environment setting, dependency or migration. Reverting the code/export/script removes it; no data rollback or database reset is needed.
+
+## Hand lifecycle, allocations and safe outcomes — B014–B017
+
+The package now also exports immutable `createPokerHand`/`startPokerHand`, `reducePokerHand`, `legalPokerActions`, private `replayPokerHand`, `allocatePokerPots` and allow-list `projectPokerHand`. The ranking APIs above remain unchanged. Engine state/replay includes secret holes and deck order and must never be sent to clients. Production CSPRNG and database authority are API responsibilities. Injected fixture randomness is not a production proof source.
+
+Run `pnpm test:poker:harness` for the deterministic 1,000-hand regression, or append `--seed 874` to reproduce a single case. The generator lives outside runtime output. See [engine/room contract](../../docs/POKER_ROOMS.md) for action semantics, safe outcome fields, persistence boundaries and remaining admission/settlement gates.

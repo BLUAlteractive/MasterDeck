@@ -7,3 +7,5 @@ Changed: `packages/game-poker/src/pots.ts`, `pots.test.ts`, root exports, decisi
 Validation commands: targeted Vitest; `pnpm ci:quality` (commit gate). Hosted checks run on the stacked draft PR. Wallet settlement remains B022; B015 calculates allocations only. Next: B016 deterministic harness.
 
 Local gate passed: 165 cases in 24 files, formatting/lint/strict types and 11 builds. The six targeted allocation cases passed independently, including all 5,000 generated layouts.
+
+Hosted validation: [draft PR #14](https://github.com/BLUAlteractive/MasterDeck/pull/14), [CI run](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41005898089) — Quality checks and Dependency audit passed.

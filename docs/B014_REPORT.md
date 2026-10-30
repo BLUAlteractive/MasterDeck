@@ -9,3 +9,5 @@ Validation: `pnpm build:packages`; `pnpm exec vitest run packages/game-poker/src
 Risk: private state includes every hidden card and must never be sent to clients. Public seed disclosure remains R-11. Next: B015 side pots and splits.
 
 Local commit gate passed: `pnpm ci:quality` — 159 cases in 23 files, all lint/format/type checks and 11 builds. An initial internal mapped-type error was corrected before this successful run.
+
+Hosted validation: [draft PR #13](https://github.com/BLUAlteractive/MasterDeck/pull/13), [CI run](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41005766987) — Quality checks and Dependency audit passed.
