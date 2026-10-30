@@ -102,3 +102,10 @@ it('accepts an explicit safe resume envelope without discarding the pending key'
     acceptResume(r, { ...snapshot(), continuity: 'SNAPSHOT' }).pending,
   ).toBe(r.pending);
 });
+
+it('accepts settlement at the same hand version and never rolls it back', () => {
+  const before = acceptSnapshot(createReplica(gameId), snapshot());
+  const after = acceptSnapshot(before, { ...snapshot(), settled: true });
+  expect(after.snapshot!.settled).toBe(true);
+  expect(acceptSnapshot(after, snapshot())).toBe(after);
+});

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import type { ClassicAdmissionPolicy } from '../src/rooms/settlement';
 import { expect } from 'vitest';
 import { createDatabase, type PrismaClient } from '@deckforge/database';
 import { createApp } from '../src/app';
@@ -14,7 +15,9 @@ const apiRequire = createRequire(
 const { generateKeyPair, exportJWK, SignJWT } = (await import(
   apiRequire.resolve('jose')
 )) as typeof import('jose');
-export async function identityFixture() {
+export async function identityFixture(
+  policy: ClassicAdmissionPolicy | null = null,
+) {
   let db!: PrismaClient;
   let app!: Awaited<ReturnType<typeof createApp>>;
   let jwks!: Server;
@@ -99,7 +102,7 @@ export async function identityFixture() {
         jwksUrl: issuer + '/.well-known/jwks.json',
       }),
     );
-    app = await createApp([], auth);
+    app = await createApp([], auth, undefined, policy);
     await app.listen(0, '127.0.0.1');
     base = await app.getUrl();
     secondDb = createDatabase(url.toString());

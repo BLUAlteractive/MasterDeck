@@ -89,6 +89,8 @@ model User {
   starterGrant      StarterGrant?
   loadout           Loadout?
   collectionManager CollectionManager?
+  chipAccount       PlayChipAccount?
+  gameReservations  GameReservation[]
   lobbySeat         LobbySeat?
   gameParticipants  GameParticipant[]
   gameEvents        GameEvent[]
@@ -348,6 +350,9 @@ model GameRoom {
   turnTimeoutMs  Int               @default(30000)
   turnDeadline   DateTime?         @db.Timestamptz(3)
   createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  chipEscrow     PlayChipAccount?
+  admission      GameAdmission?
+  result         GameResult?
   participants   GameParticipant[]
   events         GameEvent[]
 }
@@ -407,4 +412,65 @@ model LobbySeat {
   user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([lobbyId, seat])
+}
+
+model PlayChipAccount {
+  id      String          @id @db.Uuid
+  kind    String
+  userId  String?         @unique @db.Uuid
+  roomId  String?         @unique @db.Uuid
+  balance BigInt          @default(0)
+  user    User?           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  room    GameRoom?       @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  entries PlayChipEntry[]
+}
+
+model PlayChipTransfer {
+  id          String          @id @db.Uuid
+  sourceKey   String          @unique
+  requestHash String
+  kind        String
+  operatorId  String
+  createdAt   DateTime        @default(now()) @db.Timestamptz(3)
+  entries     PlayChipEntry[]
+}
+
+model PlayChipEntry {
+  transferId String           @db.Uuid
+  accountId  String           @db.Uuid
+  amount     BigInt
+  transfer   PlayChipTransfer @relation(fields: [transferId], references: [id], onDelete: Restrict)
+  account    PlayChipAccount  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@id([transferId, accountId])
+  @@index([accountId, transferId])
+}
+
+model GameAdmission {
+  roomId         String            @id @db.Uuid
+  lobbyId        String            @unique @db.Uuid
+  buyIn          Int
+  policyVersion  String
+  policySnapshot Json
+  room           GameRoom          @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  reservations   GameReservation[]
+}
+
+model GameReservation {
+  roomId    String        @db.Uuid
+  userId    String        @db.Uuid
+  snapshot  Json
+  admission GameAdmission @relation(fields: [roomId], references: [roomId], onDelete: Restrict)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([roomId, userId])
+}
+
+model GameResult {
+  roomId         String   @id @db.Uuid
+  stateVersion   Int
+  rulesetVersion String
+  allocation     Json
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  room           GameRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
 }

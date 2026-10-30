@@ -52,11 +52,13 @@ function view(
   state: PokerHand,
   userId: string,
   deadline: Date | null,
+  settled = false,
 ) {
   return pokerRoomViewSchema.parse({
     gameId,
     view: projectPokerHand(state, userId),
     turnDeadline: deadline?.toISOString() ?? null,
+    settled,
   });
 }
 export class StaleRoomVersion extends ApiFailure {
@@ -70,6 +72,19 @@ export async function initializePokerRoom(
   config: PokerConfig,
   turnTimeoutMs = 30000,
 ) {
+  const id = await db.$transaction((tx) =>
+    initializePokerRoomTx(tx, config, turnTimeoutMs),
+  );
+  console.info(
+    JSON.stringify({ event: 'poker.room_initialized', status: 'ok' }),
+  );
+  return id;
+}
+export async function initializePokerRoomTx(
+  tx: Prisma.TransactionClient,
+  config: PokerConfig,
+  turnTimeoutMs = 30000,
+) {
   if (
     !Number.isInteger(turnTimeoutMs) ||
     turnTimeoutMs < 1000 ||
@@ -80,56 +95,50 @@ export async function initializePokerRoom(
     state = createPokerHand(config, deck),
     id = randomUUID(),
     initial = initSchema.parse({ config, deck });
-  await db.$transaction(async (tx) => {
-    for (const userId of config.players.map((p) => p.id).sort()) {
-      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id"=${userId}::uuid FOR UPDATE`;
-      if (
-        (await tx.user.findUnique({ where: { id: userId } }))?.status !==
-        'ACTIVE'
-      )
-        throw new ApiFailure('ROOM_UNAVAILABLE', 404);
-    }
-    const time = await now(tx),
-      turnDeadline =
-        state.street === 'COMPLETE'
-          ? null
-          : new Date(time.getTime() + turnTimeoutMs);
-    await tx.gameRoom.create({
-      data: {
-        id,
-        rulesetVersion: state.rulesetVersion,
-        stateVersion: 0,
-        status: state.street === 'COMPLETE' ? 'COMPLETE' : 'ACTIVE',
-        initial: json(initial),
-        snapshot: json(state),
-        commitment: hash(initial),
-        turnTimeoutMs,
-        turnDeadline,
-      },
-    });
-    await tx.gameParticipant.createMany({
-      data: config.players.map((p, seat) => ({
-        roomId: id,
-        userId: p.id,
-        seat,
-      })),
-    });
-    await tx.gameEvent.create({
-      data: {
-        id: randomUUID(),
-        roomId: id,
-        stateVersion: 0,
-        source: 'GENESIS',
-        command: { type: 'INITIALIZED' },
-        snapshot: json(state),
-        turnDeadline,
-        createdAt: time,
-      },
-    });
+  for (const userId of config.players.map((p) => p.id).sort()) {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id"=${userId}::uuid FOR UPDATE`;
+    if (
+      (await tx.user.findUnique({ where: { id: userId } }))?.status !== 'ACTIVE'
+    )
+      throw new ApiFailure('ROOM_UNAVAILABLE', 404);
+  }
+  const time = await now(tx),
+    turnDeadline =
+      state.street === 'COMPLETE'
+        ? null
+        : new Date(time.getTime() + turnTimeoutMs);
+  await tx.gameRoom.create({
+    data: {
+      id,
+      rulesetVersion: state.rulesetVersion,
+      stateVersion: 0,
+      status: state.street === 'COMPLETE' ? 'COMPLETE' : 'ACTIVE',
+      initial: json(initial),
+      snapshot: json(state),
+      commitment: hash(initial),
+      turnTimeoutMs,
+      turnDeadline,
+    },
   });
-  console.info(
-    JSON.stringify({ event: 'poker.room_initialized', status: 'ok' }),
-  );
+  await tx.gameParticipant.createMany({
+    data: config.players.map((p, seat) => ({
+      roomId: id,
+      userId: p.id,
+      seat,
+    })),
+  });
+  await tx.gameEvent.create({
+    data: {
+      id: randomUUID(),
+      roomId: id,
+      stateVersion: 0,
+      source: 'GENESIS',
+      command: { type: 'INITIALIZED' },
+      snapshot: json(state),
+      turnDeadline,
+      createdAt: time,
+    },
+  });
   return id;
 }
 export class PokerRoomService {
@@ -147,6 +156,10 @@ export class PokerRoomService {
       }))
     )
       throw new ApiFailure('ROOM_UNAVAILABLE', 404);
+  }
+  /** Trusted server transaction only; never serialize this private return value. */
+  async trustedState(tx: Prisma.TransactionClient, gameId: string) {
+    return (await this.load(tx, gameId)).state;
   }
   private requestHash(input: PokerRoomCommand) {
     return hash({
@@ -280,7 +293,11 @@ export class PokerRoomService {
     return this.database.$transaction(async (tx) => {
       await this.lock(tx, p, gameId);
       const { state, room } = await this.load(tx, gameId);
-      return view(gameId, state, p.userId, room.turnDeadline);
+      const settled = !!(await tx.gameResult.findUnique({
+        where: { roomId: gameId },
+        select: { roomId: true },
+      }));
+      return view(gameId, state, p.userId, room.turnDeadline, settled);
     });
   }
   async resume(p: Principal, body: unknown) {

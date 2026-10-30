@@ -131,6 +131,7 @@ export const pokerRoomViewSchema = z
     gameId: z.uuid(),
     view: pokerViewSchema,
     turnDeadline: z.iso.datetime().nullable(),
+    settled: z.boolean().default(false),
   })
   .strict();
 export const pokerCommandReceiptSchema = pokerRoomViewSchema
