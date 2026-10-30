@@ -143,7 +143,7 @@ For each of the 21 possible five-card combinations from seven dealt cards, calcu
 
 `Score = (CategoryIndex * 1000) + StandardTieValue(0..499) + CollectibleBonus(0..1200)`
 
-**CategoryIndex**: 0 High Card, 1 One Pair, 2 Two Pair, 3 Three of a Kind, 4 Straight, 5 Flush, 6 Full House, 7 Four of a Kind, 8 Straight Flush (royal flush is the highest straight flush). `StandardTieValue` is a monotone, **nondecreasing** 0–499 summary of the conventional within-category ordinal (including ace-low straight). Because a category may contain more than 500 distinct ranks, collisions are possible; in a complete numerical-score tie, compare exact conventional rank and then split if still equal. The 7,462 conventional five-card rank classes remain the oracle for Classic mode.
+**CategoryIndex**: 0 High Card, 1 One Pair, 2 Two Pair, 3 Three of a Kind, 4 Straight, 5 Flush, 6 Full House, 7 Four of a Kind, 8 Straight Flush (royal flush is the highest straight flush). `StandardTieValue` is a monotone, **nondecreasing** 0–499 summary of the conventional within-category ordinal (including ace-low straight). Because a category may contain more than 500 distinct ranks, collisions are possible; in a complete numerical-score tie, compare exact conventional rank and then split if still equal. The 7,462 conventional five-card rank classes remain the oracle for Classic mode. Owner-approved experimental Option A (30 October 2026) uses Straight values from five-high through ace-high of `0,56,112,168,225,281,337,393,450,499`; other categories use `floor(499 * ordinal / (classCount - 1))` over ascending exact within-category rank classes. Freeze this as `EVOLVED_A_EXPERIMENTAL_V1`; approval is for experimental implementation, not live admission or balance sign-off.
 
 **Bonus**, counting only owned *hole* instances included in that candidate hand:
 
@@ -154,7 +154,7 @@ For each of the 21 possible five-card combinations from seven dealt cards, calcu
 - Special defined same-series set event: +60 if a published, configured effect applies to **both included hole cards**.
 - Clamp total bonus at 1,200; all such values are configurable by ruleset version and must be immutable mid-match.
 
-Example: a Straight with base `4,460` and collectible bonus `1,040` scores **5,500**; a Flush with base `5,210` and no bonus scores **5,210**. That Straight wins in Evolved mode, but loses in Classic mode. Since a category spans 1,000 points and tiebreak values are ≤499, the maximum bonus allows at most a one-category upset; it cannot overcome a two-category deficit. **This is a proposed design requiring simulations and playtesting, not a proven balanced formula.**
+Example: a Straight with base `4,450` and collectible bonus `1,050` scores **5,500**; a Flush with base `5,210` and no bonus scores **5,210**. That Straight wins in Evolved mode, but loses in Classic mode. Since a category spans 1,000 points and tiebreak values are ≤499, the maximum bonus allows at most a one-category upset; it cannot overcome a two-category deficit. **This is a proposed design requiring simulations and playtesting, not a proven balanced formula.**
 
 The winner is the player with the maximum score across all candidate 5-card combinations. On equal Evolved score, compare conventional evaluated rank; on remaining equality, split the pot. Never use non-deterministic server/client floating-point computations: use integers. Tests must enumerate known poker hand cases and seeded simulations to confirm fairness. Each game response includes category, category tie rank, eligible owned IDs and a human-readable bonus breakdown.
 
@@ -366,7 +366,7 @@ interface GameRuleEngine<S, C, E> {
 }
 ```
 
-**Poker test vectors:** A-2-3-4-5 is a five-high straight; 10-J-Q-K-A one suit is royal flush; full house outranks flush; flush outranks straight in Classic; 7-card evaluator selects best five of seven; board-only ties split; folded player cannot win showdown; side-pot eligibility follows contribution. Evolved `4*1000+460+1040 = 5500` beats unpowered flush `5*1000+210 = 5210`. Evolved cannot beat hands two categories higher using a ≤1,200 bonus. Test equal evolved score fallback and all 21 combinations.
+**Poker test vectors:** A-2-3-4-5 is a five-high straight; 10-J-Q-K-A one suit is royal flush; full house outranks flush; flush outranks straight in Classic; 7-card evaluator selects best five of seven; board-only ties split; folded player cannot win showdown; side-pot eligibility follows contribution. Evolved `4*1000+450+1050 = 5500` beats unpowered flush `5*1000+210 = 5210`. Evolved cannot beat hands two categories higher using a ≤1,200 bonus. Test equal evolved score fallback and all 21 combinations.
 
 **Spades vectors:** if a player holds led suit they cannot discard another; a spade wins a trick when spades are broken or legally played, subject to configured trump rules; nil win/loss and bags score exactly once; no one can play a fourteenth card in a deal.
 

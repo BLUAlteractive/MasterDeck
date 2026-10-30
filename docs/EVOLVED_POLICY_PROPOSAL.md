@@ -1,6 +1,6 @@
 # Evolved scoring decision for B023–B026
 
-Status: **owner approval pending; no implementation or live enablement authorized by this proposal.** MASTER_SPEC §4.4 is explicitly a balancing proposal. AGENTS requires product-owner approval for scoring choices; R-10 leaves exact tie mapping and set effects open.
+Status: **Option A explicitly approved by the product owner on 30 October 2026 (reply: “A”). Experimental implementation of B023–B026 is authorized; live Evolved admission remains disabled pending balancing review.** MASTER_SPEC §4.4 is explicitly a balancing proposal. AGENTS requires product-owner approval for scoring choices; R-10 leaves exact tie mapping and set effects open.
 
 Two concrete inconsistencies require a choice before implementing a versioned default:
 
@@ -9,7 +9,7 @@ Two concrete inconsistencies require a choice before implementing a versioned de
 
 **Option A — preserve the ticket's attainable 5,500 example (recommended for review).**
 
-- Use versioned explicit monotone tables. For Straights from five-high through ace-high, use `0,56,112,168,225,281,337,393,450,499`. Use uniform floor quantization for other categories, ordered by the exact conventional rank classes. This is a proposed new curve, not an approved default.
+- Use versioned explicit monotone tables. For Straights from five-high through ace-high, use `0,56,112,168,225,281,337,393,450,499`. Use uniform floor quantization for other categories, ordered by the exact conventional rank classes. This is the approved experimental curve; it is not a launch approval.
 - Correct the explanatory fixture to a king-high Straight: base 4,450 plus bonus 1,050 = **5,500**. Included holes at levels six/five contribute 630, two Legendary instances contribute 240, matching earned style adds 120 and a configured published same-series effect adds 60. Purchased skins and unused holes/board never contribute. A neutral Flush with tie value 210 scores 5,210. These are candidate rank vectors; a real multi-player fixture must additionally share one valid board/deck.
 - Explicitly configure the same-series effect by version and earned series eligibility; no effect is invented or activated for production. Use fixture-only effects until publication and balancing review.
 
@@ -21,4 +21,4 @@ Both options preserve Classic's exact 7,462-class oracle, the 1,200 cap, all 21 
 
 B023 will implement the selected immutable policy and validate candidate ownership/face/earned metadata. B024 will expose complete accessible explanations. B025 will isolate modes and ruleset versions; live admission stays disabled until policy and balancing review. B026 will produce repeatable diagnostic evidence, not assert fairness from a single aggregate win rate.
 
-Approval should identify A or B, whether the revised fixture is accepted, and the policy's experimental-only status. No answer has been inferred from a generic request to continue.
+The explicit “A” reply approves Option A, the corrected fixture and the experimental-only scope presented above. Option B remains a rejected alternative; prior pending status is superseded.

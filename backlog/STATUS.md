@@ -30,6 +30,8 @@
 
 | B028 — Spades scoring | Implementation and validation in report | [B028 report](../docs/B028_REPORT.md) | Explicit required policy; launch rules approval, realtime and device acceptance remain open. |
 
-| B023–B026 — Evolved scoring, explanations, modes and simulation | Awaiting product-owner scoring decision; not implemented | [Policy options](../docs/EVOLVED_POLICY_PROPOSAL.md), [batch report](../docs/NEXT_TEN_REPORT.md) | Resolve unattainable numeric example and exact rank mapping before code; live Evolved stays disabled. |
+| B023–B026 — Evolved scoring, explanations, modes and simulation | Option A approved; implementation underway | [Policy options](../docs/EVOLVED_POLICY_PROPOSAL.md), [batch report](../docs/NEXT_TEN_REPORT.md) | Owner selected Option A; live Evolved stays disabled pending balance review. |
+
+| B023 — Evolved scoring engine | Experimental Option A implemented; validation in report | [B023 report](../docs/B023_REPORT.md) | Live Evolved remains disabled pending balancing review. |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
