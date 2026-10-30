@@ -120,3 +120,7 @@ export const tournamentDisputeSchema = tournamentCommandSchema
 export const tournamentDisputeReceiptSchema = z
   .object({ id: z.uuid(), recorded: z.literal(true) })
   .strict();
+export const tournamentIdSchema = z.uuid();
+export const tournamentRegistrationReceiptSchema = z
+  .object({ seed: z.number().int().min(1).max(32) })
+  .strict();

@@ -1,4 +1,17 @@
-import { Text, View } from 'react-native';
+import { Text as NativeText, View } from 'react-native';
+import type { ComponentProps } from 'react';
+import { shellTheme } from '@deckforge/ui';
+function Text(props: ComponentProps<typeof NativeText>) {
+  return (
+    <NativeText
+      {...props}
+      style={[
+        { color: shellTheme.text, fontSize: 16, lineHeight: 24 },
+        props.style,
+      ]}
+    />
+  );
+}
 import {
   pokerRulesVersions,
   type PokerMode,
@@ -38,18 +51,25 @@ export function PokerMatchScreen({
             Hand phase: {view.street}. State version: {view.stateVersion}.
           </Text>
           <Text>
+            Blinds: {view.smallBlind}/{view.bigBlind} earned Play Chips. Current
+            bet: {view.currentBet}.
+          </Text>
+          <Text>
             Board:{' '}
             {view.board.length
               ? view.board.map((face) => getFace(face).label).join(', ')
               : 'not dealt yet'}
             .
           </Text>
-          {view.players.map((player) => (
+          {view.players.map((player, seat) => (
             <Text key={player.id}>
+              Seat {seat + 1}
+              {view.dealer === seat ? ' (dealer)' : ''}:
               {player.hole
                 ? player.hole.map((face) => getFace(face).label).join(', ')
                 : 'Hidden cards'}
-              . Play Chips: {player.stack}. {player.folded ? 'Folded.' : ''}
+              . Play Chips: {player.stack}. Committed: {player.committed}.
+              Street bet: {player.streetBet}. {player.folded ? 'Folded.' : ''}
             </Text>
           ))}
         </>

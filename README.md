@@ -1,6 +1,6 @@
 # DeckForge
 
-A collectible playing-card platform in incremental development. The repository now includes reusable Classic/Evolved poker and Spades engines, authenticated room and inventory infrastructure, collection screens, private Spades admission/rematches, and preview-bound five-card fusion with a confirmation UI. Live rules/economy activation requires reviewed server configuration; the default local app remains an artwork preview without an identity connection. Evolved play, real purchases and activity/location integrations remain gated or unimplemented. DeckForge remains a working title.
+A collectible playing-card platform in incremental development. The repository now includes reusable Classic/Evolved poker and Spades engines, authenticated room and inventory infrastructure, collection screens, private Spades admission/rematches, and preview-bound five-card fusion with a confirmation UI. B034–B043 add native activity read adapters, verified progression/missions, nonwalking quest proofs, separate restricted wallets, gated cosmetic purchase verification/refund recovery, and an initial scheduled tournament flow. See [the ten-ticket report](docs/NEXT_TEN_ACTIVITY_COMMERCE_TOURNAMENT_REPORT.md) for evidence and remaining acceptance gates. Live rules/economy activation requires reviewed server configuration; the default local app remains an artwork preview without an identity connection. Evolved play, real purchases, trusted activity reward ingestion and location integrations remain gated or unimplemented. DeckForge remains a working title.
 
 ## Prerequisites
 
@@ -83,9 +83,9 @@ GitHub Actions configuration is implemented in **B002**. Run `pnpm ci:quality`, 
 ```text
 apps/mobile/          Expo + React Native shell (also exports to web)
 apps/admin/           Next.js future administration shell
-services/api/         NestJS public liveness endpoint
+services/api/         NestJS authenticated authoritative services plus public liveness
 services/jobs/        Node worker lifecycle shell
-packages/game-core/   Pure shared engine boundary (no rules yet)
+packages/game-core/   Pure canonical faces, shuffle and reusable tournament bracket functions
 packages/game-poker/  Pure Classic five-card ranking and best-five-of-seven selection
 packages/game-spades/ Pure Spades rules, scoring and safe recipient projections
 packages/card-domain/ Pure collection/evolution boundary
