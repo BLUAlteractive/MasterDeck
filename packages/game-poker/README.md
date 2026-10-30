@@ -1,6 +1,6 @@
-# Classic poker ranking — B012/B013
+# Classic poker engine — B012–B018
 
-`@deckforge/game-poker` provides exact five-card ranking and best-five-of-seven selection using canonical face IDs from `@deckforge/game-core`. It is pure TypeScript with no UI, network, database, randomness, ownership or rarity input. A future server actor must establish the dealt faces and authority; a client result never authorizes settlement or rewards.
+`@deckforge/game-poker` provides exact five-card ranking, best-five-of-seven selection and a pure Classic hand lifecycle using canonical face IDs from `@deckforge/game-core`. Ranking accepts faces only; lifecycle functions accept server-established seats, chips and a canonical deck or injected bounded random source. The package has no UI, network or database dependencies and no production random source of its own. B018’s API actor establishes dealt faces and authority; a client result never authorizes settlement or rewards.
 
 ```ts
 import {

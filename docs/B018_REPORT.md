@@ -37,3 +37,5 @@ Next smallest ticket: **B019 — Matchmaking and private rooms** (subject to rea
 Implementation commit `006eb8c`; [draft PR #17](https://github.com/BLUAlteractive/MasterDeck/pull/17) tracks both required hosted checks. A final test strengthening observes both PostgreSQL lock waiters explicitly, rather than relying on elapsed time alone. The compiled package consumer smoke passed CSPRNG deal, terminal allocation/conservation and safe projection exports.
 
 Final strengthened-lock rerun passed all 62 DB cases before and after rollback/reset/reseed again. Final test types, focused lint, repository formatting and whitespace checks passed.
+
+Hosted implementation validation passed both required jobs on [CI run 41007444203](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41007444203) for `006eb8c`. Current branch checks remain visible on PR #17, including the strengthened test and final documentation.

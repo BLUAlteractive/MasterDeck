@@ -23,7 +23,7 @@ Each PR is based on its predecessor, starting with B013. Review/merge in depende
 - Dependency audit passed high/critical policy; one inherited low advisory remains.
 - Compiled package consumer smoke passed real exported CSPRNG-deal/reducer/allocation/projection APIs.
 - Existing API health `ok`; restored local Expo web at **HTTP 200**, port 8081. No live browser visual, native compilation, physical-device or real-provider claim.
-- Hosted Quality checks and Dependency audit passed for B014–B017: [B014](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41005766987), [B015](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41005898089), [B016](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41006041569), [B017](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41006265461). Current B018 hosted evidence is on [PR #17 checks](https://github.com/BLUAlteractive/MasterDeck/pull/17/checks).
+- Hosted Quality checks and Dependency audit passed for B014–B017: [B014](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41005766987), [B015](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41005898089), [B016](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41006041569), [B017](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41006265461). B018 implementation also passed both jobs on [run 41007444203](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41007444203); current B018 hosted evidence is on [PR #17 checks](https://github.com/BLUAlteractive/MasterDeck/pull/17/checks).
 
 ## Commands executed
 
@@ -56,7 +56,7 @@ The guarded DB command internally runs Prisma validate/generate/deploy/status/se
 
 Installation: `pnpm install --offline --ignore-scripts` first required noninteractive mode; `CI=true pnpm install --offline --ignore-scripts --no-frozen-lockfile` found a missing cached pinned tarball. Successful authorized network restoration: `CI=true pnpm install --ignore-scripts --no-frozen-lockfile`. The lockfile adds only two workspace links to the API; no external package version was changed. Prisma cache access and local test/tsx listeners needed sandbox escalation; no rejected approval remains.
 
-Git/GitHub: five `git switch -c codex/...` branches, explicit-path `git add`, five implementation commits, `git push -u origin <branch>`, five `gh pr create --draft --base <previous-branch> --head <branch> --body-file <ticket-report>`, `gh pr checks`, `gh run list` and artifact attachment for each PR. Final evidence is committed/pushed on B018. No merge/admin bypass/deploy command.
+Git/GitHub: five `git switch -c codex/...` branches, explicit-path `git add`, five implementation commits, `git push -u origin <branch>`, five `gh pr create --draft --base <previous-branch> --head <branch> --body-file <ticket-report>`, `gh pr checks`, `gh run list`, `gh pr edit --body-file <concise-final-description>` and artifact attachment for each PR. Final evidence is committed/pushed on B018. No merge/admin bypass/deploy command.
 
 Readiness/consumer checks: filtered package `node -e` loads actual compiled exports, creates a CSPRNG hand, advances it to completion, asserts conservation and rejects private projection keys; `curl` checks API health and web HTTP status. Web initially had no listener after relinking; `pnpm dev:web` restored it, logged at `/tmp/deckforge-b018-web.log`.
 
