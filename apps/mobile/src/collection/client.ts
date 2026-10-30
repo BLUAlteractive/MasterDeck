@@ -1,5 +1,11 @@
+import { watchSpades } from '../play/spades-watch';
 import {
   privateCardsSchema,
+  spadesRoomViewSchema,
+  spadesCommandSchema,
+  spadesReceiptSchema,
+  type SpadesCommand,
+  type SpadesRoomView,
   lobbyResultSchema,
   gameStartSchema,
   gameStartResponseSchema,
@@ -80,6 +86,33 @@ export function createCollectionClient(
   }
 
   return {
+    watchSpades(
+      gameId: string,
+      receive: (view: SpadesRoomView) => void,
+      status: (connected: boolean) => void,
+    ) {
+      return watchSpades(prefix, getAccessToken, gameId, receive, status);
+    },
+    async spadesGame(gameId: string, signal?: AbortSignal) {
+      return spadesRoomViewSchema.parse(
+        await request(
+          '/v1/games/' + encodeURIComponent(gameId),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async spadesCommand(command: SpadesCommand, signal?: AbortSignal) {
+      return spadesReceiptSchema.parse(
+        await request(
+          '/v1/games/commands',
+          'POST',
+          spadesCommandSchema.parse(command),
+          signal,
+        ),
+      );
+    },
     async startGame(lobbyId: string, commandId: string, signal?: AbortSignal) {
       return gameStartResponseSchema.parse(
         await request(
