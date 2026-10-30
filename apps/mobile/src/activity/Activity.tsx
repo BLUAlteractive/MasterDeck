@@ -1,10 +1,18 @@
+import { AccessibleQuests } from './AccessibleQuests';
+import type { CollectionClient } from '../collection/client';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, AppState } from 'react-native';
 import { shellTheme } from '@deckforge/ui';
 import { Action } from '../collection/controls';
 import { deviceHealth } from './native';
 import { reviewActivity } from './bridge';
-export function Activity() {
+export function Activity({
+  client,
+  makeId,
+}: {
+  client: CollectionClient | null;
+  makeId: () => string;
+}) {
   const [status, setStatus] = useState('NOT_REQUESTED'),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false);
@@ -101,6 +109,7 @@ export function Activity() {
       <Text style={{ color: shellTheme.text }} accessibilityLiveRegion="polite">
         {notice}
       </Text>
+      <AccessibleQuests client={client} makeId={makeId} />
     </ScrollView>
   );
 }

@@ -20,6 +20,7 @@ export async function identityFixture(
   policy: ClassicAdmissionPolicy | null = null,
   spadesPolicy: SpadesPolicy | null = null,
   fusionPolicy: FusionPolicy | null = null,
+  features: NonNullable<Parameters<typeof createApp>[6]> = {},
 ) {
   let db!: PrismaClient;
   let app!: Awaited<ReturnType<typeof createApp>>;
@@ -112,6 +113,7 @@ export async function identityFixture(
       policy,
       spadesPolicy,
       fusionPolicy,
+      features,
     );
     await app.listen(0, '127.0.0.1');
     base = await app.getUrl();

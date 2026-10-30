@@ -74,36 +74,38 @@ enum OwnershipAction {
 }
 
 model User {
-  id                 String              @id @default(uuid()) @db.Uuid
-  status             UserStatus          @default(ACTIVE)
-  role               UserRole            @default(PLAYER)
-  isGuest            Boolean             @default(true)
-  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime            @updatedAt @db.Timestamptz(3)
-  identities         ExternalIdentity[]
-  cards              CardInstance[]
-  events             OwnershipEvent[]
-  operations         OperationRecord[]
-  authAudit          AuthAudit[]
-  deletionRequest    DeletionRequest?
-  starterGrant       StarterGrant?
-  loadout            Loadout?
-  collectionManager  CollectionManager?
-  chipAccount        PlayChipAccount?
-  gameReservations   GameReservation[]
-  lobbySeat          LobbySeat?
-  gameParticipants   GameParticipant[]
-  gameEvents         GameEvent[]
-  spadesSeats        SpadesSeat[]
-  spadesEvents       SpadesEvent[]
-  spadesReservations SpadesReservation[]
-  tableMessages      TableMessage[]
-  fusionPreviews     FusionPreview[]
-  fusionJobs         FusionJob[]
-  progressEvents     ProgressEvent[]
-  progressCounters   ProgressCounter[]
-  progressAwards     ProgressAward[]
-  restrictedAccounts RestrictedAccount[]
+  id                    String                      @id @default(uuid()) @db.Uuid
+  status                UserStatus                  @default(ACTIVE)
+  role                  UserRole                    @default(PLAYER)
+  isGuest               Boolean                     @default(true)
+  createdAt             DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime                    @updatedAt @db.Timestamptz(3)
+  identities            ExternalIdentity[]
+  cards                 CardInstance[]
+  events                OwnershipEvent[]
+  operations            OperationRecord[]
+  authAudit             AuthAudit[]
+  deletionRequest       DeletionRequest?
+  starterGrant          StarterGrant?
+  loadout               Loadout?
+  collectionManager     CollectionManager?
+  chipAccount           PlayChipAccount?
+  gameReservations      GameReservation[]
+  lobbySeat             LobbySeat?
+  gameParticipants      GameParticipant[]
+  gameEvents            GameEvent[]
+  spadesSeats           SpadesSeat[]
+  spadesEvents          SpadesEvent[]
+  spadesReservations    SpadesReservation[]
+  tableMessages         TableMessage[]
+  fusionPreviews        FusionPreview[]
+  fusionJobs            FusionJob[]
+  progressEvents        ProgressEvent[]
+  progressCounters      ProgressCounter[]
+  progressAwards        ProgressAward[]
+  restrictedAccounts    RestrictedAccount[]
+  accessibleEnrollments AccessibleQuestEnrollment[]
+  accessibleFacts       AccessibleQuestFact[]
 }
 
 model ExternalIdentity {
@@ -636,27 +638,29 @@ model ProgressSource {
 }
 
 model ProgressEvent {
-  id           String                @id @db.Uuid
-  sourceKey    String
-  userId       String                @db.Uuid
-  kind         String
-  occurredAt   DateTime              @db.Timestamptz(3)
-  source       ProgressSource        @relation(fields: [sourceKey], references: [key], onDelete: Restrict)
-  user         User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
-  consumptions ProgressConsumption[]
+  id             String                @id @db.Uuid
+  sourceKey      String
+  userId         String                @db.Uuid
+  kind           String
+  occurredAt     DateTime              @db.Timestamptz(3)
+  source         ProgressSource        @relation(fields: [sourceKey], references: [key], onDelete: Restrict)
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  consumptions   ProgressConsumption[]
+  accessibleFact AccessibleQuestFact?
 
   @@unique([sourceKey, userId, kind])
   @@index([userId, occurredAt, id])
 }
 
 model ProgressGoal {
-  id           String                @id
-  definition   Json
-  policyHash   String
-  createdAt    DateTime              @default(now()) @db.Timestamptz(3)
-  counters     ProgressCounter[]
-  consumptions ProgressConsumption[]
-  awards       ProgressAward[]
+  id                    String                      @id
+  definition            Json
+  policyHash            String
+  createdAt             DateTime                    @default(now()) @db.Timestamptz(3)
+  counters              ProgressCounter[]
+  consumptions          ProgressConsumption[]
+  awards                ProgressAward[]
+  accessibleEnrollments AccessibleQuestEnrollment[]
 }
 
 model ProgressCounter {
@@ -706,16 +710,17 @@ model RestrictedAccount {
 }
 
 model RestrictedTransfer {
-  id             String            @id @db.Uuid
-  sourceKey      String            @unique
-  requestHash    String
-  currency       String
-  purpose        String
-  operatorId     String
-  proofReference String
-  policyVersion  String
-  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
-  entries        RestrictedEntry[]
+  id                   String                     @id @db.Uuid
+  sourceKey            String                     @unique
+  requestHash          String
+  currency             String
+  purpose              String
+  operatorId           String
+  proofReference       String
+  policyVersion        String
+  createdAt            DateTime                   @default(now()) @db.Timestamptz(3)
+  entries              RestrictedEntry[]
+  accessibleCompletion AccessibleQuestCompletion?
 }
 
 model RestrictedEntry {
@@ -727,4 +732,45 @@ model RestrictedEntry {
 
   @@id([transferId, accountId])
   @@index([accountId, transferId])
+}
+
+model AccessibleQuestEnrollment {
+  id         String                     @id @db.Uuid
+  userId     String                     @db.Uuid
+  goalId     String
+  windowKey  String
+  definition Json
+  policy     Json
+  startedAt  DateTime                   @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime                   @db.Timestamptz(3)
+  status     String                     @default("ACTIVE")
+  version    Int                        @default(1)
+  user       User                       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  facts      AccessibleQuestFact[]
+  completion AccessibleQuestCompletion?
+  goal       ProgressGoal               @relation(fields: [goalId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, goalId, windowKey])
+}
+
+model AccessibleQuestFact {
+  userId       String                    @db.Uuid
+  sourceKey    String
+  eventId      String                    @unique @db.Uuid
+  enrollmentId String                    @db.Uuid
+  user         User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  enrollment   AccessibleQuestEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  event        ProgressEvent             @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  @@id([userId, sourceKey])
+}
+
+model AccessibleQuestCompletion {
+  id           String                    @id @db.Uuid
+  enrollmentId String                    @unique @db.Uuid
+  transferId   String                    @unique @db.Uuid
+  receipt      Json
+  completedAt  DateTime                  @default(now()) @db.Timestamptz(3)
+  enrollment   AccessibleQuestEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  transfer     RestrictedTransfer        @relation(fields: [transferId], references: [id], onDelete: Restrict)
 }

@@ -1,6 +1,11 @@
 import { watchSpades } from '../play/spades-watch';
 import {
   privateCardsSchema,
+  accessibleViewSchema,
+  accessibleStartResponseSchema,
+  accessibleReceiptSchema,
+  accessibleStartSchema,
+  accessibleCommandSchema,
   fusionPolicyResponseSchema,
   fusionSelectionSchema,
   fusionPreviewSchema,
@@ -94,6 +99,50 @@ export function createCollectionClient(
   }
 
   return {
+    async accessibleQuests(signal?: AbortSignal) {
+      return accessibleViewSchema.parse(
+        await request('/v1/accessibility/quests', 'GET', undefined, signal),
+      );
+    },
+    async startAccessible(
+      command: { goalId: string; commandId: string },
+      signal?: AbortSignal,
+    ) {
+      return accessibleStartResponseSchema.parse(
+        await request(
+          '/v1/accessibility/quests/start',
+          'POST',
+          accessibleStartSchema.parse(command),
+          signal,
+        ),
+      );
+    },
+    async claimAccessible(
+      command: { enrollmentId: string; commandId: string },
+      signal?: AbortSignal,
+    ) {
+      return accessibleReceiptSchema.parse(
+        await request(
+          '/v1/accessibility/quests/claim',
+          'POST',
+          accessibleCommandSchema.parse(command),
+          signal,
+        ),
+      );
+    },
+    async cancelAccessible(
+      command: { enrollmentId: string; commandId: string },
+      signal?: AbortSignal,
+    ) {
+      return accessibleStartResponseSchema.parse(
+        await request(
+          '/v1/accessibility/quests/cancel',
+          'POST',
+          accessibleCommandSchema.parse(command),
+          signal,
+        ),
+      );
+    },
     async fusionPolicy(signal?: AbortSignal) {
       return fusionPolicyResponseSchema.parse(
         await request('/v1/fusion/policy', 'GET', undefined, signal),

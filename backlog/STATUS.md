@@ -59,3 +59,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B037 — Missions & seasons | Published-window projector and validation in report | [B037 report](../docs/B037_REPORT.md) | Durable prestige rewards implemented; reviewed launch content, season calendar and economic reward adapters remain gated. |
 
 | B038 — Wallet restrictions | Implemented and validated | [B038 report](../docs/B038_REPORT.md) | One canonical three-balance boundary; trusted activity/quest/billing verification and reviewed economy activation remain feature gates. B060 must reuse this persistence. |
+
+| B035 — Accessibility movement alternatives | Nonwalking enrollment/credit/proof path implemented and validated | [B035 report](../docs/B035_REPORT.md) | Full fair functional Press acceptance awaits reviewed equivalence policy and B068/B069 single-job proof consumption; no fake steps or card upgrade claimed. |
