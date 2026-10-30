@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["DeckForgeHealthModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.deckforgehealth.DeckForgeHealthModule"]
+  }
+}

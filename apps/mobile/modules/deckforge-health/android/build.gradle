@@ -1,0 +1,6 @@
+apply plugin: 'com.android.library'
+apply plugin: 'expo-module-gradle-plugin'
+group = 'expo.modules.deckforgehealth'
+version = '0.0.1'
+android { namespace 'expo.modules.deckforgehealth'; defaultConfig { minSdkVersion 26 } }
+dependencies { implementation 'androidx.health.connect:connect-client:1.1.0' }
