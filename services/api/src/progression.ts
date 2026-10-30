@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { randomUUID } from 'node:crypto';
-import { advanceProgress } from '@deckforge/card-domain';
+import { advanceProgress, progressWindow } from '@deckforge/card-domain';
 import {
   allocatePokerPots,
   evaluateSevenCardHand,
@@ -11,6 +11,7 @@ import {
   progressionPolicySchema,
   progressGoalSchema,
   progressViewSchema,
+  missionsViewSchema,
   type ProgressionPolicy,
   type ProgressGoal,
 } from '@deckforge/contracts';
@@ -26,10 +27,11 @@ export async function applyProgressGoal(
   userId: string,
   goalId: string,
   goal: ProgressGoal,
-  event: { id: string; kind: string },
-  windowKey = 'lifetime',
+  event: { id: string; kind: string; occurredAt: Date },
 ) {
   if (event.kind !== goal.kind) return;
+  const windowKey = progressWindow(goal, event.occurredAt);
+  if (windowKey === null) return;
   const key = { userId, goalId, windowKey };
   const counter = await tx.progressCounter.findUnique({
     where: { userId_goalId_windowKey: key },
@@ -179,14 +181,18 @@ export class ProgressionService {
             });
             for (const goal of policy.goals) {
               const goalId = policy.version + ':' + goal.id;
-              const existing = await tx.progressGoal.upsert({
+              await tx.progressGoal.createMany({
+                data: [
+                  {
+                    id: goalId,
+                    definition: json(goal),
+                    policyHash: hash(policy),
+                  },
+                ],
+                skipDuplicates: true,
+              });
+              const existing = await tx.progressGoal.findUniqueOrThrow({
                 where: { id: goalId },
-                create: {
-                  id: goalId,
-                  definition: json(goal),
-                  policyHash: hash(policy),
-                },
-                update: {},
               });
               if (existing.policyHash !== hash(policy))
                 throw new ApiFailure('PROGRESSION_POLICY_CHANGED', 409);
@@ -225,6 +231,73 @@ export class ProgressionService {
           );
         }
       }
+  }
+  async recoverGoals(stopping: () => boolean = () => false) {
+    if (!this.policy) return;
+    const policy = progressionPolicySchema.parse(this.policy);
+    for (const goal of policy.goals) {
+      if (stopping()) return;
+      const goalId = policy.version + ':' + goal.id;
+      await this.db.progressGoal.createMany({
+        data: [
+          { id: goalId, definition: json(goal), policyHash: hash(policy) },
+        ],
+        skipDuplicates: true,
+      });
+      const stored = await this.db.progressGoal.findUniqueOrThrow({
+        where: { id: goalId },
+      });
+      if (stored.policyHash !== hash(policy))
+        throw new ApiFailure('PROGRESSION_POLICY_CHANGED', 409);
+      const rows = await this.db.$queryRaw<
+        { id: string; userId: string; kind: string; occurredAt: Date }[]
+      >`SELECT e."id",e."userId",e."kind",e."occurredAt" FROM "ProgressEvent" e JOIN "ProgressSource" s ON s."key"=e."sourceKey" JOIN "ProgressGoal" g ON g."id"=${goalId} WHERE e."kind"=${goal.kind} AND (s."policy"->>'requirePermanent')::boolean=${policy.requirePermanent} AND (s."policy"->>'minimumOpponents')::integer=${policy.minimumOpponents} AND (s."policy"->>'minimumPlayerCommands')::integer=${policy.minimumPlayerCommands} AND progress_window(g."definition",e."occurredAt") IS NOT NULL AND NOT EXISTS(SELECT 1 FROM "ProgressConsumption" c WHERE c."eventId"=e."id" AND c."goalId"=g."id" AND c."windowKey"=progress_window(g."definition",e."occurredAt")) AND NOT EXISTS(SELECT 1 FROM "ProgressAward" a WHERE a."userId"=e."userId" AND a."goalId"=g."id" AND a."windowKey"=progress_window(g."definition",e."occurredAt")) ORDER BY e."occurredAt",e."id" LIMIT 100`;
+      for (const event of rows) {
+        if (stopping()) return;
+        await this.db.$transaction(async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id"=${event.userId}::uuid FOR UPDATE`;
+          if (
+            (await tx.user.findUniqueOrThrow({ where: { id: event.userId } }))
+              .status !== 'ACTIVE'
+          )
+            return;
+          await applyProgressGoal(tx, event.userId, goalId, goal, event);
+        });
+      }
+    }
+  }
+  async missions(p: Principal) {
+    return this.db.$transaction(async (tx) => {
+      await lockPrincipal(tx, p);
+      const [clock] = await tx.$queryRaw<
+        { now: Date }[]
+      >`SELECT clock_timestamp() AS now`;
+      const at = clock!.now,
+        missions = [];
+      for (const goal of this.policy?.goals ?? []) {
+        if (goal.window === 'LIFETIME') continue;
+        const windowKey = progressWindow(goal, at);
+        if (windowKey === null) continue;
+        const goalId = this.policy!.version + ':' + goal.id;
+        const counter = await tx.progressCounter.findUnique({
+          where: {
+            userId_goalId_windowKey: { userId: p.userId, goalId, windowKey },
+          },
+        });
+        missions.push({
+          goalId,
+          definition: goal,
+          windowKey,
+          progress: counter?.count ?? 0,
+          completed: (counter?.count ?? 0) >= goal.target,
+        });
+      }
+      return missionsViewSchema.parse({
+        available: this.policy !== null,
+        asOf: at.toISOString(),
+        missions,
+      });
+    });
   }
   async view(p: Principal) {
     return this.db.$transaction(async (tx) => {
@@ -269,6 +342,7 @@ export function startProgressWorker(service: ProgressionService) {
     if (closed || running) return;
     running = service
       .recover(() => closed)
+      .then(() => service.recoverGoals(() => closed))
       .catch(() => {
         console.warn(
           JSON.stringify({ event: 'progression.worker', status: 'retry' }),
@@ -293,6 +367,12 @@ export class ProgressionController {
     @Inject('AUTH_SERVICE') readonly auth: AuthService | null,
     @Inject('PROGRESSION_POLICY') readonly policy: ProgressionPolicy | null,
   ) {}
+  @Get('missions') async missions(@Req() req: Request) {
+    if (!this.auth) throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
+    return new ProgressionService(this.auth.database, this.policy).missions(
+      await this.auth.authenticate(req.headers.authorization),
+    );
+  }
   @Get() async view(@Req() req: Request) {
     if (!this.auth) throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
     return new ProgressionService(this.auth.database, this.policy).view(
