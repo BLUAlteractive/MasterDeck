@@ -71,3 +71,5 @@ export function getFace(id: string): CardFace {
   if (!face) throw new Error('Invalid canonical face identity.');
   return face;
 }
+
+export { shuffleFaces, validateDeck } from './deck';
