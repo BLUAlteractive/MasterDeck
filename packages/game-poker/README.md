@@ -1,6 +1,6 @@
-# Classic five-card poker — B012
+# Classic poker ranking — B012/B013
 
-`@deckforge/game-poker` evaluates exactly five distinct canonical face IDs from `@deckforge/game-core`. It is pure TypeScript with no UI, network, database, randomness, ownership or rarity input. A future server actor must establish the dealt faces and authority; a client result never authorizes settlement or rewards.
+`@deckforge/game-poker` provides exact five-card ranking and best-five-of-seven selection using canonical face IDs from `@deckforge/game-core`. It is pure TypeScript with no UI, network, database, randomness, ownership or rarity input. A future server actor must establish the dealt faces and authority; a client result never authorizes settlement or rewards.
 
 ```ts
 import {
@@ -70,6 +70,39 @@ The disjoint physical-hand frequencies match [Treibergs' University of Utah comb
 
 The forty straight flushes include four royal flushes. Category counts alone are not sufficient proof of kicker correctness; the independent full-vector and rank-order comparisons supply that additional evidence. This is an independently implemented local oracle, not certification by an external evaluator vendor.
 
+## Best five of seven — B013
+
+```ts
+import {
+  evaluateSevenCardHand,
+  compareSevenCardHands,
+} from '@deckforge/game-poker';
+
+const result = evaluateSevenCardHand([
+  'A-S',
+  'A-H',
+  'A-D',
+  'A-C',
+  'K-S',
+  'K-H',
+  'K-D',
+]);
+// result.rank: FOUR_OF_A_KIND, tiebreak [14, 13]
+// result.bestFives: three equivalent selections, one for each available king kicker.
+```
+
+`evaluateSevenCardHand` requires exactly seven distinct canonical IDs and evaluates every one of the 21 five-card subsets with the B012 evaluator. It returns `{rank, bestFives}`. Each five-card selection and every enclosing output layer is frozen. All equally best Classic selections are retained, with cards/subsets ordered by the shared canonical face order. Reordering input leaves the complete result unchanged. That stable display order gives no suit a winning rank; `compareSevenCardHands` returns 1, -1 or 0 solely from exact conventional strength, ignoring unused sixth/seventh cards.
+
+The [Hold'em rules](https://www.pokerstars.com/poker/learn/lesson/texas-holdem-rules/?scroll=null) permit the best five from the available seven; this helper imposes no hole-card quota. Its tests include board-only play and using one or both hole cards. This is not an Omaha evaluator. Shared board cards across two comparison operands are valid, while each operand must independently contain seven unique faces. The server's later dealing/room layer owns physical table-wide uniqueness, card visibility and player eligibility.
+
+Invalid lengths (including five/six/eight), unknown IDs, duplicate faces, sparse arrays and forged card objects raise `InvalidSevenCardHand` / `INVALID_SEVEN_CARD_HAND` with a fixed message. All seven faces are validated before selecting a winner, even when a royal flush is already present. B012's five-card exports, error contract and algorithm are unchanged; the implementation moved byte-for-byte to `src/five.ts` behind the same package root exports, avoiding a circular import with `src/seven.ts`.
+
+`bestFives` contains only the conventional winners. **B023 must still score all 21 candidates for Evolved**, including candidates below the Classic maximum; it must not add bonuses to one arbitrary representative or assume all returned choices use the same personal hole cards. B017/B020 own explanations and authorized per-viewer projections; this internal result is not a room broadcast payload. No cards are dealt, events emitted or chips split by either comparison helper.
+
+Run `pnpm test:poker:seven`. B013's test-only direct reference classifies each seven-card hand directly from its rank/suit counts, without calling B012 or the production seven-card routine. On 50,000 deterministic fixture seeds, tests require the full category/tie-vector to match, exercise all nine categories and cover all 21 subset positions as winners across the corpus. A separate traversal of the 128 possible seven-bit masks checks every equally best subset on 500 samples. Comparisons are checked in both directions against reference order on 4,999 generated pairs. Additional cases cover double trips, three pairs, six/seven-card flushes/runs, all 5,040 input permutations of a multi-choice hand, all 24 suit permutations per category, immutable outputs and invalid inputs.
+
+The fixture sampler is deterministic and noncryptographic, test-only and excluded from production exports. It is never a trusted shuffle or deal source. This is generated/reference coverage, **not** enumeration of all 133,784,560 seven-card sets or certification by a third-party evaluator. The targeted command and ordinary CI unit suite both run these tests; existing B012 exhaustive checks remain enabled.
+
 ## Scope and recovery
 
-B013 owns best-five-of-seven selection. B014 onward own shuffling/dealing, legal commands, betting, replay, privacy, pots and authoritative rooms. This ticket cannot play or settle a match and adds no mobile screen, persisted state, API, environment setting, dependency or migration. Reverting the code/export/script removes it; no data rollback or database reset is needed.
+B012/B013 cover ranking and selection only. B014 onward own shuffling/dealing, legal commands, betting, replay, privacy, pots and authoritative rooms. This ticket cannot play or settle a match and adds no mobile screen, persisted state, API, environment setting, dependency or migration. Reverting the code/export/script removes it; no data rollback or database reset is needed.
