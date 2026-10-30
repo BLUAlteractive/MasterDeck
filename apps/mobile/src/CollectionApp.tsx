@@ -1,3 +1,4 @@
+import { Tournaments } from './tournaments/Tournaments';
 import { Storefront } from './commerce/Storefront';
 import { Activity } from './activity/Activity';
 import { Fusion } from './fusion/Fusion';
@@ -46,6 +47,7 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
     | 'fusion'
     | 'activity'
     | 'storefront'
+    | 'tournaments'
   >('gallery');
   return (
     <View style={{ flex: 1 }}>
@@ -66,6 +68,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           label="Spades"
           selected={view === 'spades'}
           onPress={() => setView('spades')}
+        />
+        <Action
+          label="Tournaments"
+          selected={view === 'tournaments'}
+          onPress={() => setView('tournaments')}
         />
         <Action
           label="Cosmetic store"
@@ -108,6 +115,9 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
       </View>
       {view === 'activity' ? (
         <Activity client={client} makeId={randomUUID} />
+      ) : null}
+      {view === 'tournaments' ? (
+        <Tournaments client={client} makeId={randomUUID} />
       ) : null}
       {view === 'storefront' ? <Storefront client={client} /> : null}
       {view === 'archive' ? <Archive client={client} /> : null}

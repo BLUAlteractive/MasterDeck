@@ -644,6 +644,15 @@ export class TournamentService {
     const binding = current?.bindings.find(
       (b) => b.attempt === current.attempt,
     );
+    const boundHost =
+      binding && !binding.roomId
+        ? (
+            await tx.lobby.findUniqueOrThrow({
+              where: { id: binding.lobbyId },
+              select: { hostId: true },
+            })
+          ).hostId
+        : null;
     const nextAction =
       t.status === 'CANCELLED'
         ? 'CANCELLED'
@@ -661,8 +670,10 @@ export class TournamentService {
                   : 'INELIGIBLE'
                 : t.status === 'REGISTRATION'
                   ? 'WAIT_START'
-                  : binding?.roomId
-                    ? 'PLAY'
+                  : boundHost
+                    ? boundHost === p.userId
+                      ? 'READY'
+                      : 'WAIT_OPPONENT'
                     : current?.leftEntryId && current.rightEntryId
                       ? current.ready.some(
                           (r) =>

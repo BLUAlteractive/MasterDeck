@@ -1,5 +1,19 @@
+import { watchPoker } from '../play/poker-watch';
 import { watchSpades } from '../play/spades-watch';
 import {
+  tournamentIdSchema,
+  tournamentListQuerySchema,
+  tournamentListSchema,
+  tournamentViewSchema,
+  tournamentCommandSchema,
+  tournamentReadySchema,
+  tournamentReadyResultSchema,
+  tournamentRegistrationReceiptSchema,
+  tournamentDisputeSchema,
+  tournamentDisputeReceiptSchema,
+  pokerCommandSchema,
+  pokerCommandReceiptSchema,
+  type PokerRoomCommand,
   privateCardsSchema,
   billingProofSchema,
   billingContextSchema,
@@ -107,6 +121,100 @@ export function createCollectionClient(
   }
 
   return {
+    async tournaments(cursor?: string, signal?: AbortSignal) {
+      const q = tournamentListQuerySchema.parse({
+        limit: 10,
+        ...(cursor ? { cursor } : {}),
+      });
+      return tournamentListSchema.parse(
+        await request(
+          '/v1/tournaments?limit=10' +
+            (q.cursor ? '&cursor=' + encodeURIComponent(q.cursor) : ''),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async tournament(id: string, signal?: AbortSignal) {
+      tournamentIdSchema.parse(id);
+      const value = tournamentViewSchema.parse(
+        await request(
+          '/v1/tournaments/' + encodeURIComponent(id),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+      if (value.id !== id) throw new Error('WRONG_TOURNAMENT');
+      return value;
+    },
+    async registerTournament(
+      id: string,
+      commandId: string,
+      signal?: AbortSignal,
+    ) {
+      tournamentIdSchema.parse(id);
+      return tournamentRegistrationReceiptSchema.parse(
+        await request(
+          '/v1/tournaments/' + encodeURIComponent(id) + '/register',
+          'POST',
+          tournamentCommandSchema.parse({ commandId }),
+          signal,
+        ),
+      );
+    },
+    async readyTournament(
+      matchId: string,
+      attempt: number,
+      commandId: string,
+      signal?: AbortSignal,
+    ) {
+      tournamentIdSchema.parse(matchId);
+      return tournamentReadyResultSchema.parse(
+        await request(
+          '/v1/tournaments/matches/' + encodeURIComponent(matchId) + '/ready',
+          'POST',
+          tournamentReadySchema.parse({ commandId, attempt }),
+          signal,
+        ),
+      );
+    },
+    async reportTournament(
+      id: string,
+      command: {
+        commandId: string;
+        matchId: string;
+        code: 'RESULT_INCONSISTENT' | 'CONNECTION_FAILURE' | 'COLLUSION';
+      },
+      signal?: AbortSignal,
+    ) {
+      tournamentIdSchema.parse(id);
+      return tournamentDisputeReceiptSchema.parse(
+        await request(
+          '/v1/tournaments/' + encodeURIComponent(id) + '/reports',
+          'POST',
+          tournamentDisputeSchema.parse(command),
+          signal,
+        ),
+      );
+    },
+    watchPoker(
+      gameId: string,
+      receive: Parameters<typeof watchPoker>[3],
+      status: Parameters<typeof watchPoker>[4],
+    ) {
+      return watchPoker(prefix, getAccessToken, gameId, receive, status);
+    },
+    async pokerCommand(command: PokerRoomCommand, signal?: AbortSignal) {
+      const c = pokerCommandSchema.parse(command),
+        receipt = pokerCommandReceiptSchema.parse(
+          await request('/v1/games/commands', 'POST', c, signal),
+        );
+      if (receipt.gameId !== c.gameId || receipt.commandId !== c.commandId)
+        throw new Error('WRONG_COMMAND_RECEIPT');
+      return receipt;
+    },
     async billingContext(signal?: AbortSignal) {
       return billingContextSchema.parse(
         await request('/v1/billing/context', 'GET', undefined, signal),

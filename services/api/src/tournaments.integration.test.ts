@@ -380,3 +380,63 @@ it('records private result reports once and exposes them only through audited ad
     f.db.tournamentDispute.deleteMany({ where: { tournamentId } }),
   ).rejects.toThrow();
 });
+
+it('shows only the designated host an admission retry after insufficient funds, then safely completes the bound hand', async () => {
+  const first = await f.actor(false),
+    host = await f.actor(false);
+  for (const p of [first, host]) await fixtureLoadout(f.db, p.userId);
+  await f.db.$transaction((tx) =>
+    issueEarnedChips(tx, {
+      userId: first.userId,
+      amount: 500n,
+      sourceKey: 'tournament-retry:' + first.userId,
+      operatorId: 'test.only',
+    }),
+  );
+  const { id } = await create(2, 700);
+  for (const p of [first, host]) await a.register(p.principal, id, key());
+  await new Promise((resolve) => setTimeout(resolve, 750));
+  await a.startDue(id);
+  const m = await f.db.tournamentMatch.findFirstOrThrow({
+      where: { tournamentId: id },
+    }),
+    ready = { ...key(), attempt: 1 };
+  await a.ready(first.principal, m.id, ready);
+  await expect(
+    a.ready(host.principal, m.id, { ...key(), attempt: 1 }),
+  ).rejects.toMatchObject({ code: 'INSUFFICIENT_PLAY_CHIPS' });
+  expect((await a.read(first.principal, id)).nextAction).toBe('WAIT_OPPONENT');
+  expect((await a.read(host.principal, id)).nextAction).toBe('READY');
+  expect(
+    await f.db.tournamentBinding.count({
+      where: { matchId: m.id, roomId: null },
+    }),
+  ).toBe(1);
+  await f.db.$transaction((tx) =>
+    issueEarnedChips(tx, {
+      userId: host.userId,
+      amount: 500n,
+      sourceKey: 'tournament-retry:' + host.userId,
+      operatorId: 'test.only',
+    }),
+  );
+  const admitted = await a.ready(host.principal, m.id, {
+      ...key(),
+      attempt: 1,
+    }),
+    rooms = new PokerRoomService(f.db),
+    frame = await rooms.read(first.principal, admitted.gameId!),
+    actor = [first, host].find((p) => p.userId === frame.view.toAct)!;
+  await rooms.command(actor.principal, {
+    gameId: admitted.gameId!,
+    stateVersion: frame.view.stateVersion,
+    ...key(),
+    payload: { action: 'FOLD' },
+  });
+  await new MatchSettlementService(f.db, admission).complete(admitted.gameId!);
+  await a.ingest(admitted.gameId!);
+  expect((await a.read(first.principal, id)).status).toBe('COMPLETED');
+  expect(
+    await f.db.tournamentAward.count({ where: { tournamentId: id } }),
+  ).toBe(1);
+}, 30000);
