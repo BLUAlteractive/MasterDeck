@@ -94,11 +94,26 @@ export class IdentityController {
         branch: true,
         rarity: true,
         stateVersion: true,
+        status: true,
+        seriesId: true,
+        template: {
+          select: { version: true, series: { select: { displayName: true } } },
+        },
+        favorites: {
+          where: { userId: principal.userId },
+          select: { favorite: true },
+        },
       },
     });
     const page = rows.slice(0, input.limit);
     return privateCardsSchema.parse({
-      items: page.map(({ id, ...card }) => ({ instanceId: id, ...card })),
+      items: page.map(({ id, template, favorites, ...card }) => ({
+        instanceId: id,
+        ...card,
+        seriesName: template.series.displayName,
+        templateVersion: template.version,
+        favorite: favorites[0]?.favorite ?? false,
+      })),
       nextCursor: rows.length > input.limit ? page.at(-1)?.id : null,
     });
   }

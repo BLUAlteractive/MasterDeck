@@ -13,6 +13,14 @@
     },
     "android": {
       "package": "com.deckforge.dev"
-    }
+    },
+    "plugins": [
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ]
+    ]
   }
 }

@@ -100,6 +100,37 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/StarterGrant'}
         default: {$ref: '#/components/responses/ApiError'}
+  /cards/{cardId}/favorite:
+    parameters:
+      - {in: path, name: cardId, required: true, schema: {type: string, format: uuid}}
+    put:
+      operationId: setCardFavorite
+      x-implementation-status: implemented
+      summary: Set an owner-only presentation preference without mutating inventory or history
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [favorite]
+              properties:
+                favorite: {type: boolean}
+      responses:
+        '200':
+          description: Idempotent requested preference; concurrent opposite writes are last-commit-wins
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [instanceId, favorite]
+                properties:
+                  instanceId: {type: string, format: uuid}
+                  favorite: {type: boolean}
+        default: {$ref: '#/components/responses/ApiError'}
   /cards/{cardId}/provenance:
     parameters:
       - {in: path, name: cardId, required: true, schema: {type: string, format: uuid}}
@@ -700,7 +731,7 @@ components:
           items:
             type: object
             additionalProperties: false
-            required: [instanceId, faceId, level, branch, rarity, stateVersion]
+            required: [instanceId, faceId, level, branch, rarity, stateVersion, status, seriesId, seriesName, templateVersion, favorite]
             properties:
               instanceId: {type: string, format: uuid}
               faceId: {type: string, pattern: '^(?:[2-9]|10|J|Q|K|A)-[CDHS]$'}
@@ -708,6 +739,11 @@ components:
               branch: {type: string, enum: [BLUE, RED]}
               rarity: {type: string, enum: [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY]}
               stateVersion: {type: integer, minimum: 1}
+              status: {type: string, enum: [OWNED, LOCKED]}
+              seriesId: {type: string, format: uuid}
+              seriesName: {type: string, minLength: 1, maxLength: 120}
+              templateVersion: {type: integer, minimum: 1}
+              favorite: {type: boolean}
     FusionPreviewRequest:
       type: object
       required: [ingredientIds]
