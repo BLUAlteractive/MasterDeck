@@ -55,3 +55,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B034 — Health steps bridge | Adapter implemented; automated boundary/syntax/autolinking checks pass | [B034 report](../docs/B034_REPORT.md) | Native compilation and real iOS/Android grant/denial/revoke acceptance remain blocked on toolchain/devices; no trusted activity reward source configured. |
 
 | B036 — Achievement engine | Server-source implementation and validation in report | [B036 report](../docs/B036_REPORT.md) | Badge grants and replay safety implemented; reviewed eligibility/reward policies and provider/device acceptance remain open. |
+
+| B037 — Missions & seasons | Published-window projector and validation in report | [B037 report](../docs/B037_REPORT.md) | Durable prestige rewards implemented; reviewed launch content, season calendar and economic reward adapters remain gated. |

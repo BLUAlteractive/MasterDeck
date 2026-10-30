@@ -25,3 +25,46 @@ it('rejects invalid counters and targets', () => {
     expect(() => advanceProgress(count!, target!, false)).toThrow();
   expect(advanceProgress(9, 10, true)).toEqual({ count: 9, award: false });
 });
+import { progressWindow } from './progress';
+const interval = {
+  startsAt: '2026-01-01T00:00:00.000Z',
+  endsAt: '2027-01-01T00:00:00.000Z',
+};
+it('uses UTC day and Monday week boundaries including offset/DST dates', () => {
+  expect(
+    progressWindow(
+      { window: 'DAILY', ...interval },
+      new Date('2026-03-08T23:30:00-07:00'),
+    ),
+  ).toBe('daily:2026-03-09');
+  expect(
+    progressWindow(
+      { window: 'WEEKLY', ...interval },
+      new Date('2026-03-08T23:30:00Z'),
+    ),
+  ).toBe('weekly:2026-03-02');
+  expect(
+    progressWindow(
+      { window: 'WEEKLY', ...interval },
+      new Date('2026-03-09T00:00:00Z'),
+    ),
+  ).toBe('weekly:2026-03-09');
+});
+it('has inclusive season start and exclusive end, independent of worker time', () => {
+  const goal = { window: 'SEASON' as const, ...interval };
+  expect(progressWindow(goal, new Date(interval.startsAt))).toBe(
+    'season:' + Date.parse(interval.startsAt),
+  );
+  expect(progressWindow(goal, new Date(interval.endsAt))).toBeNull();
+  expect(progressWindow(goal, new Date('2025-12-31T23:59:59Z'))).toBeNull();
+});
+it('requires explicit timed publication intervals and valid event times', () => {
+  expect(() => progressWindow({ window: 'DAILY' }, new Date())).toThrow();
+  expect(() =>
+    progressWindow(
+      { window: 'DAILY', startsAt: interval.endsAt, endsAt: interval.startsAt },
+      new Date(),
+    ),
+  ).toThrow();
+  expect(() => progressWindow({ window: 'LIFETIME' }, new Date(NaN))).toThrow();
+});

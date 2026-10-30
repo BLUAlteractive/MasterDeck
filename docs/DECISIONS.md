@@ -339,3 +339,8 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Derive typed progression facts only from immutable settled poker, completed Spades and confirmed five-parent fusion records. Replay private game state and verify settlement before extracting outcomes; never expose private cards in progression views. No client event-write/grant endpoint.
 - Explicit versioned policy controls eligibility/targets. Preserve first processed source policy and immutable goal definitions; dedupe sources, facts and per-goal consumption, reconcile counters and unique grants in SQL. Main policy defaults null. Only prestige badges are supported here; approved currency/card/XP grant adapters remain distinct.
 - A source result earns at most one matching fact per user; replaying one full house ten times cannot meet the ten-distinct-outcome goal. Saturating counters and durable award keys survive worker/service restarts. Full collusion/eligibility review remains a release gate.
+
+### B037 — Published UTC mission windows and durable recovery
+
+- Reuse versioned progression goals/consumption/grants for daily, Monday-week and bounded-season prestige missions. Timed definitions require explicit start/end; UTC boundaries and inclusive-start/exclusive-end are documented engineering policy and frozen in goal definitions. Original result timestamps determine windows, not processing or client clocks.
+- Recover missed event projections after restart; dedupe per goal/window/event and grant. Only backfill facts accepted under the same permanent/opponent/command eligibility. SQL verifies the same window, counters and reward completeness. Main configuration remains disabled until content/eligibility/reward review; no monetary or card reward values invented.

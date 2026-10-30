@@ -9,7 +9,11 @@ import {
 import type { PrismaClient } from '@deckforge/database';
 import { hash, json } from '../src/rooms/shared';
 /** Private isolated settled-result fixture, complete replay chain; never imported by runtime. */
-export async function fullHouseFixture(db: PrismaClient, ids: string[]) {
+export async function fullHouseFixture(
+  db: PrismaClient,
+  ids: string[],
+  occurredAt = new Date(),
+) {
   const front = [
     '2-C',
     'K-H',
@@ -93,12 +97,15 @@ export async function fullHouseFixture(db: PrismaClient, ids: string[]) {
         initial: json(initial),
         snapshot: json(state),
         commitment: hash(initial),
+        createdAt: occurredAt,
       },
     });
     await tx.gameParticipant.createMany({
       data: ids.map((userId, seat) => ({ roomId: id, userId, seat })),
     });
-    await tx.gameEvent.createMany({ data: events });
+    await tx.gameEvent.createMany({
+      data: events.map((e) => ({ ...e, createdAt: occurredAt })),
+    });
     await tx.playChipAccount.create({
       data: { id: randomUUID(), kind: 'ESCROW', roomId: id },
     });
@@ -108,6 +115,7 @@ export async function fullHouseFixture(db: PrismaClient, ids: string[]) {
         stateVersion: state.stateVersion,
         rulesetVersion: state.rulesetVersion,
         allocation: json(allocatePokerPots(state)),
+        createdAt: occurredAt,
       },
     });
   });
