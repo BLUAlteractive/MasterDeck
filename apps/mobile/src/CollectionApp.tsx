@@ -1,3 +1,4 @@
+import { Storefront } from './commerce/Storefront';
 import { Activity } from './activity/Activity';
 import { Fusion } from './fusion/Fusion';
 import { SpadesLobby } from './play/SpadesLobby';
@@ -38,7 +39,13 @@ export function CollectionApp({
 }
 function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
   const [view, setView] = useState<
-    'gallery' | 'archive' | 'play' | 'spades' | 'fusion' | 'activity'
+    | 'gallery'
+    | 'archive'
+    | 'play'
+    | 'spades'
+    | 'fusion'
+    | 'activity'
+    | 'storefront'
   >('gallery');
   return (
     <View style={{ flex: 1 }}>
@@ -59,6 +66,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           label="Spades"
           selected={view === 'spades'}
           onPress={() => setView('spades')}
+        />
+        <Action
+          label="Cosmetic store"
+          selected={view === 'storefront'}
+          onPress={() => setView('storefront')}
         />
         <Action
           label="Activity"
@@ -97,6 +109,7 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
       {view === 'activity' ? (
         <Activity client={client} makeId={randomUUID} />
       ) : null}
+      {view === 'storefront' ? <Storefront client={client} /> : null}
       {view === 'archive' ? <Archive client={client} /> : null}
       {view === 'spades' ? (
         <SpadesLobby client={client} makeId={randomUUID} />

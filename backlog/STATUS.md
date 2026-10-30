@@ -61,3 +61,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B038 — Wallet restrictions | Implemented and validated | [B038 report](../docs/B038_REPORT.md) | One canonical three-balance boundary; trusted activity/quest/billing verification and reviewed economy activation remain feature gates. B060 must reuse this persistence. |
 
 | B035 — Accessibility movement alternatives | Nonwalking enrollment/credit/proof path implemented and validated | [B035 report](../docs/B035_REPORT.md) | Full fair functional Press acceptance awaits reviewed equivalence policy and B068/B069 single-job proof consumption; no fake steps or card upgrade claimed. |
+
+| B039 — Direct cosmetics storefront | Fixed catalog/preview and private entitlement view implemented; validation in report | [B039 report](../docs/B039_REPORT.md) | Actual checkout/native localized prices, reviewed catalog activation and platform/product/legal acceptance remain gated. |

@@ -1,6 +1,8 @@
 import { watchSpades } from '../play/spades-watch';
 import {
   privateCardsSchema,
+  storefrontViewSchema,
+  cosmeticInventorySchema,
   accessibleViewSchema,
   accessibleStartResponseSchema,
   accessibleReceiptSchema,
@@ -99,6 +101,27 @@ export function createCollectionClient(
   }
 
   return {
+    async storefront(platform: 'APPLE' | 'GOOGLE', signal?: AbortSignal) {
+      return storefrontViewSchema.parse(
+        await request(
+          '/v1/storefront?platform=' + platform,
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async cosmetics(cursor?: string, signal?: AbortSignal) {
+      return cosmeticInventorySchema.parse(
+        await request(
+          '/v1/cosmetics?limit=50' +
+            (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
     async accessibleQuests(signal?: AbortSignal) {
       return accessibleViewSchema.parse(
         await request('/v1/accessibility/quests', 'GET', undefined, signal),
