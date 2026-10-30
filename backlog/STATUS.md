@@ -63,3 +63,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B035 — Accessibility movement alternatives | Nonwalking enrollment/credit/proof path implemented and validated | [B035 report](../docs/B035_REPORT.md) | Full fair functional Press acceptance awaits reviewed equivalence policy and B068/B069 single-job proof consumption; no fake steps or card upgrade claimed. |
 
 | B039 — Direct cosmetics storefront | Fixed catalog/preview and private entitlement view implemented; validation in report | [B039 report](../docs/B039_REPORT.md) | Actual checkout/native localized prices, reviewed catalog activation and platform/product/legal acceptance remain gated. |
+
+| B040 — Apple/Google receipt verification | Server adapters and durable fulfillment implemented; validation in report | [B040 report](../docs/B040_REPORT.md), [billing guide](../docs/BILLING.md) | Real Apple/Google sandbox/device/console delivery and native client integration remain unverified; no live credentials or activation. |

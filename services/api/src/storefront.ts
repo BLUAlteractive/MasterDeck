@@ -61,6 +61,8 @@ export class StorefrontController {
     @Inject('CATALOG_DATABASE') readonly db: PrismaClient | null,
     @Inject('AUTH_SERVICE') readonly auth: AuthService | null,
     @Inject('STOREFRONT_POLICY') readonly policy: StorefrontPolicy | null,
+    @Inject('BILLING_ENVIRONMENT')
+    readonly billingEnvironment: 'SANDBOX' | 'PRODUCTION',
   ) {}
   @Get('storefront') async catalog(@Query() query: unknown) {
     const parsed = storefrontQuerySchema.safeParse(query);
@@ -104,7 +106,13 @@ export class StorefrontController {
       await lockPrincipal(tx, p);
       const rows = await tx.cosmeticItem.findMany({
         where: {
-          grants: { some: { userId: p.userId, status: 'ACTIVE' } },
+          grants: {
+            some: {
+              userId: p.userId,
+              status: 'ACTIVE',
+              purchase: { environment: this.billingEnvironment },
+            },
+          },
           ...(parsed.data.cursor ? { id: { gt: parsed.data.cursor } } : {}),
         },
         orderBy: { id: 'asc' },

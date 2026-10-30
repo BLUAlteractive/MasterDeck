@@ -9,21 +9,23 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@apple/app-store-server-library": "3.1.0",
     "@deckforge/card-domain": "workspace:*",
     "@deckforge/contracts": "workspace:*",
     "@deckforge/database": "workspace:*",
+    "@deckforge/game-core": "workspace:*",
+    "@deckforge/game-poker": "workspace:*",
+    "@deckforge/game-spades": "workspace:*",
     "@nestjs/common": "12.3.2",
     "@nestjs/core": "12.3.2",
     "@nestjs/platform-express": "12.3.2",
     "dotenv": "17.2.3",
     "express-rate-limit": "8.7.1",
+    "google-auth-library": "11.3.2",
     "jose": "6.2.13",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "socket.io": "4.8.4",
-    "zod": "4.6.7",
-    "@deckforge/game-poker": "workspace:*",
-    "@deckforge/game-core": "workspace:*",
-    "@deckforge/game-spades": "workspace:*"
+    "zod": "4.6.7"
   }
 }

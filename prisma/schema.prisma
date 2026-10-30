@@ -107,6 +107,8 @@ model User {
   accessibleEnrollments AccessibleQuestEnrollment[]
   accessibleFacts       AccessibleQuestFact[]
   cosmeticGrants        CosmeticGrant[]
+  billingBinding        BillingBinding?
+  purchases             VerifiedPurchase[]
 }
 
 model ExternalIdentity {
@@ -802,6 +804,7 @@ model CosmeticProduct {
   createdAt         DateTime              @default(now()) @db.Timestamptz(3)
   items             CosmeticProductItem[]
   priceScale        Int                   @default(2)
+  purchases         VerifiedPurchase[]
 }
 
 model CosmeticProductItem {
@@ -814,15 +817,88 @@ model CosmeticProductItem {
 }
 
 model CosmeticGrant {
-  id        String       @id @db.Uuid
-  userId    String       @db.Uuid
-  itemId    String       @db.Uuid
-  sourceKey String       @unique
-  status    String       @default("ACTIVE")
-  version   Int          @default(1)
-  issuedAt  DateTime     @default(now()) @db.Timestamptz(3)
-  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
-  item      CosmeticItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  id         String           @id @db.Uuid
+  userId     String           @db.Uuid
+  itemId     String           @db.Uuid
+  sourceKey  String           @unique
+  status     String           @default("ACTIVE")
+  version    Int              @default(1)
+  issuedAt   DateTime         @default(now()) @db.Timestamptz(3)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  item       CosmeticItem     @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  purchaseId String           @db.Uuid
+  purchase   VerifiedPurchase @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
 
   @@index([userId, status, itemId])
+}
+
+model BillingBinding {
+  id         String             @id @db.Uuid
+  userId     String             @unique @db.Uuid
+  googleHash String             @unique
+  user       User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  purchases  VerifiedPurchase[]
+}
+
+model VerifiedPurchase {
+  id              String                  @id @db.Uuid
+  userId          String                  @db.Uuid
+  bindingId       String                  @db.Uuid
+  platform        String
+  transactionId   String
+  sku             String
+  productId       String                  @db.Uuid
+  snapshot        Json
+  proofKey        String                  @unique
+  evidenceBox     String
+  status          String
+  version         Int                     @default(1)
+  createdAt       DateTime                @default(now()) @db.Timestamptz(3)
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  binding         BillingBinding          @relation(fields: [bindingId], references: [id], onDelete: Restrict)
+  product         CosmeticProduct         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  grants          CosmeticGrant[]
+  events          PurchaseEvent[]
+  acknowledgement BillingAcknowledgement?
+  environment     String
+
+  @@unique([platform, environment, transactionId])
+  @@index([userId, createdAt, id])
+}
+
+model PurchaseEvent {
+  id             String           @id @db.Uuid
+  purchaseId     String           @db.Uuid
+  sourceKey      String           @unique
+  observedState  String
+  effectiveState String
+  stateVersion   Int
+  proofHash      String
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  purchase       VerifiedPurchase @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+}
+
+model BillingInbox {
+  id            String   @id @db.Uuid
+  sourceKey     String   @unique
+  platform      String
+  proofHash     String
+  evidenceBox   String
+  status        String   @default("PENDING")
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now()) @db.Timestamptz(3)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  environment   String
+
+  @@index([status, nextAttemptAt])
+}
+
+model BillingAcknowledgement {
+  purchaseId    String           @id @db.Uuid
+  status        String           @default("PENDING")
+  attempts      Int              @default(0)
+  nextAttemptAt DateTime         @default(now()) @db.Timestamptz(3)
+  purchase      VerifiedPurchase @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+
+  @@index([status, nextAttemptAt])
 }

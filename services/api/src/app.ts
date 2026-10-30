@@ -1,3 +1,6 @@
+import { BillingController } from './billing/controller';
+import { BillingService, startBillingWorker } from './billing/service';
+import type { BillingConfig } from './billing/providers';
 import { StorefrontController } from './storefront';
 import {
   storefrontPolicySchema,
@@ -77,11 +80,21 @@ export async function createApp(
     progressionPolicy?: ProgressionPolicy;
     accessiblePolicy?: AccessiblePolicy;
     storefrontPolicy?: StorefrontPolicy;
+    billing?: BillingConfig;
   } = {},
 ) {
   const storefrontPolicy = features.storefrontPolicy
     ? storefrontPolicySchema.parse(features.storefrontPolicy)
     : null;
+  if (features.billing && (!auth || !storefrontPolicy))
+    throw new Error(
+      'Billing requires configured identity and reviewed catalog',
+    );
+  const billing =
+    features.billing && auth && storefrontPolicy
+      ? new BillingService(auth.database, features.billing, storefrontPolicy)
+      : null;
+  let stopBilling = async () => {};
   const accessiblePolicy = features.accessiblePolicy
     ? accessiblePolicySchema.parse(features.accessiblePolicy)
     : null;
@@ -117,6 +130,7 @@ export async function createApp(
         WalletController,
         AccessibleQuestController,
         StorefrontController,
+        BillingController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
@@ -126,6 +140,11 @@ export async function createApp(
         { provide: 'PROGRESSION_POLICY', useValue: progressionPolicy },
         { provide: 'ACCESSIBLE_POLICY', useValue: accessiblePolicy },
         { provide: 'STOREFRONT_POLICY', useValue: storefrontPolicy },
+        { provide: 'BILLING_SERVICE', useValue: billing },
+        {
+          provide: 'BILLING_ENVIRONMENT',
+          useValue: features.billing?.environment ?? 'PRODUCTION',
+        },
         { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',
@@ -136,6 +155,7 @@ export async function createApp(
           provide: 'AUTH_SHUTDOWN',
           useValue: {
             beforeApplicationShutdown: async () => {
+              await stopBilling();
               await stopProgress();
               await stopTimeouts();
               await stopSettlements();
@@ -171,6 +191,8 @@ export async function createApp(
     stopProgress = startProgressWorker(
       new ProgressionService(auth.database, progressionPolicy),
     );
+  if (billing && features.billing?.workers !== false)
+    stopBilling = startBillingWorker(billing);
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({
