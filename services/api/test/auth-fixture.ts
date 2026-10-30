@@ -114,5 +114,16 @@ export async function identityFixture() {
   }
 
   await setup();
-  return { db, secondDb, app, auth, base, players, actor, request, close };
+  return {
+    db,
+    secondDb,
+    app,
+    auth,
+    base,
+    issuer,
+    players,
+    actor,
+    request,
+    close,
+  };
 }

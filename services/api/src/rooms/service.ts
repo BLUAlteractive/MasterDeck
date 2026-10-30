@@ -289,6 +289,7 @@ export class PokerRoomService {
               snapshot: json(next),
             },
           });
+          await tx.$queryRaw`SELECT pg_notify('deckforge_game_updates', ${input.gameId})::text`;
           status = 'accepted';
           return pokerCommandReceiptSchema.parse({
             gameId: input.gameId,

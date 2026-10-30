@@ -84,7 +84,12 @@ export async function createApp(
   );
   app.useBodyParser('json', { limit: '16kb' });
   app.useGlobalFilters(new SafeErrorFilter());
-  stopSocket = attachAuthSocket(app.getHttpServer(), auth, origins, pokerRooms);
+  stopSocket = await attachAuthSocket(
+    app.getHttpServer(),
+    auth,
+    origins,
+    pokerRooms,
+  );
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({

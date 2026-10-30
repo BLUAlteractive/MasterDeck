@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import { listenGameChanges } from '@deckforge/database';
 import type { Server as HttpServer } from 'node:http';
 import { z } from 'zod';
 import type { AuthService } from './service';
@@ -10,7 +11,7 @@ const handshakeSchema = z
   .object({ token: z.string().min(1).max(16384) })
   .strict();
 const joinSchema = pokerRoomJoinSchema;
-export function attachAuthSocket(
+export async function attachAuthSocket(
   server: HttpServer,
   auth: AuthService | null,
   origins: string[],
@@ -58,6 +59,13 @@ export function attachAuthSocket(
       next(new Error('UNAUTHORIZED'));
     }
   });
+  const refreshers = new Set<(roomId: string | null) => void>();
+  const stopNotifications =
+    auth && roomService
+      ? await listenGameChanges(auth.database, (id) => {
+          for (const refresh of refreshers) refresh(id);
+        })
+      : async () => {};
   rooms.on('connection', (socket) => {
     let expiryTimer: ReturnType<typeof setTimeout>;
     const checkExpiry = () => {
@@ -93,6 +101,48 @@ export function attachAuthSocket(
         socket.disconnect(true);
       }
     });
+    let joined: string | null = null,
+      lastVersion = -1,
+      refreshing = false,
+      pending = false;
+    const refresh = async () => {
+      if (refreshing) {
+        pending = true;
+        return;
+      }
+      refreshing = true;
+      try {
+        do {
+          pending = false;
+          const gameId = joined;
+          if (!gameId || !socket.connected || !auth || !roomService) break;
+          const principal = await auth.authenticate(`Bearer ${token}`);
+          const result = await roomService.read(principal, gameId);
+          if (
+            joined === gameId &&
+            socket.connected &&
+            result.view.stateVersion > lastVersion
+          ) {
+            lastVersion = result.view.stateVersion;
+            socket.emit('game.state', result);
+          }
+        } while (pending);
+      } catch {
+        joined = null;
+        socket.emit('auth.error', { code: 'UNAUTHORIZED' });
+        socket.disconnect(true);
+      } finally {
+        refreshing = false;
+      }
+    };
+    const notify = (id: string | null) => {
+      if (joined && (id === null || id === joined)) void refresh();
+    };
+    refreshers.add(notify);
+    socket.once('disconnect', () => {
+      joined = null;
+      refreshers.delete(notify);
+    });
     const handle = async (
       kind: 'join' | 'command',
       input: unknown,
@@ -116,7 +166,12 @@ export function attachAuthSocket(
         if (kind === 'join') {
           const parsed = joinSchema.safeParse(input);
           if (!parsed.success) throw new ApiFailure('INVALID_REQUEST', 400);
-          ack(await roomService.read(principal, parsed.data.gameId));
+          const result = await roomService.read(principal, parsed.data.gameId);
+          joined = parsed.data.gameId;
+          lastVersion = result.view.stateVersion;
+          ack(result);
+          // Close the read/subscribe race by fetching once more after membership is registered.
+          void refresh();
         } else ack(await roomService.command(principal, input));
       } catch (error) {
         ack({
@@ -137,7 +192,8 @@ export function attachAuthSocket(
       void handle('command', input, ack);
     });
   });
-  return () => {
+  return async () => {
+    await stopNotifications();
     clearInterval(cleanup);
     io.disconnectSockets(true);
     io.engine.close();
