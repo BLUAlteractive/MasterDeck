@@ -184,6 +184,42 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LoadoutSaved'}
         default: {$ref: '#/components/responses/ApiError'}
+  /collection/archive:
+    get:
+      operationId: getOwnerArchive
+      x-implementation-status: implemented
+      summary: Owner-only retained instances, including consumed and revoked records
+      description: No owner selectors, raw audit fields or inferred fusion lineage. Missing legacy origin and edition serial remain null.
+      security: [{bearerAuth: []}]
+      parameters:
+        - {in: query, name: cursor, schema: {type: string, format: uuid}}
+        - {in: query, name: limit, schema: {type: integer, minimum: 1, maximum: 100, default: 50}}
+        - {in: query, name: view, schema: {type: string, enum: [all, current, former], default: all}}
+        - {in: query, name: seriesId, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: UUID-keyset page of recorded owner instances
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ArchivePage'}
+        default: {$ref: '#/components/responses/ApiError'}
+  /collection/album:
+    get:
+      operationId: getOwnerAlbum
+      x-implementation-status: implemented
+      summary: Distinct-face series counts over the owner's entire retained archive
+      description: Recorded counts include terminal records and do not grant discoveries, achievements or rewards. Current counts include OWNED and LOCKED only.
+      security: [{bearerAuth: []}]
+      parameters:
+        - {in: query, name: cursor, schema: {type: string, format: uuid}}
+        - {in: query, name: limit, schema: {type: integer, minimum: 1, maximum: 20, default: 10}}
+      responses:
+        '200':
+          description: Independent series page; counts are independent of archive pagination
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AlbumPage'}
+        default: {$ref: '#/components/responses/ApiError'}
   /collection/manager:
     get:
       operationId: getCollectionManager
@@ -744,6 +780,63 @@ components:
               seriesName: {type: string, minLength: 1, maxLength: 120}
               templateVersion: {type: integer, minimum: 1}
               favorite: {type: boolean}
+    ArchivePage:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        nextCursor: {type: string, format: uuid, nullable: true}
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/ArchiveCard'}
+    ArchiveCard:
+      type: object
+      additionalProperties: false
+      required: [instanceId, faceId, level, branch, rarity, stateVersion, status, seriesId, seriesName, templateVersion, holding, editionSerial, createdAt, origin]
+      properties:
+        instanceId: {type: string, format: uuid}
+        faceId: {type: string, pattern: '^(?:[2-9]|10|J|Q|K|A)-[CDHS]$'}
+        level: {type: integer, minimum: 1, maximum: 6}
+        branch: {type: string, enum: [BLUE, RED]}
+        rarity: {type: string, enum: [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY]}
+        stateVersion: {type: integer, minimum: 1}
+        status: {type: string, enum: [OWNED, LOCKED, CONSUMED, REVOKED]}
+        seriesId: {type: string, format: uuid}
+        seriesName: {type: string, minLength: 1, maxLength: 120}
+        templateVersion: {type: integer, minimum: 1}
+        holding: {type: string, enum: [OWNED_NOW, PREVIOUSLY_OWNED]}
+        editionSerial: {type: integer, minimum: 1, nullable: true}
+        createdAt: {type: string, format: date-time}
+        origin:
+          type: object
+          nullable: true
+          additionalProperties: false
+          required: [eventId, action, recordedAt]
+          properties:
+            eventId: {type: string, format: uuid}
+            action: {type: string, enum: [MINT, GRANT, FUSION_CREATE]}
+            recordedAt: {type: string, format: date-time}
+    AlbumPage:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        nextCursor: {type: string, format: uuid, nullable: true}
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [seriesId, seriesName, recordedInstances, currentInstances, recordedFaces, currentFaces, completeNow, completeRecorded]
+            properties:
+              seriesId: {type: string, format: uuid}
+              seriesName: {type: string, minLength: 1, maxLength: 120}
+              recordedInstances: {type: integer, minimum: 0}
+              currentInstances: {type: integer, minimum: 0}
+              recordedFaces: {type: integer, minimum: 0, maximum: 52}
+              currentFaces: {type: integer, minimum: 0, maximum: 52}
+              completeNow: {type: boolean}
+              completeRecorded: {type: boolean}
     FusionPreviewRequest:
       type: object
       required: [ingredientIds]

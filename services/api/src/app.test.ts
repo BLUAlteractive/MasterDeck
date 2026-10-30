@@ -34,6 +34,16 @@ describe('API shell over HTTP', () => {
       error: { code: 'AUTH_NOT_CONFIGURED' },
     });
   });
+  it.each(['collection/archive', 'collection/album'])(
+    'fails closed for unconfigured private %s',
+    async (path) => {
+      const response = await fetch(`${base}/v1/${path}`);
+      expect(response.status).toBe(503);
+      expect(await response.json()).toMatchObject({
+        error: { code: 'AUTH_NOT_CONFIGURED' },
+      });
+    },
+  );
   it('bounds JSON requests before auth processing', async () => {
     const response = await fetch(`${base}/v1/auth/session`, {
       method: 'POST',
