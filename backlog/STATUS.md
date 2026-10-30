@@ -22,3 +22,5 @@
 | B018 — Game room actor                | Validated locally and on GitHub; ready for review                                     | [B018 report](../docs/B018_REPORT.md)                                                                                                                                                                       | Durable single-hand kernel; public admission, funding and broadcasts remain separate.                                                                           |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
+
+| B019 — Matchmaking and private rooms | Implemented; validation in ticket report | [B019 report](../docs/B019_REPORT.md) | Native two-device acceptance and funded admission remain separate. |

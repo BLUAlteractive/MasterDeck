@@ -360,3 +360,4 @@ export const albumResponseSchema = z
   .strict();
 
 export * from './poker';
+export * from './lobby';

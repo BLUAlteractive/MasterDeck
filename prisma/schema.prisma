@@ -89,6 +89,7 @@ model User {
   starterGrant      StarterGrant?
   loadout           Loadout?
   collectionManager CollectionManager?
+  lobbySeat         LobbySeat?
   gameParticipants  GameParticipant[]
   gameEvents        GameEvent[]
 }
@@ -376,4 +377,30 @@ model GameEvent {
 
   @@unique([roomId, stateVersion])
   @@unique([actorUserId, commandId])
+}
+
+model Lobby {
+  id         String      @id @db.Uuid
+  kind       String
+  mode       String      @default("CLASSIC")
+  capacity   Int
+  hostId     String      @db.Uuid
+  inviteHash String?     @unique
+  version    Int         @default(1)
+  status     String      @default("OPEN")
+  createdAt  DateTime    @default(now()) @db.Timestamptz(3)
+  seats      LobbySeat[]
+
+  @@index([kind, mode, status, createdAt])
+}
+
+model LobbySeat {
+  userId  String  @id @db.Uuid
+  lobbyId String  @db.Uuid
+  seat    Int
+  ready   Boolean @default(false)
+  lobby   Lobby   @relation(fields: [lobbyId], references: [id], onDelete: Restrict)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([lobbyId, seat])
 }
