@@ -2,6 +2,8 @@ import { watchSpades } from '../play/spades-watch';
 import {
   privateCardsSchema,
   spadesRoomViewSchema,
+  spadesPolicyResponseSchema,
+  spadesStartSchema,
   spadesCommandSchema,
   spadesReceiptSchema,
   type SpadesCommand,
@@ -86,6 +88,24 @@ export function createCollectionClient(
   }
 
   return {
+    async spadesPolicy(signal?: AbortSignal) {
+      return spadesPolicyResponseSchema.parse(
+        await request('/v1/spades/policy', 'GET', undefined, signal),
+      );
+    },
+    async startSpades(
+      command: { lobbyId: string; commandId: string; rematchOf?: string },
+      signal?: AbortSignal,
+    ) {
+      return gameStartResponseSchema.parse(
+        await request(
+          '/v1/spades/start',
+          'POST',
+          spadesStartSchema.parse(command),
+          signal,
+        ),
+      );
+    },
     watchSpades(
       gameId: string,
       receive: (view: SpadesRoomView) => void,

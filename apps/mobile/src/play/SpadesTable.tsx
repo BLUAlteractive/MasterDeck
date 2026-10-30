@@ -26,10 +26,12 @@ export function SpadesTable({
   client,
   gameId,
   makeId,
+  onComplete,
 }: {
   client: CollectionClient;
   gameId: string;
   makeId: () => string;
+  onComplete?: () => void;
 }) {
   return (
     <ConnectedTable
@@ -37,6 +39,7 @@ export function SpadesTable({
       client={client}
       gameId={gameId}
       makeId={makeId}
+      {...(onComplete ? { onComplete } : {})}
     />
   );
 }
@@ -44,10 +47,12 @@ function ConnectedTable({
   client,
   gameId,
   makeId,
+  onComplete,
 }: {
   client: CollectionClient;
   gameId: string;
   makeId: () => string;
+  onComplete?: () => void;
 }) {
   const replica = useRef<SpadesReplica>({
       gameId,
@@ -82,6 +87,13 @@ function ConnectedTable({
       stop();
     };
   }, [client, gameId]);
+  const notified = useRef(false);
+  useEffect(() => {
+    if (view?.phase === 'MATCH_COMPLETE' && !notified.current) {
+      notified.current = true;
+      onComplete?.();
+    }
+  }, [view?.phase, onComplete]);
   async function submit(payload?: SpadesCommand['payload']) {
     if (busy || !connected) return;
     const signal = lifecycle.current?.signal;

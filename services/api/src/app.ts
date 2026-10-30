@@ -1,3 +1,5 @@
+import { SpadesAdmissionController } from './rooms/spades-admission';
+import { spadesPolicySchema, type SpadesPolicy } from '@deckforge/contracts';
 import { GameRooms } from './rooms/router';
 import 'reflect-metadata';
 import { Controller, Get, Module } from '@nestjs/common';
@@ -47,7 +49,9 @@ export async function createApp(
   auth: AuthService | null = null,
   catalogDatabase: PrismaClient | null = auth?.database ?? null,
   admissionPolicy: ClassicAdmissionPolicy | null = null,
+  spadesPolicy: SpadesPolicy | null = null,
 ) {
+  if (spadesPolicy) spadesPolicy = spadesPolicySchema.parse(spadesPolicy);
   let stopSocket = async () => {};
   let stopTimeouts = async () => {};
   let stopSettlements = async () => {};
@@ -68,10 +72,12 @@ export async function createApp(
         PokerRoomController,
         LobbyController,
         ChipController,
+        SpadesAdmissionController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
+        { provide: 'SPADES_POLICY', useValue: spadesPolicy },
         { provide: 'POKER_ROOMS', useValue: gameRooms },
         {
           provide: 'STARTER_SERVICE',

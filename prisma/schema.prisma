@@ -74,28 +74,30 @@ enum OwnershipAction {
 }
 
 model User {
-  id                String             @id @default(uuid()) @db.Uuid
-  status            UserStatus         @default(ACTIVE)
-  role              UserRole           @default(PLAYER)
-  isGuest           Boolean            @default(true)
-  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
-  identities        ExternalIdentity[]
-  cards             CardInstance[]
-  events            OwnershipEvent[]
-  operations        OperationRecord[]
-  authAudit         AuthAudit[]
-  deletionRequest   DeletionRequest?
-  starterGrant      StarterGrant?
-  loadout           Loadout?
-  collectionManager CollectionManager?
-  chipAccount       PlayChipAccount?
-  gameReservations  GameReservation[]
-  lobbySeat         LobbySeat?
-  gameParticipants  GameParticipant[]
-  gameEvents        GameEvent[]
-  spadesSeats       SpadesSeat[]
-  spadesEvents      SpadesEvent[]
+  id                 String              @id @default(uuid()) @db.Uuid
+  status             UserStatus          @default(ACTIVE)
+  role               UserRole            @default(PLAYER)
+  isGuest            Boolean             @default(true)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime            @updatedAt @db.Timestamptz(3)
+  identities         ExternalIdentity[]
+  cards              CardInstance[]
+  events             OwnershipEvent[]
+  operations         OperationRecord[]
+  authAudit          AuthAudit[]
+  deletionRequest    DeletionRequest?
+  starterGrant       StarterGrant?
+  loadout            Loadout?
+  collectionManager  CollectionManager?
+  chipAccount        PlayChipAccount?
+  gameReservations   GameReservation[]
+  lobbySeat          LobbySeat?
+  gameParticipants   GameParticipant[]
+  gameEvents         GameEvent[]
+  spadesSeats        SpadesSeat[]
+  spadesEvents       SpadesEvent[]
+  spadesReservations SpadesReservation[]
+  tableMessages      TableMessage[]
 }
 
 model ExternalIdentity {
@@ -391,17 +393,20 @@ model GameEvent {
 }
 
 model Lobby {
-  id             String      @id @db.Uuid
-  kind           String
-  mode           String      @default("CLASSIC")
-  rulesetVersion String      @default("CLASSIC_NLHE_V1")
-  capacity       Int
-  hostId         String      @db.Uuid
-  inviteHash     String?     @unique
-  version        Int         @default(1)
-  status         String      @default("OPEN")
-  createdAt      DateTime    @default(now()) @db.Timestamptz(3)
-  seats          LobbySeat[]
+  id               String            @id @db.Uuid
+  kind             String
+  mode             String            @default("CLASSIC")
+  rulesetVersion   String            @default("CLASSIC_NLHE_V1")
+  capacity         Int
+  hostId           String            @db.Uuid
+  inviteHash       String?           @unique
+  version          Int               @default(1)
+  status           String            @default("OPEN")
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+  seats            LobbySeat[]
+  rulesConfig      Json?
+  spadesAdmissions SpadesAdmission[]
+  messages         TableMessage[]
 
   @@index([kind, mode, status, createdAt])
   @@index([kind, mode, rulesetVersion, status, createdAt], map: "Lobby_queue_rules_idx")
@@ -480,16 +485,19 @@ model GameResult {
 }
 
 model SpadesRoom {
-  id             String        @id @db.Uuid
+  id             String              @id @db.Uuid
   rulesetVersion String
-  stateVersion   Int           @default(0)
+  stateVersion   Int                 @default(0)
   phase          String
   initial        Json
   snapshot       Json
-  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  createdAt      DateTime            @default(now()) @db.Timestamptz(3)
   seats          SpadesSeat[]
   events         SpadesEvent[]
   result         SpadesResult?
+  admission      SpadesAdmission?    @relation("SpadesAdmissionRoom")
+  rematches      SpadesAdmission[]   @relation("SpadesPreviousRoom")
+  reservations   SpadesReservation[]
 }
 
 model SpadesSeat {
@@ -530,4 +538,43 @@ model SpadesResult {
   teams          Json
   createdAt      DateTime   @default(now()) @db.Timestamptz(3)
   room           SpadesRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+}
+
+model SpadesAdmission {
+  roomId         String      @id @db.Uuid
+  lobbyId        String      @db.Uuid
+  sequence       Int
+  previousRoomId String?     @db.Uuid
+  policySnapshot Json
+  createdAt      DateTime    @default(now()) @db.Timestamptz(3)
+  room           SpadesRoom  @relation("SpadesAdmissionRoom", fields: [roomId], references: [id], onDelete: Restrict)
+  previousRoom   SpadesRoom? @relation("SpadesPreviousRoom", fields: [previousRoomId], references: [id], onDelete: Restrict)
+  lobby          Lobby       @relation(fields: [lobbyId], references: [id], onDelete: Restrict)
+
+  @@unique([lobbyId, sequence])
+  @@unique([lobbyId, previousRoomId])
+}
+
+model SpadesReservation {
+  roomId String     @db.Uuid
+  userId String     @db.Uuid
+  items  Json
+  room   SpadesRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([roomId, userId])
+}
+
+model TableMessage {
+  id          String   @id @db.Uuid
+  lobbyId     String   @db.Uuid
+  actorUserId String   @db.Uuid
+  seat        Int
+  code        String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  lobby       Lobby    @relation(fields: [lobbyId], references: [id], onDelete: Restrict)
+  actor       User     @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([lobbyId, createdAt])
+  @@index([actorUserId, createdAt])
 }
