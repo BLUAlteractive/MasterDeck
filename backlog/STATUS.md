@@ -23,3 +23,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B015 — Side-pots and splits | Implemented; local validation recorded in report | [B015 report](../docs/B015_REPORT.md) | Pure allocation; transactional wallet settlement remains B022. |
 
 | B016 — Poker bot/test harness | Implemented; local validation recorded in report | [B016 report](../docs/B016_REPORT.md) | 1,000 complete hands, replay and allocation; no tournament or production RNG claim. |
+
+| B017 — Rules explanation/UI payload | Implemented; local validation recorded in report | [B017 report](../docs/B017_REPORT.md) | Safe typed payloads; no game screen, wallet mutation or full realtime broadcast claim. |
