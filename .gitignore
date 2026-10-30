@@ -20,3 +20,11 @@ apps/mobile/ios/
 apps/mobile/android/
 **/next-env.d.ts
 packages/database/src/generated/
+
+# Platform signing keys and raw purchase evidence
+*.p8
+*.jks
+*.keystore
+*.credentials.json
+*.jws
+**/secrets/

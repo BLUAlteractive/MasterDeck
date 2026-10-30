@@ -31,12 +31,17 @@ export async function identityFixture(
   let auth!: AuthService;
   let secondDb!: PrismaClient;
   let players!: Awaited<ReturnType<typeof actor>>[];
-  async function token(sub: string, sid: string, guest = true) {
+  async function token(
+    sub: string,
+    sid: string,
+    guest = true,
+    aal: 'aal1' | 'aal2' = 'aal1',
+  ) {
     return new SignJWT({
       session_id: sid,
       is_anonymous: guest,
       role: 'authenticated',
-      aal: 'aal1',
+      aal,
     })
       .setProtectedHeader({ alg: 'ES256', kid: 'starter-test' })
       .setSubject(sub)
@@ -56,10 +61,10 @@ export async function identityFixture(
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
   }
-  async function actor() {
+  async function actor(guest = true, aal: 'aal1' | 'aal2' = 'aal1') {
     const sub = randomUUID(),
       sid = randomUUID();
-    const bearer = await token(sub, sid);
+    const bearer = await token(sub, sid, guest, aal);
     const response = await request('auth/session', bearer, {});
     expect(response.status).toBe(200);
     const profile = (await response.json()) as { userId: string };
