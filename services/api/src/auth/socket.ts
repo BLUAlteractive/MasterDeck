@@ -3,7 +3,7 @@ import { listenGameChanges } from '@deckforge/database';
 import type { Server as HttpServer } from 'node:http';
 import { z } from 'zod';
 import type { AuthService } from './service';
-import { pokerRoomJoinSchema } from '@deckforge/contracts';
+import { pokerRoomJoinSchema, pokerResumeSchema } from '@deckforge/contracts';
 import { ApiFailure } from './errors';
 import { PokerRoomService, StaleRoomVersion } from '../rooms/service';
 
@@ -144,7 +144,7 @@ export async function attachAuthSocket(
       refreshers.delete(notify);
     });
     const handle = async (
-      kind: 'join' | 'command',
+      kind: 'join' | 'command' | 'resume',
       input: unknown,
       ack: unknown,
     ) => {
@@ -163,7 +163,15 @@ export async function attachAuthSocket(
         }
         // Recheck in the handler as well as packet middleware; the DB service rechecks under locks.
         const principal = await auth.authenticate(`Bearer ${token}`);
-        if (kind === 'join') {
+        if (kind === 'resume') {
+          const parsed = pokerResumeSchema.safeParse(input);
+          if (!parsed.success) throw new ApiFailure('INVALID_REQUEST', 400);
+          const result = await roomService.resume(principal, parsed.data);
+          joined = parsed.data.gameId;
+          lastVersion = result.view.stateVersion;
+          ack(result);
+          void refresh();
+        } else if (kind === 'join') {
           const parsed = joinSchema.safeParse(input);
           if (!parsed.success) throw new ApiFailure('INVALID_REQUEST', 400);
           const result = await roomService.read(principal, parsed.data.gameId);
@@ -187,6 +195,9 @@ export async function attachAuthSocket(
     };
     socket.on('room.join', (input: unknown, ack: unknown) => {
       void handle('join', input, ack);
+    });
+    socket.on('room.resume', (input: unknown, ack: unknown) => {
+      void handle('resume', input, ack);
     });
     socket.on('game.command', (input: unknown, ack: unknown) => {
       void handle('command', input, ack);

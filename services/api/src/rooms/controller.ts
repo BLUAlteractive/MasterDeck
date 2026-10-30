@@ -29,6 +29,16 @@ export class PokerRoomController {
       gameId,
     );
   }
+  @Post('resume')
+  @HttpCode(200)
+  async resume(@Req() req: Request, @Body() body: unknown) {
+    if (!this.auth || !this.rooms)
+      throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
+    return this.rooms.resume(
+      await this.auth.authenticate(req.headers.authorization),
+      body,
+    );
+  }
   @Post('commands')
   @HttpCode(200)
   async command(
