@@ -1,6 +1,6 @@
 # B011 — Album and archive implementation report
 
-29 October 2026. **Read-only archive/series foundation prepared; complete B011 acceptance remains open.** B010's provider/device acceptance is unchanged. B011's declared prerequisite is B008, allowing this independent implementation without claiming B010 completion.
+29 October 2026. **Read-only archive/series foundation prepared; complete B011 acceptance remains open.** B010's provider/device acceptance is unchanged. B011's declared prerequisite is B008, allowing this independent implementation without claiming B010 completion. Implementation `34cbc53` is in [draft PR #10](https://github.com/BLUAlteractive/MasterDeck/pull/10); [hosted CI](https://github.com/BLUAlteractive/MasterDeck/actions/runs/40996833323) passed both required jobs.
 
 ## Changes
 
@@ -21,7 +21,8 @@ No gameplay, currency, reward grant, fusion transaction, earned discovery, comme
 - `pnpm ci:database`: **51 cases in eight files passed before and after reverse/reset/reseed**, Prisma validation, repeated migrate/seed and owned-container cleanup passed. The initial attempt exposed the seed test's global fixture-count assumption; the targeted seed replay assertion corrected it. No existing developer/production database was used.
 - Separate iOS and Android `expo export` passed. These are bundle checks, not native compilation/device acceptance.
 - OpenAPI validation passed with `pnpm --package=@redocly/cli@2.72.0 dlx redocly lint architecture/API_CONTRACT.yaml --extends spec`. The first implicit-binary invocation failed because the package exposes multiple binaries; the explicit invocation passed.
-- `pnpm ci:audit` passed the high/critical gate; one inherited low finding remains.
+- `pnpm ci:audit` passed the high/critical gate; one inherited low finding remains. Hosted Quality checks independently passed frozen installation, formatting/lint/types/tests/builds and the isolated migration/rollback suite; Dependency audit passed.
+- Final whitespace and local documentation-link checks passed. Running local API health returned ok, web returned HTTP 200, and the unconfigured archive correctly returned 503 AUTH_NOT_CONFIGURED. These are readiness/boundary checks, not authenticated visual acceptance.
 
 ## Risks and remaining acceptance
 
