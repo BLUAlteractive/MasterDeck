@@ -9,6 +9,7 @@ import { CollectionApp } from '../CollectionApp';
 import { authStorageKey, credentialStorage } from './nativeStorage';
 import type { sessionConfiguration } from './storage';
 import { disconnectMessage, disconnectSession } from './disconnect';
+import { restoreAccount } from './restoration';
 type Configuration = NonNullable<ReturnType<typeof sessionConfiguration>>;
 export function ManagedSessionHost({
   config,
@@ -43,8 +44,13 @@ export function ManagedSessionHost({
   const [message, setMessage] = useState('Restoring account…');
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const [needsCleanup, setNeedsCleanup] = useState(false);
+  const [restoreAttempt, setRestoreAttempt] = useState(0);
+  const [restoreState, setRestoreState] = useState<
+    'pending' | 'ready' | 'failed'
+  >('pending');
   useEffect(() => {
     let alive = true;
+    setRestoreState('pending');
     const { data } = provider.auth.onAuthStateChange((event, next) => {
       if (!alive || disconnected.current) return;
       setSession(next);
@@ -61,31 +67,23 @@ export function ManagedSessionHost({
         setMessage('Explore first, or start a guest collection.');
       }
     });
-    void provider.auth
-      .getSession()
-      .then(({ data, error }) => {
-        if (!alive || disconnected.current) return;
-        if (error) {
-          setMessage(
-            'Could not restore your account. Check the connection and try again.',
-          );
-          setBusy(false);
-          return;
-        }
-        setSession(data.session);
-        if (!data.session) {
-          setBusy(false);
-          setMessage('Explore first, or start a guest collection.');
-        }
-      })
-      .catch(() => {
-        if (alive) {
-          setBusy(false);
-          setMessage(
-            'Account storage is unavailable. Your saved session was not replaced.',
-          );
-        }
-      });
+    void restoreAccount(() => provider.auth.getSession()).then((result) => {
+      if (!alive || disconnected.current) return;
+      setRestoreState(result.status);
+      if (result.status === 'failed') {
+        setReady(null);
+        setBusy(false);
+        setMessage(
+          'Could not restore your saved account. Guest creation is paused to protect saved access. Retry your saved account.',
+        );
+        return;
+      }
+      setSession(result.session);
+      if (!result.session) {
+        setBusy(false);
+        setMessage('Explore first, or start a guest collection.');
+      }
+    });
     const appState =
       Platform.OS === 'web'
         ? null
@@ -104,9 +102,9 @@ export function ManagedSessionHost({
       appState?.remove();
       provider.auth.stopAutoRefresh();
     };
-  }, [provider]);
+  }, [provider, restoreAttempt]);
   useEffect(() => {
-    if (!session || disconnected.current) {
+    if (!session || disconnected.current || restoreState !== 'ready') {
       setReady(null);
       return;
     }
@@ -145,7 +143,7 @@ export function ManagedSessionHost({
     });
     return () => controller.abort();
     // Token refresh keeps the same provider session; API requests obtain its fresh token below.
-  }, [provider, session?.user.id, epoch, apiUrl]);
+  }, [provider, session?.user.id, epoch, apiUrl, restoreState]);
   const connection = useMemo(
     () =>
       ready
@@ -168,6 +166,7 @@ export function ManagedSessionHost({
     [ready, provider, apiUrl],
   );
   async function guest() {
+    if (restoreState !== 'ready' || needsCleanup || busy) return;
     disconnected.current = false;
     setBusy(true);
     try {
@@ -220,6 +219,8 @@ export function ManagedSessionHost({
     setReady(null);
     setBusy(false);
     setNeedsCleanup(!result.providerSignedOut || !result.credentialsCleared);
+    if (result.providerSignedOut && result.credentialsCleared)
+      setRestoreState('ready');
     setMessage(disconnectMessage(result));
   }
 
@@ -229,6 +230,18 @@ export function ManagedSessionHost({
         <Text accessibilityLiveRegion="polite" style={styles.text}>
           {message}
         </Text>
+        {restoreState === 'failed' && !needsCleanup ? (
+          <Action
+            label="Retry saved account"
+            disabled={busy}
+            onPress={() => {
+              setRestoreState('pending');
+              setBusy(true);
+              setMessage('Restoring saved account…');
+              setRestoreAttempt((value) => value + 1);
+            }}
+          />
+        ) : null}
         {needsCleanup ? (
           <Action
             label="Retry account cleanup"
@@ -247,7 +260,7 @@ export function ManagedSessionHost({
             </Text>
             <Action
               label={busy ? 'Connecting…' : 'Start guest collection'}
-              disabled={busy || needsCleanup}
+              disabled={busy || needsCleanup || restoreState !== 'ready'}
               onPress={() => void guest()}
             />
           </>
