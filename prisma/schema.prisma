@@ -345,6 +345,8 @@ model GameRoom {
   initial        Json
   snapshot       Json
   commitment     String
+  turnTimeoutMs  Int               @default(30000)
+  turnDeadline   DateTime?         @db.Timestamptz(3)
   createdAt      DateTime          @default(now()) @db.Timestamptz(3)
   participants   GameParticipant[]
   events         GameEvent[]
@@ -363,17 +365,19 @@ model GameParticipant {
 }
 
 model GameEvent {
-  id           String   @id @db.Uuid
-  roomId       String   @db.Uuid
+  id           String    @id @db.Uuid
+  roomId       String    @db.Uuid
   stateVersion Int
-  actorUserId  String?  @db.Uuid
+  actorUserId  String?   @db.Uuid
   commandId    String?
   requestHash  String?
+  source       String    @default("PLAYER")
+  turnDeadline DateTime? @db.Timestamptz(3)
   command      Json
   snapshot     Json
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  room         GameRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
-  actor        User?    @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  room         GameRoom  @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  actor        User?     @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
 
   @@unique([roomId, stateVersion])
   @@unique([actorUserId, commandId])

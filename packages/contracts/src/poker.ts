@@ -127,9 +127,20 @@ export const pokerCommandSchema = z
   })
   .strict();
 export const pokerRoomViewSchema = z
-  .object({ gameId: z.uuid(), view: pokerViewSchema })
+  .object({
+    gameId: z.uuid(),
+    view: pokerViewSchema,
+    turnDeadline: z.iso.datetime().nullable(),
+  })
   .strict();
 export const pokerCommandReceiptSchema = pokerRoomViewSchema
   .extend({ commandId: z.string(), stateVersion: z.number().int().min(1) })
   .strict();
 export type PokerRoomCommand = z.infer<typeof pokerCommandSchema>;
+
+export const pokerResumeSchema = pokerRoomJoinSchema
+  .extend({ afterVersion: z.number().int().min(0).max(2147483647) })
+  .strict();
+export const pokerResumeResponseSchema = pokerRoomViewSchema
+  .extend({ continuity: z.literal('SNAPSHOT') })
+  .strict();

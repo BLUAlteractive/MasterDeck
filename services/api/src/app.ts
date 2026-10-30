@@ -15,7 +15,7 @@ import { FavoriteController } from './favorites';
 import { ArchiveController } from './archive';
 import { LobbyController } from './rooms/lobby';
 import { PokerRoomController } from './rooms/controller';
-import { PokerRoomService } from './rooms/service';
+import { PokerRoomService, startTimeoutWorker } from './rooms/service';
 import { StarterController, StarterService } from './starter';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
@@ -40,7 +40,8 @@ export async function createApp(
   auth: AuthService | null = null,
   catalogDatabase: PrismaClient | null = auth?.database ?? null,
 ) {
-  let stopSocket = () => {};
+  let stopSocket = async () => {};
+  let stopTimeouts = async () => {};
   const pokerRooms = auth ? new PokerRoomService(auth.database) : null;
   const app = await NestFactory.create<NestExpressApplication>(
     {
@@ -68,7 +69,10 @@ export async function createApp(
         {
           provide: 'AUTH_SHUTDOWN',
           useValue: {
-            beforeApplicationShutdown: () => stopSocket(),
+            beforeApplicationShutdown: async () => {
+              await stopTimeouts();
+              await stopSocket();
+            },
             onApplicationShutdown: async () => {
               if (auth) await auth.database.$disconnect();
               if (catalogDatabase && catalogDatabase !== auth?.database)
@@ -90,6 +94,7 @@ export async function createApp(
     origins,
     pokerRooms,
   );
+  if (pokerRooms) stopTimeouts = startTimeoutWorker(pokerRooms);
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({
