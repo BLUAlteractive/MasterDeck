@@ -13,6 +13,7 @@ import { CardHistoryController } from './history';
 import { LoadoutController } from './loadouts';
 import { FavoriteController } from './favorites';
 import { ArchiveController } from './archive';
+import { LobbyController } from './rooms/lobby';
 import { PokerRoomController } from './rooms/controller';
 import { PokerRoomService } from './rooms/service';
 import { StarterController, StarterService } from './starter';
@@ -54,6 +55,7 @@ export async function createApp(
         FavoriteController,
         ArchiveController,
         PokerRoomController,
+        LobbyController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
