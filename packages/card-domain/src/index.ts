@@ -16,3 +16,6 @@ export { fusionRecipe } from './fusion';
 export type { FusionSource } from './fusion';
 
 export { advanceProgress, progressWindow } from './progress';
+
+export { currencyDirection } from './currency';
+export type { Currency, CurrencyPurpose } from './currency';

@@ -1,3 +1,4 @@
+import { WalletController } from './wallets';
 import {
   ProgressionController,
   ProgressionService,
@@ -93,6 +94,7 @@ export async function createApp(
         SpadesAdmissionController,
         FusionController,
         ProgressionController,
+        WalletController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
