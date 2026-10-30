@@ -26,6 +26,7 @@ export const lobbyViewSchema = z
     id: z.uuid(),
     kind: z.enum(['PUBLIC', 'PRIVATE']),
     mode: z.literal('CLASSIC'),
+    status: z.enum(['OPEN', 'STARTED', 'CLOSED']).default('OPEN'),
     capacity: z.number().int().min(2).max(6),
     hostId: z.uuid(),
     version: z.number().int().positive(),

@@ -13,6 +13,12 @@ import { CardHistoryController } from './history';
 import { LoadoutController } from './loadouts';
 import { FavoriteController } from './favorites';
 import { ArchiveController } from './archive';
+import { ChipController } from './rooms/chip-controller';
+import {
+  MatchSettlementService,
+  startSettlementWorker,
+  type ClassicAdmissionPolicy,
+} from './rooms/settlement';
 import { LobbyController } from './rooms/lobby';
 import { PokerRoomController } from './rooms/controller';
 import { PokerRoomService, startTimeoutWorker } from './rooms/service';
@@ -39,9 +45,11 @@ export async function createApp(
   origins: string[] = [],
   auth: AuthService | null = null,
   catalogDatabase: PrismaClient | null = auth?.database ?? null,
+  admissionPolicy: ClassicAdmissionPolicy | null = null,
 ) {
   let stopSocket = async () => {};
   let stopTimeouts = async () => {};
+  let stopSettlements = async () => {};
   const pokerRooms = auth ? new PokerRoomService(auth.database) : null;
   const app = await NestFactory.create<NestExpressApplication>(
     {
@@ -57,9 +65,11 @@ export async function createApp(
         ArchiveController,
         PokerRoomController,
         LobbyController,
+        ChipController,
       ],
       providers: [
         { provide: 'AUTH_SERVICE', useValue: auth },
+        { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
         { provide: 'POKER_ROOMS', useValue: pokerRooms },
         {
           provide: 'STARTER_SERVICE',
@@ -71,6 +81,7 @@ export async function createApp(
           useValue: {
             beforeApplicationShutdown: async () => {
               await stopTimeouts();
+              await stopSettlements();
               await stopSocket();
             },
             onApplicationShutdown: async () => {
@@ -95,6 +106,10 @@ export async function createApp(
     pokerRooms,
   );
   if (pokerRooms) stopTimeouts = startTimeoutWorker(pokerRooms);
+  if (auth)
+    stopSettlements = startSettlementWorker(
+      new MatchSettlementService(auth.database, admissionPolicy),
+    );
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({

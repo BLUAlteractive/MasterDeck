@@ -103,6 +103,7 @@ export async function attachAuthSocket(
     });
     let joined: string | null = null,
       lastVersion = -1,
+      lastSettled = false,
       refreshing = false,
       pending = false;
     const refresh = async () => {
@@ -121,10 +122,16 @@ export async function attachAuthSocket(
           if (
             joined === gameId &&
             socket.connected &&
-            result.view.stateVersion > lastVersion
+            (result.view.stateVersion > lastVersion ||
+              (result.view.stateVersion === lastVersion &&
+                result.settled &&
+                !lastSettled))
           ) {
             lastVersion = result.view.stateVersion;
+            const newlySettled = result.settled && !lastSettled;
+            lastSettled = result.settled;
             socket.emit('game.state', result);
+            if (newlySettled) socket.emit('game.settled', result);
           }
         } while (pending);
       } catch {
@@ -169,6 +176,7 @@ export async function attachAuthSocket(
           const result = await roomService.resume(principal, parsed.data);
           joined = parsed.data.gameId;
           lastVersion = result.view.stateVersion;
+          lastSettled = result.settled;
           ack(result);
           void refresh();
         } else if (kind === 'join') {
@@ -177,6 +185,7 @@ export async function attachAuthSocket(
           const result = await roomService.read(principal, parsed.data.gameId);
           joined = parsed.data.gameId;
           lastVersion = result.view.stateVersion;
+          lastSettled = result.settled;
           ack(result);
           // Close the read/subscribe race by fetching once more after membership is registered.
           void refresh();

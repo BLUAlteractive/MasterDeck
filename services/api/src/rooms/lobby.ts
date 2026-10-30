@@ -18,10 +18,14 @@ import { validateLoadout } from '@deckforge/card-domain';
 import type { Prisma, PrismaClient } from '@deckforge/database';
 import type { AuthService, Principal } from '../auth/service';
 import { ApiFailure } from '../auth/errors';
+import type { ClassicAdmissionPolicy } from './settlement';
 import { lockPrincipal, hash, json } from './shared';
 const inviteHash = (s: string) => createHash('sha256').update(s).digest('hex');
 export class LobbyService {
-  constructor(readonly database: PrismaClient) {}
+  constructor(
+    readonly database: PrismaClient,
+    readonly policy: ClassicAdmissionPolicy | null = null,
+  ) {}
   private async view(
     tx: Prisma.TransactionClient,
     userId: string,
@@ -32,6 +36,24 @@ export class LobbyService {
     });
     if (!own) return { lobby: null, invite: null };
     const l = own.lobby;
+    const accounts = this.policy
+      ? await tx.playChipAccount.findMany({
+          where: { userId: { in: l.seats.map((s) => s.userId) } },
+        })
+      : [];
+    const canStart =
+      !!this.policy &&
+      l.status === 'OPEN' &&
+      l.hostId === userId &&
+      l.seats.length >= 2 &&
+      l.seats.every(
+        (s) =>
+          s.ready &&
+          accounts.some(
+            (a) =>
+              a.userId === s.userId && a.balance >= BigInt(this.policy!.buyIn),
+          ),
+      );
     return lobbyResultSchema.parse({
       lobby: {
         id: l.id,
@@ -45,7 +67,7 @@ export class LobbyService {
           seat: s.seat,
           ready: s.ready,
         })),
-        canStart: false,
+        canStart,
       },
       invite: null,
     });
@@ -83,6 +105,13 @@ export class LobbyService {
         const own = await tx.lobbySeat.findUnique({
           where: { userId: p.userId },
         });
+        if (
+          own &&
+          (await tx.lobby.findUniqueOrThrow({ where: { id: own.lobbyId } }))
+            .status !== 'OPEN'
+        )
+          throw new ApiFailure('GAME_IN_PROGRESS', 409);
+
         let invite: string | null = null;
         if (input.action === 'LEAVE') {
           if (own) {
@@ -218,10 +247,12 @@ export class LobbyService {
 export class LobbyController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly auth: AuthService | null,
+    @Inject('ADMISSION_POLICY')
+    private readonly policy: ClassicAdmissionPolicy | null,
   ) {}
   @Get() async read(@Req() req: Request) {
     if (!this.auth) throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
-    return new LobbyService(this.auth.database).read(
+    return new LobbyService(this.auth.database, this.policy).read(
       await this.auth.authenticate(req.headers.authorization),
     );
   }
@@ -230,7 +261,7 @@ export class LobbyController {
     @Body() body: unknown,
   ) {
     if (!this.auth) throw new ApiFailure('AUTH_NOT_CONFIGURED', 503);
-    return new LobbyService(this.auth.database).command(
+    return new LobbyService(this.auth.database, this.policy).command(
       await this.auth.authenticate(req.headers.authorization),
       body,
     );

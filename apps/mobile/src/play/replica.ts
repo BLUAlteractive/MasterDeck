@@ -26,7 +26,9 @@ export function acceptSnapshot(
   if (next.gameId !== state.gameId) throw new Error('WRONG_ROOM');
   if (
     state.snapshot &&
-    next.view.stateVersion <= state.snapshot.view.stateVersion
+    (next.view.stateVersion < state.snapshot.view.stateVersion ||
+      (next.view.stateVersion === state.snapshot.view.stateVersion &&
+        (state.snapshot.settled || !next.settled)))
   )
     return state;
   if (
@@ -62,6 +64,7 @@ export function acceptReceipt(state: RoomReplica, input: unknown): RoomReplica {
     gameId: receipt.gameId,
     view: receipt.view,
     turnDeadline: receipt.turnDeadline,
+    settled: receipt.settled,
   });
   return {
     ...next,
@@ -84,5 +87,6 @@ export function acceptResume(state: RoomReplica, input: unknown): RoomReplica {
     gameId: response.gameId,
     view: response.view,
     turnDeadline: response.turnDeadline,
+    settled: response.settled,
   });
 }
