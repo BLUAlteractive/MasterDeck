@@ -1,0 +1,15 @@
+# B028 — Spades scoring
+
+Added one clockwise immutable bid per seat, nil validation, explicit versioned team-scoring configuration, bag carry/penalties, target resolution and a bid/play/multi-round reducer. A completed deal scores both fixed partnerships exactly once; stale/repeated final actions cannot append another result. Next-round setup is a trusted server operation, rotates dealer and preserves score/history. Match points are not wallet credits.
+
+Changed files: game-spades `index.ts` now exports separate `tricks.ts` and `scoring.ts` modules (avoids cyclic imports); new `scoring.test.ts`; decisions, status and this report. The existing trick engine and tests retain their behavior. No new dependencies, migration, public API or room integration; those remain B029.
+
+Rules configuration is required, copied and frozen per match. There is no exported launch default. The caller must explicitly choose version, nil enablement/value, contract/bag points, bag threshold/penalty, failed-nil bag treatment and target. Failed nil tricks cannot satisfy the partner contract. Bag penalties can repeat in one round; carry stays below threshold. Both teams are evaluated before declaring the higher team over target; tied target scores continue. Numeric inputs/results are bounded integers. This implements the specified configurable foundation without resolving R-10 launch house-rule approval.
+
+Reference: [Pagat's basic four-player Spades rules and scoring examples](https://www.pagat.com/auctionwhist/spades.html), checked 30 October 2026. The test-only published profile verifies a prior 337 score / seven bags and bid five: seven tricks → 389/nine bags; eight → 290/zero; nine → 291/one. Fixtures also cover nil success/failure, nil partner contract failure, two nils, multiple bag penalties, nil-disabled and explicit failed-nil bag choices, invalid inputs/overflow, simultaneous target crossings and ties.
+
+Focused `pnpm --filter @deckforge/game-spades build` and `pnpm exec vitest run packages/game-spades/src` passed **23 cases**. Alongside B027's 1,000 deals, the scoring suite runs **200 three-round seeded matches**, replaying every bid/play and comparing each partnership result to the standalone scorer. Fixture random sources are test-only. Final full quality results follow below.
+
+No physical-device, native, authentication or realtime Spades acceptance is claimed. B029 must authorize actors, validate wire schemas, persist versioned rules/private events and project recipient-safe hands before any live integration. A reviewed launch policy is still required; this package chooses none. Within the requested B019–B028 batch, B023–B026 remain dependent on the outstanding Evolved scoring-policy approval.
+
+Final `pnpm ci:quality` passed formatting, lint, strict/test types, **204 unit tests in 31 files** and **11 builds** (`/tmp/deckforge-b028-quality-final.log`). Whitespace checks passed. No persisted implementation changed in B027/B028, so B022's 85 cases passed twice remain the latest applicable database integration evidence.

@@ -28,4 +28,6 @@
 
 | B027 — Spades deal and trick engine | Implementation and validation in report | [B027 report](../docs/B027_REPORT.md) | Pure engine; scoring B028, realtime/privacy/device acceptance B029–B030 remain separate. |
 
+| B028 — Spades scoring | Implementation and validation in report | [B028 report](../docs/B028_REPORT.md) | Explicit required policy; launch rules approval, realtime and device acceptance remain open. |
+
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
