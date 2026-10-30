@@ -17,3 +17,5 @@
 | B013 — Best 5 of 7                    | Validated locally and on GitHub; ready for review                                     | [B013 report](../docs/B013_REPORT.md), [draft PR #12](https://github.com/BLUAlteractive/MasterDeck/pull/12), [hosted CI](https://github.com/BLUAlteractive/MasterDeck/actions/runs/41003424270)             | 50,000 reference fixtures, all 21 winning positions, 149 unit/property cases and 11 builds pass. Actual split pots and game actors remain later work.           |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
+
+| B014 — Poker state machine | Implemented; local validation recorded in report | [B014 report](../docs/B014_REPORT.md) | Private engine only; no wallet settlement or public seed disclosure. |

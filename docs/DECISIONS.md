@@ -195,3 +195,10 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Evolved B023 must still evaluate all 21 candidates, not only the Classic winners. Retaining multiple best selections does not determine personal-card attribution, hole-card bonuses, match visibility or rewards.
 - Validate generated seeds against an independent direct seven-card rank/suit reference, with separate bitmask traversal for complete tie selections. The deterministic fixture sampler is test-only and not a production RNG/deal. No third-party runtime evaluator or copied tables are added.
 - Separate the acceptance matrix's ranking/tie detection item from actual split-pot allocation/settlement. B013 can return equality but cannot settle chips, eligibility or a game. This clarifies verification ownership and changes no scoring/product rule; all payout/side-pot work remains B015/B022.
+
+## B014 Classic hand transitions — 29 October 2026
+
+- Freeze `CLASSIC_NLHE_V1`: 2–6 occupied seats, clockwise dealing with burns, heads-up button small blind, integer chips and a one-billion table-total bound. No ante, straddle or rake. Digital commands are explicit; no live verbal-bet correction or penalties are inferred.
+- Minimum raises and player-specific cumulative short-all-in reopening follow [Poker TDA rules 36, 45 and 49](https://www.pokertda.com/view-poker-tda-rules/). A prior check counts as action; an incomplete opening all-in alone does not reopen it. An unacted player may raise by the last full increment. No lone player may build a dry side pot.
+- The pure reducer accepts one validated 52-face deck or injected bounded draws. Production CSPRNG selection belongs to B018. Contributions remain in the pot until B015 allocation; no wallet settlement occurs here.
+- R-11 remains open: no shuffle seed or private replay is disclosed after closure, since it could reconstruct folded holes. Retain private replay evidence; public fairness proof requires cryptographic/privacy review. This restricts disclosure and does not approve a new public proof policy.
