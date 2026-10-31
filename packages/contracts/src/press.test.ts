@@ -31,3 +31,20 @@ it('rejects purchased currency, functional cosmetic modifiers, invalid transitio
       screenPatternSchema.safeParse({ ...recipe, ...change }).success,
     ).toBe(false);
 });
+import { screenPurchaseSchema } from './press';
+it('accepts only a stable command and offer hash for an earned screen purchase, never a client price or paid wallet', () => {
+  const purchase = {
+    commandId: '00000000-0000-4000-8000-000000000001',
+    expectedDefinitionHash: 'a'.repeat(64),
+  };
+  expect(screenPurchaseSchema.parse(purchase)).toEqual(purchase);
+  for (const extra of [
+    { currency: 'STORE_GEMS' },
+    { price: 0 },
+    { status: 'AVAILABLE' },
+    { screenId: purchase.commandId },
+  ])
+    expect(
+      screenPurchaseSchema.safeParse({ ...purchase, ...extra }).success,
+    ).toBe(false);
+});

@@ -1365,3 +1365,35 @@ model ScreenReview {
   @@id([patternId, review])
   @@unique([patternId, reviewerId])
 }
+
+model OwnedScreen {
+  id             String   @id @db.Uuid
+  userId         String   @db.Uuid
+  patternId      String   @db.Uuid
+  definitionHash String
+  snapshot       Json
+  commandId      String   @db.Uuid
+  requestHash    String
+  transferId     String   @unique @db.Uuid
+  result         Json
+  status         String   @default("AVAILABLE")
+  stateVersion   Int      @default(1)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, commandId])
+}
+
+model ScreenEvent {
+  id          String   @id @db.Uuid
+  screenId    String   @db.Uuid
+  userId      String   @db.Uuid
+  version     Int
+  action      String
+  sourceKey   String   @unique
+  requestHash String
+  before      Json?
+  after       Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([screenId, version])
+}

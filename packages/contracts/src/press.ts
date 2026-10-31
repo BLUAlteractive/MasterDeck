@@ -77,3 +77,40 @@ export const screenCatalogSchema = z
     patterns: z.array(screenPatternViewSchema).max(100),
   })
   .strict();
+export const screenPurchaseSchema = z
+  .object({
+    commandId: z.uuid(),
+    expectedDefinitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict();
+export const ownedScreenViewSchema = z
+  .object({
+    screenId: z.uuid(),
+    patternId: z.uuid(),
+    status: z.enum(['AVAILABLE', 'ASSIGNED', 'CONSUMED', 'REVOKED']),
+    stateVersion: z.number().int().positive(),
+    definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    definition: screenPatternSchema,
+    acquiredAt: z.iso.datetime(),
+  })
+  .strict();
+export const screenPurchaseReceiptSchema = z
+  .object({
+    screen: ownedScreenViewSchema,
+    charged: z.string().regex(/^[1-9]\d*$/),
+    currency: z.literal('TRAIL_CREDITS'),
+    transferId: z.uuid(),
+  })
+  .strict();
+export const screenInventoryQuerySchema = z
+  .object({
+    cursor: z.uuid().optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(50),
+  })
+  .strict();
+export const screenInventorySchema = z
+  .object({
+    screens: z.array(ownedScreenViewSchema).max(100),
+    nextCursor: z.uuid().nullable(),
+  })
+  .strict();

@@ -34,6 +34,7 @@ export const privacyStateSchema = z
 export const privacyExportQuerySchema = z
   .object({
     resource: z.enum([
+      'SCREENS',
       'PACK_OPENINGS',
       'SUPPLIES',
       'ACTIVITY',
