@@ -29,13 +29,8 @@ export async function approvedCosmeticProduct(
     },
     include: { items: { include: { item: true }, orderBy: { itemId: 'asc' } } },
   });
-  const availability = product
-    ? await tx.productAvailability.findUnique({
-        where: { productId: product.id },
-      })
-    : null;
+  // Sale visibility is separate: a delayed legitimate platform proof must still fulfill.
   if (
-    availability?.enabled === false ||
     !product ||
     !product.approvalReference ||
     product.items.some((i) => !i.item.approvalReference)

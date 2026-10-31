@@ -48,6 +48,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Formatting, lint, types, tests and builds
         run: pnpm ci:quality
+      - name: Reject tracked credentials and private backups
+        run: pnpm security:check
       - name: Reproduce experimental Evolved diagnostics
         run: pnpm test:poker:evolved --verify docs/simulations/evolved-a-v1.json
       - name: Isolated migrations, seeds, constraints and rollback

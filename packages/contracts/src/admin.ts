@@ -1,6 +1,7 @@
 import { catalogManifestSchema } from '@deckforge/card-domain';
 import { z } from 'zod';
 export const adminCapabilities = [
+  'GAME_OPERATOR',
   'CONTENT_EDITOR',
   'CONTENT_REVIEWER',
   'CONTENT_PUBLISHER',

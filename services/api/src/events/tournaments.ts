@@ -1,3 +1,4 @@
+import { adminAccess } from '../admin/access';
 import { randomUUID, randomBytes } from 'node:crypto';
 import {
   Body,
@@ -50,10 +51,7 @@ export class TournamentService {
     return { policy: this.policy, admission: this.admission };
   }
   private async admin(tx: Prisma.TransactionClient, p: Principal) {
-    await lockPrincipal(tx, p);
-    const u = await tx.user.findUniqueOrThrow({ where: { id: p.userId } });
-    if (u.role !== 'ADMIN' || u.isGuest || p.claims.aal !== 'aal2')
-      throw new ApiFailure('FORBIDDEN', 403);
+    await adminAccess(tx, p, 'GAME_OPERATOR');
   }
   async create(p: Principal, body: unknown) {
     const input = parse(tournamentCreateSchema, body),

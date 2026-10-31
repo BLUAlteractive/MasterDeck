@@ -244,3 +244,44 @@ it('retains revocation on older valid receipts and enforces purchase/grant/event
     }),
   ).rejects.toThrow();
 });
+it('honors a delayed first verified paid proof after an offer switch while keeping that product hidden from sale', async () => {
+  const actor = await bound(),
+    operator = await f.actor(false, 'aal2');
+  await f.db.user.update({
+    where: { id: operator.userId },
+    data: { role: 'ADMIN' },
+  });
+  await f.db.adminCapability.create({
+    data: {
+      userId: operator.userId,
+      capability: 'PRODUCT_OPERATOR',
+      grantedBy: 'test.operator-provisioning-only',
+    },
+  });
+  const proof = fixture.proof(
+    'APPLE',
+    actor.context.appleAppAccountToken,
+    product.appleProductId,
+  );
+  const { ContentAdminService } = await import('./admin/content');
+  await new ContentAdminService(f.auth).command(operator.principal, {
+    action: 'PRODUCT_SWITCH',
+    productId: product.productId,
+    enabled: false,
+    commandId: randomUUID(),
+    reason: 'Fixture offer disabled before delayed delivery',
+  });
+  const catalog = await f.request('storefront?platform=APPLE');
+  expect(
+    ((await catalog.json()) as { products: unknown[] }).products,
+  ).toHaveLength(0);
+  const receipt = await service.verify(actor.principal, proof);
+  expect(
+    await f.db.cosmeticGrant.count({
+      where: { purchaseId: receipt.purchaseId, status: 'ACTIVE' },
+    }),
+  ).toBe(1);
+  expect(
+    (await service.currentPurchase(actor.principal, receipt.purchaseId)).status,
+  ).toBe('ACTIVE');
+});

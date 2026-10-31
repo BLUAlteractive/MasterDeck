@@ -390,7 +390,7 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 ### B044 — Scoped catalog authority and immutable review
 
 - Operator-provisioned capabilities refine local ADMIN; every command rechecks current role, scope and MFA under lock. No public capability grant or mint endpoint. Draft templates reference existing art assets; commercial provenance must already be approved by the trusted pipeline. Editor, two independent reviewers and publisher cannot substitute one actor for the full review chain.
-- Review the exact publishable manifest hash. Retire published series rather than rewriting earned templates. Live cosmetic switches require both an approved fixed product and the existing server allow-list; disabled products reject new purchases but existing purchase restore/refund evidence remains valid. Main remains unconfigured for live commerce.
+- Review the exact publishable manifest hash. Retire published series rather than rewriting earned templates. Live cosmetic switches require both an approved fixed product and the existing server allow-list; disabled offers are hidden from sale; B049 separates authoritative late receipt fulfillment so valid platform purchases are not stranded. Existing purchase restore/refund evidence remains valid. Main remains unconfigured for live commerce.
 - Admin UI receives a refresh-aware managed-auth connection from its host, stores no bearer token and defaults disconnected. This implements administration infrastructure, not a claim of real operator/rights/provider approval.
 
 ### B045 — Participant safety without invented forfeitures
@@ -417,3 +417,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Preserve full rank/suit text and distinct suit shapes alongside color; test the 52 accessible names and actual active palette/ink contrasts. Do not mutate hashed art merely to add an unreviewed visual variant.
 - Share system reduced motion once per session, default reduced on uncertainty, and remove modal fade when requested. Keep scalable minimum-48 controls and press retention for motor drift.
 - Automated/source audit is not physical VoiceOver/TalkBack, focus/large-text or full journey acceptance. Maintain an explicit device matrix and the nonwalking Press integration dependency; no accessibility claim establishes activity proof or a reward.
+
+### B049 — Least privilege and paid-proof integrity
+
+- Close legacy tournament ADMIN privilege with a distinct operator-provisioned GAME_OPERATOR scope, fresh MFA/current-role checks and SQL audit scope validation. Existing audit history is retained; no default administrator gains the new capability.
+- An offer switch controls storefront sale visibility, not the validity of an already-paid platform proof. Continue approved fixed cosmetic fulfillment/restore/refund for legitimate delayed evidence; never invent a paid balance, contents, price or functional reward.
+- Harden API response caching/framing/sniffing, add tracked-secret CI checks and scope maintainer-patched minimatch/glob to exact current CLI/lint parents. Validate actual command/build paths; retain the inherited low trusted-config deepmerge risk and external penetration/provider/device/edge/key-operations gates.

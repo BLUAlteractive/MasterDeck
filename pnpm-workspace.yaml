@@ -11,3 +11,5 @@ onlyBuiltDependencies:
 # Scoped compatibility remediation; see docs/DECISIONS.md and scripts/expo-cli-compat.test.ts.
 overrides:
   '@expo/cli@58.1.17>zod': 4.6.7
+  'minimatch@10.2.6': 11.0.1
+  'glob@13.0.6': 14.0.2
