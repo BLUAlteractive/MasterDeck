@@ -1199,3 +1199,68 @@ model PrivacyAccessEvent {
   resource  String
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
+
+model ActivityBatch {
+  id          String   @id @db.Uuid
+  userId      String   @db.Uuid
+  proofKey    String
+  requestHash String
+  result      Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, proofKey])
+}
+
+model ActivitySource {
+  id            String    @id @db.Uuid
+  userId        String    @db.Uuid
+  sourceKey     String
+  source        String
+  revision      Int
+  requestHash   String
+  day           String
+  acceptedSteps Int
+  reason        String?
+  startAt       DateTime? @db.Timestamptz(3)
+  endAt         DateTime? @db.Timestamptz(3)
+  batchId       String    @db.Uuid
+
+  @@unique([userId, sourceKey])
+  @@index([userId, day])
+}
+
+model ActivityDay {
+  userId         String @db.Uuid
+  day            String
+  acceptedSteps  Int    @default(0)
+  grantedCredits Int    @default(0)
+  policy         Json
+
+  @@id([userId, day])
+}
+
+model ActivityAllocation {
+  id         String   @id @db.Uuid
+  batchId    String   @db.Uuid
+  userId     String   @db.Uuid
+  channel    String
+  targetId   String
+  units      Int
+  transferId String?  @unique @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([batchId, channel, targetId])
+}
+
+model ActivityReview {
+  id             String   @id @db.Uuid
+  userId         String   @db.Uuid
+  sourceId       String   @db.Uuid
+  revision       Int
+  requestHash    String
+  stepAdjustment Int
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([sourceId, revision])
+  @@index([userId])
+}

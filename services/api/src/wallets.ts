@@ -59,6 +59,12 @@ export async function moveRestrictedCurrency(
       .status !== 'ACTIVE'
   )
     throw new ApiFailure('USER_INACTIVE', 403);
+  if (
+    input.currency === 'TRAIL_CREDITS' &&
+    direction === 'SPEND' &&
+    (await tx.activityReview.count({ where: { userId: input.userId } }))
+  )
+    throw new ApiFailure('ACTIVITY_REVIEW_REQUIRED', 409);
   const digest = hash({ ...input, amount: input.amount.toString() });
   const prior = await tx.restrictedTransfer.findUnique({
     where: { sourceKey: input.sourceKey },

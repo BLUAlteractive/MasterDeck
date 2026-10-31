@@ -34,6 +34,8 @@ export const privacyStateSchema = z
 export const privacyExportQuerySchema = z
   .object({
     resource: z.enum([
+      'ACTIVITY',
+      'ACTIVITY_REVIEWS',
       'ACCOUNT',
       'CARDS',
       'OWNERSHIP',
