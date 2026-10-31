@@ -1054,3 +1054,47 @@ model TournamentDispute {
   @@unique([userId, commandId])
   @@index([tournamentId, createdAt])
 }
+
+model AdminCapability {
+  userId     String    @db.Uuid
+  capability String
+  grantedBy  String
+  revokedAt  DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, capability])
+}
+
+model AdminAction {
+  id          String   @id @db.Uuid
+  actorId     String   @db.Uuid
+  commandId   String   @db.Uuid
+  capability  String
+  action      String
+  scope       String
+  reason      String
+  requestHash String
+  result      Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([actorId, commandId])
+  @@index([scope, createdAt])
+}
+
+model ContentReview {
+  seriesId     String   @db.Uuid
+  manifestHash String
+  review       String
+  reviewerId   String   @db.Uuid
+  evidence     String
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([seriesId, manifestHash, review])
+}
+
+model ProductAvailability {
+  productId String   @id @db.Uuid
+  enabled   Boolean  @default(false)
+  version   Int      @default(1)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}

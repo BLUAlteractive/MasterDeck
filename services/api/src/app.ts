@@ -1,3 +1,4 @@
+import { ContentAdminController } from './admin/content';
 import {
   TournamentController,
   TournamentService,
@@ -136,6 +137,7 @@ export async function createApp(
       module: AppModule,
       controllers: [
         HealthController,
+        ContentAdminController,
         IdentityController,
         CatalogController,
         StarterController,

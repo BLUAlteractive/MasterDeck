@@ -29,7 +29,13 @@ export async function approvedCosmeticProduct(
     },
     include: { items: { include: { item: true }, orderBy: { itemId: 'asc' } } },
   });
+  const availability = product
+    ? await tx.productAvailability.findUnique({
+        where: { productId: product.id },
+      })
+    : null;
   if (
+    availability?.enabled === false ||
     !product ||
     !product.approvalReference ||
     product.items.some((i) => !i.item.approvalReference)
@@ -77,7 +83,15 @@ export class StorefrontController {
         orderBy: { id: 'asc' },
         take: 100,
       });
-      for (const row of rows)
+      for (const row of rows) {
+        if (
+          (
+            await this.db.productAvailability.findUnique({
+              where: { productId: row.id },
+            })
+          )?.enabled === false
+        )
+          continue;
         products.push(
           await approvedCosmeticProduct(
             this.db,
@@ -88,6 +102,7 @@ export class StorefrontController {
               : row.googleProductId,
           ),
         );
+      }
     }
     return storefrontViewSchema.parse({
       available: this.db !== null && this.policy !== null,
