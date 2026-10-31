@@ -7,7 +7,10 @@ export function secretPath(path: string) {
     !/\.(example|sample)$/.test(path) &&
     (/(^|\/)\.env($|\.)/.test(path) ||
       /\.(p8|jks|keystore|p12|pfx|dump|backup)$/i.test(path) ||
-      /credentials\.json$/i.test(path))
+      /credentials\.json$/i.test(path) ||
+      /\.sql\.gz$/i.test(path) ||
+      /\.pgdata$/i.test(path) ||
+      /(^|\/)private-backups\//.test(path))
   );
 }
 export function secretText(text: string) {

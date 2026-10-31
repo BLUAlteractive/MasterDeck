@@ -7,6 +7,9 @@ it('rejects tracked runtime credentials/backups while allowing public templates 
     'private.p8',
     'credentials.json',
     'db.dump',
+    'db.sql.gz',
+    'local.pgdata',
+    'ops/private-backups/snapshot.bin',
   ])
     expect(secretPath(path)).toBe(true);
   for (const path of [

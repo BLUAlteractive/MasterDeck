@@ -1,0 +1,43 @@
+{
+  "ticket": "B052",
+  "environment": "Owned loopback PostgreSQL 17.6 fixture on Node 22.22.0 / macOS arm64",
+  "observed": {
+    "event": "recovery.drill",
+    "status": "ok",
+    "scope": "OWNED_FROZEN_FIXTURE_SNAPSHOT",
+    "dumpBytes": 1124261,
+    "dumpSha256": "752736b62e1edc9a08a14ce4b6a84e09231c1be0534d84172251c908013e369c",
+    "databaseRestoreMs": 300,
+    "verifiedRecoveryMs": 2166,
+    "assets": {
+      "files": 57,
+      "digest": "89c687a91d4dda7346f3c5424bdeadbd3db278d3b2cba3280dd6198a97a0f67b"
+    },
+    "verification": {
+      "event": "recovery.verify",
+      "status": "ok",
+      "tables": 87,
+      "rows": 11576,
+      "contentsDigest": "06b8801b3a21741b9af3b22a850b5e54532bd085dd46db41ccac71b8c6d795f3",
+      "replay": {
+        "pokerRooms": 55,
+        "spadesRooms": 7,
+        "settledPoker": 32,
+        "settledSpades": 4,
+        "digest": "90e4a8c4d07abdc3a5c559383e5f3f2bbca6e9af5bf9ca70f6e90c348402b737"
+      },
+      "integrity": {
+        "playChipMismatches": 0,
+        "playChipTotal": "0",
+        "restrictedMismatches": 0,
+        "missingOrigins": 0
+      }
+    }
+  },
+  "limits": [
+    "Frozen fixture snapshot only; not production RPO/RTO or PITR",
+    "Purchase evidence bytes restored; production key recovery unverified",
+    "Original repository assets only; no external object store or provider identity restore",
+    "Optional 500-room load case skipped in this normal acceptance run"
+  ]
+}
