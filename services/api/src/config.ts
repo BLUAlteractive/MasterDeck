@@ -1,5 +1,6 @@
 import { z } from 'zod';
 const configSchema = z.object({
+  DEPLOYMENT_ENV: z.enum(['local', 'staging', 'production']).default('local'),
   AUTH_ISSUER: z.url().optional(),
   AUTH_AUDIENCE: z.string().min(1).default('authenticated'),
   AUTH_JWKS_URL: z.url().optional(),
@@ -57,7 +58,43 @@ export function readConfig(env: Record<string, string | undefined>) {
       databaseUrl,
     };
   }
+  const deploymentEnvironment = result.data.DEPLOYMENT_ENV;
+  if (env.NODE_ENV === 'production' && deploymentEnvironment === 'local')
+    throw new Error(
+      'Production process requires explicit staging or production environment',
+    );
+  if (deploymentEnvironment !== 'local') {
+    let database: URL;
+    try {
+      database = new URL(result.data.DATABASE_URL ?? '');
+    } catch {
+      throw new Error('Deployed database configuration required');
+    }
+    const local = (host: string) =>
+      ['localhost', '0.0.0.0', '[::]', '[::1]'].includes(host) ||
+      host.startsWith('127.') ||
+      host.startsWith('[::ffff:7f') ||
+      host.endsWith('.localhost');
+    if (
+      !auth ||
+      !origins.length ||
+      origins.length > 10 ||
+      new Set(origins).size !== origins.length ||
+      origins.some(
+        (o) => new URL(o).protocol !== 'https:' || local(new URL(o).hostname),
+      ) ||
+      database.protocol !== 'postgresql:' ||
+      local(database.hostname) ||
+      database.searchParams.getAll('sslmode').length !== 1 ||
+      database.searchParams.get('sslmode') !== 'verify-full' ||
+      database.searchParams.has('ssl')
+    )
+      throw new Error(
+        'Deployed API requires managed identity, exact HTTPS origins and verified database TLS',
+      );
+  }
   return {
+    deploymentEnvironment,
     auth,
     databaseUrl: result.data.DATABASE_URL ?? null,
     port: result.data.PORT,

@@ -50,6 +50,8 @@ jobs:
         run: pnpm ci:quality
       - name: Reject tracked credentials and private backups
         run: pnpm security:check
+      - name: Validate release checklist shape without inventing approval
+        run: pnpm release:validate
       - name: Reproduce experimental Evolved diagnostics
         run: pnpm test:poker:evolved --verify docs/simulations/evolved-a-v1.json
       - name: Isolated restore, replay, migrations and rollback

@@ -1,0 +1,44 @@
+{
+  "ticket": "B053",
+  "scope": "Final ten-ticket regression; owned frozen fixture only",
+  "observed": {
+    "event": "recovery.drill",
+    "status": "ok",
+    "scope": "OWNED_FROZEN_FIXTURE_SNAPSHOT",
+    "dumpBytes": 1124206,
+    "dumpSha256": "e94251531c1374dc0e44a88cd55f6d43d9b7a3e158f9d7f5b20b3c99e4907077",
+    "databaseRestoreMs": 311,
+    "verifiedRecoveryMs": 2227,
+    "assets": {
+      "files": 57,
+      "digest": "89c687a91d4dda7346f3c5424bdeadbd3db278d3b2cba3280dd6198a97a0f67b"
+    },
+    "verification": {
+      "event": "recovery.verify",
+      "status": "ok",
+      "tables": 87,
+      "rows": 11576,
+      "contentsDigest": "4bddf6ca74272de3875d7c93604716bfacb9068d78e028f15d8603baf851dcd4",
+      "replay": {
+        "pokerRooms": 55,
+        "spadesRooms": 7,
+        "settledPoker": 32,
+        "settledSpades": 4,
+        "digest": "85d6c58b1f90b768f9fc66f8a7a241280e1c5df26cc414e0318bf384b81611de"
+      },
+      "integrity": {
+        "playChipMismatches": 0,
+        "playChipTotal": "0",
+        "restrictedMismatches": 0,
+        "missingOrigins": 0
+      }
+    }
+  },
+  "databaseAcceptance": {
+    "passedPerRun": 162,
+    "files": 31,
+    "runs": 2,
+    "optionalLoadSkippedPerRun": 1
+  },
+  "productionRollbackAcceptance": "UNVERIFIED"
+}
