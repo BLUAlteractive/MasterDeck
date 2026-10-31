@@ -1,3 +1,5 @@
+import { ScreenCatalogController, ScreenCatalogService } from './press/catalog';
+import type { ScreenPolicy } from '@deckforge/contracts';
 import { FixedPackController, FixedPackService } from './packs/fixed';
 import {
   PackOpeningController,
@@ -119,6 +121,7 @@ export async function createApp(
     privacy?: PrivacyConfig;
     activity?: ActivityConfig;
     packPolicy?: PackPolicy;
+    screenPolicy?: ScreenPolicy;
     packOpening?: PackOpeningConfig;
   } = {},
 ) {
@@ -188,6 +191,7 @@ export async function createApp(
         OperationsController,
         PrivacyController,
         ActivityController,
+        ScreenCatalogController,
         PackCatalogController,
         PackOpeningController,
         FixedPackController,
@@ -216,6 +220,15 @@ export async function createApp(
         { provide: 'PRIVACY_SERVICE', useValue: privacy },
         { provide: 'ACTIVITY_SERVICE', useValue: activity },
         { provide: 'PACK_CATALOG', useValue: packCatalog },
+        {
+          provide: 'SCREEN_CATALOG',
+          useValue: catalogDatabase
+            ? new ScreenCatalogService(
+                catalogDatabase,
+                features.screenPolicy ?? null,
+              )
+            : null,
+        },
         { provide: 'PACK_OPENINGS', useValue: packOpenings },
         {
           provide: 'FIXED_PACKS',
