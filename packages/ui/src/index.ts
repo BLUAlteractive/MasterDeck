@@ -11,3 +11,4 @@ export {
   renderCardFaceSvg,
   renderCardBackSvg,
 } from './card-art';
+export { contrastRatio } from './accessibility';

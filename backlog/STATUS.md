@@ -54,3 +54,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B046 — Operational dashboards | Audited reconciled aggregates, WEC coverage and bounded HTTP latency implemented | [B046 report](../docs/B046_REPORT.md), [operations](../docs/OPERATIONS.md) | Historical analytics coverage, production monitoring and independent fraud review remain open. |
 
 | B047 — Mobile polish | Adaptive shell, guidance, card interaction and optional feedback implemented; web validated | [B047 report](../docs/B047_REPORT.md) | Native toolchain/device journey and playback/haptic/rotation acceptance remain open. |
+
+| B048 — Accessibility audit | Automated/source audit and motion/motor fixes implemented | [B048 report](../docs/B048_REPORT.md), [audit matrix](../docs/ACCESSIBILITY_AUDIT.md) | Physical screen-reader/focus/scaled-text/device and full nonwalking Press acceptance remain open. |
