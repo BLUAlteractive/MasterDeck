@@ -1,3 +1,4 @@
+import { eligibleGroup } from '../admin/group';
 import { bindTournamentRoom } from '../events/binding';
 import { randomUUID } from 'node:crypto';
 import { type PrismaClient, writeCardTransition } from '@deckforge/database';
@@ -134,6 +135,10 @@ export class MatchSettlementService {
           )
             throw new ApiFailure('LOBBY_NOT_READY', 409);
         }
+        await eligibleGroup(
+          tx,
+          lobby.seats.map((s) => s.userId),
+        );
         const selections = [];
         for (const seat of lobby.seats) {
           const loadout = await tx.loadout.findUnique({

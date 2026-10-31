@@ -1,3 +1,4 @@
+import { eligibleGroup } from '../admin/group';
 import {
   Body,
   Controller,
@@ -320,7 +321,7 @@ export class LobbyService {
             const rulesetVersion = pokerRulesVersions[mode];
             const free = await tx.$queryRaw<
               { id: string }[]
-            >`SELECT l."id" FROM "Lobby" l WHERE l."kind"='PUBLIC' AND l."mode"=${mode} AND l."rulesetVersion"=${rulesetVersion} AND l."status"='OPEN' AND (SELECT count(*) FROM "LobbySeat" s WHERE s."lobbyId"=l."id") < l."capacity" ORDER BY l."createdAt",l."id" LIMIT 1`;
+            >`SELECT l."id" FROM "Lobby" l WHERE l."kind"='PUBLIC' AND l."mode"=${mode} AND l."rulesetVersion"=${rulesetVersion} AND l."status"='OPEN' AND NOT EXISTS(SELECT 1 FROM "LobbySeat" s JOIN "User" u ON u.id=s."userId" WHERE s."lobbyId"=l.id AND u.status<>'ACTIVE') AND NOT EXISTS(SELECT 1 FROM "LobbySeat" s JOIN "UserBlock" b ON (b."userId"=${p.userId}::uuid AND b."targetUserId"=s."userId") OR (b."targetUserId"=${p.userId}::uuid AND b."userId"=s."userId") WHERE s."lobbyId"=l.id AND b.active) AND (SELECT count(*) FROM "LobbySeat" s WHERE s."lobbyId"=l."id") < l."capacity" ORDER BY l."createdAt",l."id" LIMIT 1`;
             lobby = free[0]
               ? await tx.lobby.findUniqueOrThrow({ where: { id: free[0].id } })
               : await tx.lobby.create({
@@ -334,6 +335,15 @@ export class LobbyService {
                   },
                 });
           }
+          await eligibleGroup(tx, [
+            p.userId,
+            ...(
+              await tx.lobbySeat.findMany({
+                where: { lobbyId: lobby.id },
+                select: { userId: true },
+              })
+            ).map((s) => s.userId),
+          ]);
           const seats = await tx.lobbySeat.findMany({
             where: { lobbyId: lobby.id },
           });

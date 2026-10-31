@@ -1,3 +1,4 @@
+import { SafetyController } from './admin/moderation';
 import { ContentAdminController } from './admin/content';
 import {
   TournamentController,
@@ -138,6 +139,7 @@ export async function createApp(
       controllers: [
         HealthController,
         ContentAdminController,
+        SafetyController,
         IdentityController,
         CatalogController,
         StarterController,
