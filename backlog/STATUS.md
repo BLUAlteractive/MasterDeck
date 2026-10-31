@@ -58,3 +58,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B048 — Accessibility audit | Automated/source audit and motion/motor fixes implemented | [B048 report](../docs/B048_REPORT.md), [audit matrix](../docs/ACCESSIBILITY_AUDIT.md) | Physical screen-reader/focus/scaled-text/device and full nonwalking Press acceptance remain open. |
 
 | B049 — Security audit | Engineering audit and scoped authority/billing/header/secret/dependency fixes implemented | [B049 report](../docs/B049_REPORT.md), [audit](../docs/SECURITY_AUDIT.md) | Independent staging/native/provider adversarial review and deployment/key operations remain open. |
+
+| B050 — Load and failure test | Observed 500 rooms/1000 signed clients; cancellation and source retry validated | [B050 report](../docs/B050_REPORT.md), [baseline](../docs/load/b050-owned-500.json) | Distributed/mobile/soak and 500 funded-table capacity remain unverified; production limits unchanged. |

@@ -11,13 +11,24 @@ import { RoomVersionConflict } from '../rooms/shared';
 const handshakeSchema = z
   .object({ token: z.string().min(1).max(16384) })
   .strict();
+export const socketAdmissionPolicySchema = z
+  .object({
+    approvalReference: z.string().min(8).max(200),
+    handshakesPerMinute: z.number().int().min(60).max(10000),
+  })
+  .strict();
+export type SocketAdmissionPolicy = z.infer<typeof socketAdmissionPolicySchema>;
 const joinSchema = pokerRoomJoinSchema;
 export async function attachAuthSocket(
   server: HttpServer,
   auth: AuthService | null,
   origins: string[],
   roomService: RoomProtocol | null = null,
+  admissionPolicy?: SocketAdmissionPolicy,
 ) {
+  const handshakeLimit = admissionPolicy
+    ? socketAdmissionPolicySchema.parse(admissionPolicy).handshakesPerMinute
+    : 60;
   const attempts = new Map<string, { count: number; started: number }>();
   const cleanup = setInterval(() => {
     for (const [ip, value] of attempts)
@@ -37,7 +48,7 @@ export async function attachAuthSocket(
         bucket = { count: 0, started: Date.now() };
         attempts.set(ip, bucket);
       }
-      accept(null, ++bucket.count <= 60);
+      accept(null, ++bucket.count <= handshakeLimit);
     },
     cors: { origin: origins },
     maxHttpBufferSize: 16384,

@@ -423,3 +423,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Close legacy tournament ADMIN privilege with a distinct operator-provisioned GAME_OPERATOR scope, fresh MFA/current-role checks and SQL audit scope validation. Existing audit history is retained; no default administrator gains the new capability.
 - An offer switch controls storefront sale visibility, not the validity of an already-paid platform proof. Continue approved fixed cosmetic fulfillment/restore/refund for legitimate delayed evidence; never invent a paid balance, contents, price or functional reward.
 - Harden API response caching/framing/sniffing, add tracked-secret CI checks and scope maintainer-patched minimatch/glob to exact current CLI/lint parents. Validate actual command/build paths; retain the inherited low trusted-config deepmerge risk and external penetration/provider/device/edge/key-operations gates.
+
+### B050 — Observed room load and bounded transaction recovery
+
+- Measure 500 unfunded canonical room actors and 1,000 distinct signed fixture clients on an owned loopback database. A trusted bootstrap may explicitly raise handshake admission for this experiment; main's rate limits remain unchanged. Report actual hardware/latency/privacy results and do not infer 500 funded-table or production/mobile capacity.
+- Recognize Prisma adapter-wrapped PostgreSQL serialization/deadlock conflicts with bounded identity retries/backoff. Do not retry arbitrary auth/provider errors. Controlled cancellation must roll back the entire journal; replaying the same source then commits once. Lost command acknowledgements retain the original key/version and event count.
+- `ci:load` reuses the disposable database runner, ignores caller connection strings and repeats acceptance after owned reverse migrations/reset/reseed. Optional timing measurements are explicit; normal CI does not pretend it ran the 500-room case.

@@ -1,0 +1,47 @@
+{
+  "scope": "Owned loopback transport/reducer fixtures, not funded production capacity",
+  "runs": [
+    {
+      "event": "load.baseline",
+      "fixture": true,
+      "node": "v22.22.0",
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpus": 12,
+      "rooms": 500,
+      "distinctUsers": 1000,
+      "connectedClients": 1000,
+      "setupMs": 6100,
+      "connectedMs": 3528,
+      "joinP50Ms": 57,
+      "joinP95Ms": 72,
+      "commandP50Ms": 42,
+      "commandP95Ms": 51,
+      "privacyFailures": 0,
+      "completedHands": 500,
+      "financialCapacityAt500FundedTables": "NOT_MEASURED",
+      "heapMiB": 252
+    },
+    {
+      "event": "load.baseline",
+      "fixture": true,
+      "node": "v22.22.0",
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpus": 12,
+      "rooms": 500,
+      "distinctUsers": 1000,
+      "connectedClients": 1000,
+      "setupMs": 6088,
+      "connectedMs": 3511,
+      "joinP50Ms": 57,
+      "joinP95Ms": 70,
+      "commandP50Ms": 43,
+      "commandP95Ms": 51,
+      "privacyFailures": 0,
+      "completedHands": 500,
+      "financialCapacityAt500FundedTables": "NOT_MEASURED",
+      "heapMiB": 249
+    }
+  ]
+}

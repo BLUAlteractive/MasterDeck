@@ -1,5 +1,6 @@
+import { retryableTransaction } from '../database-retry';
 import { createHash } from 'node:crypto';
-import { Prisma, type PrismaClient } from '@deckforge/database';
+import { type PrismaClient } from '@deckforge/database';
 import { ApiFailure } from './errors';
 import {
   bearerToken,
@@ -63,7 +64,7 @@ export class AuthService {
   }
   async startSession(header: unknown) {
     const claims = await this.claims(header);
-    for (let attempt = 0; attempt < 4; attempt++) {
+    for (let attempt = 0; attempt < 6; attempt++) {
       try {
         const profile = await this.database.$transaction(
           async (tx) => {
@@ -113,12 +114,12 @@ export class AuthService {
         console.info(JSON.stringify({ event: 'auth.session', status: 'ok' }));
         return profile;
       } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          ['P2002', 'P2034'].includes(error.code) &&
-          attempt < 3
-        )
+        if (retryableTransaction(error) && attempt < 5) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 10 * (attempt + 1)),
+          );
           continue;
+        }
         throw error;
       }
     }
