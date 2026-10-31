@@ -58,3 +58,5 @@
 | B053 — Launch operations                                        | Signed preflight tooling, deployed-config guards, templates and incident/rollback runbooks implemented | [B053 report](../docs/B053_REPORT.md), [operations](../docs/LAUNCH_OPERATIONS.md), [unsigned checklist](../ops/release-manifest.json)                                                                       | NO-GO: human signatures, real staging traffic rollback, provider/native/legal/monitoring and required B060–B082 core acceptance remain open.                              |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
+
+| B060 — Separate three wallet balances | Existing B038 journal reused; exact server-balance display and cross-wallet atomic rollback validated | [B060 report](../docs/B060_REPORT.md) | Real-device presentation and reviewed economy/provider activation remain open; no legacy balance conversion was necessary. |
