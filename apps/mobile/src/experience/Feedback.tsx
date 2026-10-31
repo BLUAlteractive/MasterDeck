@@ -1,7 +1,9 @@
+import { useReducedMotion } from './useReducedMotion';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AppState } from 'react-native';
 type Feedback = {
+  reduceMotion: boolean;
   sound: boolean;
   haptics: boolean;
   setSound: (enabled: boolean) => void;
@@ -9,6 +11,7 @@ type Feedback = {
   tap: () => void;
 };
 const context = createContext<Feedback>({
+  reduceMotion: true,
   sound: false,
   haptics: false,
   setSound: () => {},
@@ -17,6 +20,7 @@ const context = createContext<Feedback>({
 });
 export const useFeedback = () => useContext(context);
 export function FeedbackProvider({ children }: { children: ReactNode }) {
+  const reduceMotion = useReducedMotion();
   const [sound, setSound] = useState(false),
     [haptics, setHaptics] = useState(false),
     live = useRef(true),
@@ -80,7 +84,9 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     })();
   }
   return (
-    <context.Provider value={{ sound, haptics, setSound, setHaptics, tap }}>
+    <context.Provider
+      value={{ reduceMotion, sound, haptics, setSound, setHaptics, tap }}
+    >
       {children}
     </context.Provider>
   );

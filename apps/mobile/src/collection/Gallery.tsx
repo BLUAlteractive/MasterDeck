@@ -1,3 +1,4 @@
+import { useFeedback } from '../experience/Feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
@@ -37,6 +38,7 @@ export function Gallery({
   client?: CollectionClient | null;
   makeId: () => string;
 }) {
+  const { reduceMotion } = useFeedback();
   const [reload, setReload] = useState(0);
   const [mode, setMode] = useState<'preview' | 'owned'>('preview');
   const [cards, setCards] = useState<OwnedCard[]>([]);
@@ -508,7 +510,7 @@ export function Gallery({
       <Modal
         visible={selected !== null}
         transparent
-        animationType="fade"
+        animationType={reduceMotion ? 'none' : 'fade'}
         onRequestClose={closeDetails}
       >
         <View style={styles.modalBackdrop}>

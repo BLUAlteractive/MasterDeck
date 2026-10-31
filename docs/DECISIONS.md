@@ -411,3 +411,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Keep sound/haptics off by default and scoped to the current identity session. Use original procedural audio, no microphone or background recording/playback permission, strict foreground checks and cleanup of late async playback. Feedback cannot replace a visible server result or block a command.
 - Compact navigation and getting-started guidance preserve current account safety disclosures and server-only availability. Card interaction respects system reduced motion; orientation is adaptive. No guest linking or permanent-account policy is improvised.
 - Web/TS/native configuration checks cannot satisfy real Android/iOS journey acceptance. Native toolchain/device gates remain open. Current dependency audit also reports moderate advisories in unchanged CLI/lint paths; B049 reviews them before beta.
+
+### B048 — Measured accessibility evidence, open device sign-off
+
+- Preserve full rank/suit text and distinct suit shapes alongside color; test the 52 accessible names and actual active palette/ink contrasts. Do not mutate hashed art merely to add an unreviewed visual variant.
+- Share system reduced motion once per session, default reduced on uncertainty, and remove modal fade when requested. Keep scalable minimum-48 controls and press retention for motor drift.
+- Automated/source audit is not physical VoiceOver/TalkBack, focus/large-text or full journey acceptance. Maintain an explicit device matrix and the nonwalking Press integration dependency; no accessibility claim establishes activity proof or a reward.

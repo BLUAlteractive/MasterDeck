@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { Animated } from 'react-native';
-import { useReducedMotion } from '../experience/useReducedMotion';
 import { useFeedback } from '../experience/Feedback';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { getFace } from '@deckforge/game-core';
@@ -17,8 +16,8 @@ export function CardTile({
   onPress: () => void;
 }) {
   const scale = useRef(new Animated.Value(1)).current,
-    reduce = useReducedMotion(),
-    feedback = useFeedback();
+    feedback = useFeedback(),
+    reduce = feedback.reduceMotion;
   useEffect(() => {
     if (reduce) {
       scale.stopAnimation();

@@ -19,6 +19,7 @@ export function Action({
       accessibilityLabel={label}
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
+      pressRetentionOffset={12}
       onPress={() => {
         feedback.tap();
         onPress();
