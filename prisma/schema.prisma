@@ -1338,3 +1338,30 @@ model SupplyEvent {
 
   @@unique([userId, kind, version])
 }
+
+model ScreenPattern {
+  id             String   @id @db.Uuid
+  slug           String
+  version        Int
+  status         String   @default("DRAFT")
+  stateVersion   Int      @default(1)
+  definition     Json
+  definitionHash String
+  creatorId      String   @db.Uuid
+  publisherId    String?  @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([slug, version])
+}
+
+model ScreenReview {
+  patternId      String   @db.Uuid
+  reviewerId     String   @db.Uuid
+  review         String
+  definitionHash String
+  evidence       String
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([patternId, review])
+  @@unique([patternId, reviewerId])
+}

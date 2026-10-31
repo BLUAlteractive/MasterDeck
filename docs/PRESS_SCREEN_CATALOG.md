@@ -1,0 +1,13 @@
+# Versioned Printing Screen patterns
+
+A **Screen Pattern** is an immutable reviewed recipe, not a card or an owned consumable. B066 provides definitions/publication only; B067 purchases an Owned Screen and B068/B069 reserve it and claim a print. Catalog commands never grant inventory or change card state.
+
+Permitted transitions are Basic Blue 1→3, Fine Red 2→4, Master Blue 3→5 and Master Red 4→6. Pure domain validation and strict API/database checks reject terminal/cross-branch progression, Store Gems/payment fields and cosmetic speed/strength modifiers. Each recipe includes earned Trail Credit price, required steps/ink, consumability, rule version, the original code-rendered platen theme and an explicit post-progress cancellation policy. Amounts are reviewed versioned data; prototype numbers are not activated production tuning. No functional paid screen or extra throughput is available.
+
+Fresh scoped MFA controls draft, independent content/economy review, publication and retirement. Creator, both reviewers and publisher must be four different accounts; reviewers bind the exact definition hash. Published or retired recipe data cannot change. A revision creates a new pattern version/ID and needs its own independent review. Old owned screens/jobs must retain their original recipe snapshot; retirement stops new catalog admission and never rewrites prior entitlements.
+
+`GET /v1/press/screens/catalog` exposes only published IDs in a reviewed server allow-list. Main has no allow-list/policy and returns unavailable. `POST /v1/press/screens/admin` accepts strict hash/version-bound commands and writes immutable AdminAction evidence. Existing aggregate API latency/error signals cover requests; audit records remain scoped to authorized administration and never become public user logs.
+
+Before any accepted progress, later jobs may return their assigned screen on cancellation. The recipe snapshots an explicit policy after progress: DISABLED, or independently reviewed FORFEIT_SCREEN. The catalog does not pick a live policy for the product owner or implement a refund. Screen consumption/ink debit/in-place transformation remain later tickets. Test recipes and synthetic review evidence are not actual economy/legal approval.
+
+Migration `202610310003_screen_patterns` creates ScreenPattern/ScreenReview, foreign keys, immutable review/version guards, exact publication audit and recipe shape/transition constraints. Its reverse script is disposable-only. For production rollback, disable new admission/retire a bad version through the audited workflow, retain all recipe/review/history and issue a reviewed new version. Never edit snapshots referenced by active jobs.
