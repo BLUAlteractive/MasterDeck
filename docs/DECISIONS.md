@@ -398,3 +398,10 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Bind reports and block targets to verified room participation. Preserve immutable report version/hash and versioned block events; future admissions reject blocked pairs in either direction. Blocking an existing opponent does not modify an already accepted hand or payout.
 - SUPPORT requires current operator scope, local ADMIN and MFA; audited suspension revokes sessions and open ordinary queues, while game escrow/locks and tournament evidence remain intact. Reinstatement cannot bypass pending deletion and never resurrects old bearer sessions.
 - Dispute inspection replays authoritative poker/Spades history and returns bounded hashes/proofs rather than hidden-card or shuffle snapshots. Staff decisions are triage records, not an automatic result override. Incident/appeal/forfeit policy and full moderation operations remain beta gates.
+
+### B046 — Reconciled aggregates and explicit measurement coverage
+
+- Dashboard reads require current scoped MFA, reason and immutable audit. Use one repeatable-read database snapshot, bounded conflict retries, exact monetary strings and aggregate counts only. Paid counts are production-verified purchases; reference prices are not revenue.
+- Record one latest server collection timestamp for authenticated nonempty inventory views/successful favorites; combine with settled match and fusion/Press history for rolling WEC. Do not invent historical view/archive/incubation facts or let analytics grant rewards. Coverage is disclosed and B051 owns retention/erasure.
+- HTTP latency is a bounded process-only histogram with fixed labels and since-boot timestamp, separate from database facts. Integrity exceptions need investigation; zero counts do not prove absence of fraud.
+- Security follow-up for B049: review disabled storefront offers with delayed first-time verified purchase proofs. An offer switch must not strand a legitimate already-paid transaction; distinguish sale visibility/initiation from authoritative fulfillment of earlier platform evidence. Live billing remains disabled until this is resolved and platform-tested.

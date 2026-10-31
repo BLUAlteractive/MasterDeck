@@ -50,3 +50,5 @@
 | B045 — Moderation and incidents                                 | Report/block, scoped suspension and audited replay implemented                            | [B045 report](../docs/B045_REPORT.md), [operations](../docs/MODERATION.md)                                                                                                                                  | Appeals/staffing/terms and active abandoned-game incident policy remain open; no arbitrary result override.                                                               |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
+
+| B046 — Operational dashboards | Audited reconciled aggregates, WEC coverage and bounded HTTP latency implemented | [B046 report](../docs/B046_REPORT.md), [operations](../docs/OPERATIONS.md) | Historical analytics coverage, production monitoring and independent fraud review remain open. |

@@ -9,6 +9,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@deckforge/contracts": "workspace:*",
     "@deckforge/ui": "workspace:*",
     "next": "16.4.3",
     "react": "19.3.0",

@@ -1,3 +1,4 @@
+import { recordCollection } from './collector-activity';
 import {
   Body,
   Controller,
@@ -66,6 +67,7 @@ export class FavoriteController {
         },
         update: { favorite: input.data.favorite },
       });
+      await recordCollection(tx, user.id);
       return { instanceId: card.id, favorite: input.data.favorite };
     });
     console.info(

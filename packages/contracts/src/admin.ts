@@ -125,3 +125,64 @@ export const moderationCommandSchema = z.discriminatedUnion('action', [
     .strict(),
 ]);
 export type SafetyCommand = z.infer<typeof safetyCommandSchema>;
+const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+export const operationalSummarySchema = z
+  .object({
+    generatedAt: z.iso.datetime(),
+    windowStart: z.iso.datetime(),
+    source: z.literal('DATABASE_REPEATABLE_READ'),
+    funnel: z
+      .object({
+        newAccounts: count,
+        permanentNewAccounts: count,
+        starterGrants: count,
+        completedPoker: count,
+        completedSpades: count,
+        fusions: count,
+        activeVerifiedPurchases: count,
+        revokedPurchases: count,
+      })
+      .strict(),
+    wec: z
+      .object({
+        count,
+        definition: z.literal('MATCH_AND_SERVER_OBSERVED_COLLECTION_ACTION_7D'),
+        coverage: z.string(),
+      })
+      .strict(),
+    integrity: z
+      .object({
+        playChipMismatches: count,
+        restrictedMismatches: count,
+        missingCardOrigins: count,
+        purchaseGrantMismatches: count,
+        playChipTotal: z.string(),
+        restrictedTotals: z.array(
+          z.object({ currency: z.string(), total: z.string() }).strict(),
+        ),
+      })
+      .strict(),
+    queues: z
+      .object({
+        billingInbox: count,
+        billingAcknowledgements: count,
+        voidCoverageGaps: count,
+        unsettledPoker: count,
+        unprocessedTournamentResults: count,
+        gameReports: count,
+      })
+      .strict(),
+    latency: z
+      .object({
+        source: z.literal('PROCESS_HTTP'),
+        since: z.iso.datetime(),
+        requests: count,
+        p95UpperMs: z.number().nonnegative().nullable(),
+        buckets: z.array(
+          z.object({ upperMs: z.number().nullable(), count }).strict(),
+        ),
+      })
+      .strict(),
+  })
+  .strict();
+export type OperationalSummary = z.infer<typeof operationalSummarySchema>;
