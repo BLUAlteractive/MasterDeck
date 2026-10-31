@@ -93,7 +93,7 @@ export class OperationsService {
         };
         const [wec] = await tx.$queryRaw<
           { n: number }[]
-        >`WITH matched AS (SELECT p."userId" FROM "GameParticipant" p JOIN "GameResult" r ON r."roomId"=p."roomId" WHERE r."createdAt">=${since} UNION SELECT p."userId" FROM "SpadesSeat" p JOIN "SpadesResult" r ON r."roomId"=p."roomId" WHERE r."createdAt">=${since}), collected AS (SELECT "userId" FROM "CollectorActivity" WHERE "lastCollectionAt">=${since} UNION SELECT c."ownerId" FROM "OwnershipEvent" e JOIN "CardInstance" c ON c.id=e."instanceId" WHERE e.action IN ('FUSION_CREATE','PRESS_EVOLVE') AND e."recordedAt">=${since}) SELECT count(*)::int AS n FROM matched m JOIN collected c ON c."userId"=m."userId"`;
+        >`WITH matched AS (SELECT p."userId" FROM "GameParticipant" p JOIN "GameResult" r ON r."roomId"=p."roomId" WHERE r."createdAt">=${since} UNION SELECT p."userId" FROM "SpadesSeat" p JOIN "SpadesResult" r ON r."roomId"=p."roomId" WHERE r."createdAt">=${since}), collected AS (SELECT "userId" FROM "CollectorActivity" WHERE "lastCollectionAt">=${since} UNION SELECT c."ownerId" FROM "OwnershipEvent" e JOIN "CardInstance" c ON c.id=e."instanceId" WHERE e.action IN ('FUSION_CREATE','PRESS_EVOLVE') AND e."recordedAt">=${since}) SELECT count(*)::int AS n FROM matched m JOIN collected c ON c."userId"=m."userId" JOIN "PrivacyChoice" pc ON pc."userId"=m."userId" AND pc.analytics`;
         const [chips] = await tx.$queryRaw<
           { n: number; total: string }[]
         >`SELECT count(*) FILTER(WHERE a.balance<>(SELECT COALESCE(sum(e.amount),0) FROM "PlayChipEntry" e WHERE e."accountId"=a.id))::int AS n,COALESCE(sum(a.balance),0)::text AS total FROM "PlayChipAccount" a`;
@@ -121,7 +121,7 @@ export class OperationsService {
             count: wec!.n,
             definition: 'MATCH_AND_SERVER_OBSERVED_COLLECTION_ACTION_7D',
             coverage:
-              'Authenticated nonempty inventory reads, successful favorite actions, fusion and Press history. Historical uninstrumented views/favorites/archive/incubation are not backfilled.',
+              'Consented users only: authenticated nonempty inventory reads, successful favorite actions, fusion and Press history. Historical uninstrumented views/favorites/archive/incubation are not backfilled.',
           },
           integrity: {
             playChipMismatches: chips!.n,

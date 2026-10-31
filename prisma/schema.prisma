@@ -1139,3 +1139,63 @@ model CollectorActivity {
   userId           String   @id @db.Uuid
   lastCollectionAt DateTime @default(now()) @db.Timestamptz(3)
 }
+
+model PrivacyChoice {
+  userId             String  @id @db.Uuid
+  analytics          Boolean @default(false)
+  activityUpload     Boolean @default(false)
+  foregroundLocation Boolean @default(false)
+  version            Int     @default(0)
+}
+
+model PrivacyConsent {
+  id            String   @id @db.Uuid
+  userId        String   @db.Uuid
+  commandId     String   @db.Uuid
+  purpose       String
+  enabled       Boolean
+  policyVersion String
+  state         Json
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, commandId])
+  @@index([userId, id])
+}
+
+model PrivacyDeletionJob {
+  nextAttemptAt DateTime  @default(now()) @db.Timestamptz(3)
+  id            String    @id @db.Uuid
+  requestId     String    @unique @db.Uuid
+  userId        String    @unique @db.Uuid
+  status        String    @default("WAITING_CONFIG")
+  version       Int       @default(1)
+  leaseUntil    DateTime? @db.Timestamptz(3)
+  completedAt   DateTime? @db.Timestamptz(3)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
+}
+
+model PrivacyDeletionProof {
+  jobId         String   @db.Uuid
+  identityId    String   @db.Uuid
+  referenceHash String
+  confirmedAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([jobId, identityId])
+}
+
+model IdentityTombstone {
+  issuer      String
+  subjectHash String
+  jobId       String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([issuer, subjectHash])
+}
+
+model PrivacyAccessEvent {
+  id        String   @id @db.Uuid
+  userId    String   @db.Uuid
+  action    String
+  resource  String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}

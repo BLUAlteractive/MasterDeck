@@ -4,5 +4,7 @@ export async function recordCollection(
   tx: Prisma.TransactionClient,
   userId: string,
 ) {
+  if (!(await tx.privacyChoice.findUnique({ where: { userId } }))?.analytics)
+    return;
   await tx.$executeRaw`INSERT INTO "CollectorActivity"("userId","lastCollectionAt") VALUES(${userId}::uuid,CURRENT_TIMESTAMP) ON CONFLICT("userId") DO UPDATE SET "lastCollectionAt"=GREATEST("CollectorActivity"."lastCollectionAt",EXCLUDED."lastCollectionAt")`;
 }

@@ -1,3 +1,9 @@
+import {
+  PrivacyController,
+  PrivacyService,
+  startPrivacyWorker,
+  type PrivacyConfig,
+} from './privacy/service';
 import { OperationsController, RequestLatency } from './admin/operations';
 import { SafetyController } from './admin/moderation';
 import { ContentAdminController } from './admin/content';
@@ -96,6 +102,7 @@ export async function createApp(
     billing?: BillingConfig;
     tournamentPolicy?: TournamentPolicy;
     socketAdmissionPolicy?: SocketAdmissionPolicy;
+    privacy?: PrivacyConfig;
   } = {},
 ) {
   const tournamentPolicy = features.tournamentPolicy
@@ -109,6 +116,10 @@ export async function createApp(
     ? new TournamentService(auth.database, tournamentPolicy, admissionPolicy)
     : null;
   let stopTournaments = async () => {};
+  const privacy = auth
+    ? new PrivacyService(auth, features.privacy ?? null)
+    : null;
+  let stopPrivacy = async () => {};
   const latency = new RequestLatency();
   const storefrontPolicy = features.storefrontPolicy
     ? storefrontPolicySchema.parse(features.storefrontPolicy)
@@ -144,6 +155,7 @@ export async function createApp(
         ContentAdminController,
         SafetyController,
         OperationsController,
+        PrivacyController,
         IdentityController,
         CatalogController,
         StarterController,
@@ -166,6 +178,7 @@ export async function createApp(
       ],
       providers: [
         { provide: 'TOURNAMENT_SERVICE', useValue: tournaments },
+        { provide: 'PRIVACY_SERVICE', useValue: privacy },
         { provide: 'REQUEST_LATENCY', useValue: latency },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
@@ -189,6 +202,7 @@ export async function createApp(
           provide: 'AUTH_SHUTDOWN',
           useValue: {
             beforeApplicationShutdown: async () => {
+              await stopPrivacy();
               await stopTournaments();
               await stopBilling();
               await stopProgress();
@@ -261,6 +275,7 @@ export async function createApp(
     stopBilling = startBillingWorker(billing);
   if (tournaments && tournamentPolicy?.workers)
     stopTournaments = startTournamentWorker(tournaments);
+  if (privacy && features.privacy) stopPrivacy = startPrivacyWorker(privacy);
   app.enableCors({ origin: origins });
   app.use(
     rateLimit({

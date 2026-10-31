@@ -150,6 +150,33 @@ export function ManagedSessionHost({
         ? {
             apiUrl,
             sessionKey: ready.userId + ':' + ready.epoch,
+            onDeletionAccepted: async (requestId: string) => {
+              disconnected.current = true;
+              provider.auth.stopAutoRefresh();
+              setReady(null);
+              const result = await disconnectSession({
+                revokeServer: async () => {}, // The accepted deletion already revoked every local API session.
+                signOutProvider: async () => {
+                  const { error } = await provider.auth.signOut({
+                    scope: 'local',
+                  });
+                  if (error) throw error;
+                },
+                clearCredentials: () =>
+                  credentialStorage.removeItem(storageKey),
+              });
+              setSession(null);
+              setNeedsCleanup(
+                !result.providerSignedOut || !result.credentialsCleared,
+              );
+              setBusy(false);
+              setMessage(
+                'Deletion requested: ' +
+                  requestId +
+                  '. Provider removal remains pending. ' +
+                  disconnectMessage(result),
+              );
+            },
             getAccessToken: async () => {
               const { data, error } = await provider.auth.getSession();
               if (

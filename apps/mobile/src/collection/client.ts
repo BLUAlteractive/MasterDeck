@@ -1,3 +1,12 @@
+import {
+  privacyStateSchema,
+  privacyConsentSchema,
+  privacyConsentReceiptSchema,
+  privacyExportSchema,
+  privacyExportQuerySchema,
+  privacyDeleteSchema,
+  privacyDeleteReceiptSchema,
+} from '@deckforge/contracts';
 import { watchPoker } from '../play/poker-watch';
 import { watchSpades } from '../play/spades-watch';
 import {
@@ -126,6 +135,45 @@ export function createCollectionClient(
   }
 
   return {
+    async privacyState() {
+      return privacyStateSchema.parse(await request('/v1/privacy'));
+    },
+    async privacyConsent(input: ReturnType<typeof privacyConsentSchema.parse>) {
+      return privacyConsentReceiptSchema.parse(
+        await request(
+          '/v1/privacy/consent',
+          'POST',
+          privacyConsentSchema.parse(input),
+        ),
+      );
+    },
+    async privacyExport(
+      input: Omit<
+        ReturnType<typeof privacyExportQuerySchema.parse>,
+        'limit'
+      > & { limit?: number },
+    ) {
+      const q = privacyExportQuerySchema.parse(input);
+      return privacyExportSchema.parse(
+        await request(
+          '/v1/privacy/export?' +
+            new URLSearchParams({
+              resource: q.resource,
+              limit: String(q.limit),
+              ...(q.cursor ? { cursor: q.cursor } : {}),
+            }),
+        ),
+      );
+    },
+    async privacyDelete(input: ReturnType<typeof privacyDeleteSchema.parse>) {
+      return privacyDeleteReceiptSchema.parse(
+        await request(
+          '/v1/privacy/deletion',
+          'POST',
+          privacyDeleteSchema.parse(input),
+        ),
+      );
+    },
     async safety(
       game: 'POKER' | 'SPADES',
       gameId: string,
@@ -558,5 +606,6 @@ export type CollectionConnection = {
   apiUrl: string;
   sessionKey: string;
   getAccessToken: () => Promise<string>;
+  onDeletionAccepted?: (requestId: string) => Promise<void>;
 };
 export type { OwnedCard };

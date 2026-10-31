@@ -1,3 +1,5 @@
+import { privacySubjectHash } from '../privacy/key';
+import { lockPrincipal } from '../rooms/shared';
 import { retryableTransaction } from '../database-retry';
 import { createHash } from 'node:crypto';
 import { type PrismaClient } from '@deckforge/database';
@@ -17,6 +19,12 @@ export type Principal = {
   role: 'PLAYER' | 'ADMIN';
 };
 export class AuthService {
+  private privacyKey: Buffer | null = null;
+  configurePrivacyProtection(key: Buffer) {
+    if (key.length !== 32 || (this.privacyKey && !this.privacyKey.equals(key)))
+      throw new Error('Privacy hash key mismatch');
+    this.privacyKey = Buffer.from(key);
+  }
   constructor(
     readonly database: PrismaClient,
     private readonly verifier: TokenVerifier,
@@ -75,6 +83,29 @@ export class AuthService {
               include: { user: true },
             });
             if (!identity) {
+              if (this.privacyKey) {
+                if (
+                  await tx.identityTombstone.findUnique({
+                    where: {
+                      issuer_subjectHash: {
+                        issuer: claims.iss,
+                        subjectHash: privacySubjectHash(
+                          this.privacyKey,
+                          claims.iss,
+                          claims.sub,
+                        ),
+                      },
+                    },
+                  })
+                )
+                  throw new ApiFailure('UNAUTHORIZED', 401);
+              } else if (
+                await tx.identityTombstone.count({
+                  where: { issuer: claims.iss },
+                })
+              )
+                throw new ApiFailure('PRIVACY_CONFIGURATION_REQUIRED', 503);
+
               identity = await tx.externalIdentity.create({
                 data: {
                   issuer: claims.iss,
@@ -137,7 +168,7 @@ export class AuthService {
       .update(JSON.stringify({ expectedUserId: input.expectedUserId }))
       .digest('hex');
     return this.database.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${principal.userId}::uuid FOR UPDATE`;
+      await lockPrincipal(tx, principal);
       const user = await tx.user.findUniqueOrThrow({
         where: { id: principal.userId },
       });
@@ -187,7 +218,7 @@ export class AuthService {
   async logout(principal: Principal) {
     await this.database.$transaction(async (tx) => {
       // Serialize with grants/linking/deletion before locking a session or writing audit FKs.
-      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${principal.userId}::uuid FOR UPDATE`;
+      await lockPrincipal(tx, principal);
       const changed = await tx.authSession.updateMany({
         where: { id: principal.sessionId, revokedAt: null },
         data: { revokedAt: new Date() },
@@ -201,7 +232,7 @@ export class AuthService {
   }
   async requestDeletion(principal: Principal) {
     return this.database.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${principal.userId}::uuid FOR UPDATE`;
+      await lockPrincipal(tx, principal);
       const request = await tx.deletionRequest.upsert({
         where: { userId: principal.userId },
         create: { userId: principal.userId },
@@ -217,6 +248,12 @@ export class AuthService {
       });
       await tx.authAudit.create({
         data: { userId: principal.userId, event: 'DELETION_REQUESTED' },
+      });
+      await tx.privacyDeletionJob.createMany({
+        data: [
+          { id: request.id, requestId: request.id, userId: principal.userId },
+        ],
+        skipDuplicates: true,
       });
       return { requestId: request.id, status: 'pending' as const };
     });

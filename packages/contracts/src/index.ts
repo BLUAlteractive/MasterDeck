@@ -381,3 +381,4 @@ export * from './commerce';
 export * from './billing';
 export * from './tournaments';
 export * from './admin';
+export * from './privacy';
