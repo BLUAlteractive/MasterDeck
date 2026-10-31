@@ -28,3 +28,10 @@ packages/database/src/generated/
 *.credentials.json
 *.jws
 **/secrets/
+
+# Private database and recovery artifacts
+*.dump
+*.backup
+*.sql.gz
+*.pgdata
+**/private-backups/

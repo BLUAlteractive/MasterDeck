@@ -83,6 +83,15 @@ try {
   run(['db:seed'], env);
   run(['db:seed'], env);
   run(['exec', 'vitest', 'run', '--config', 'vitest.database.config.mts'], env);
+  if (process.env.DECKFORGE_BACKUP_DRILL === '1') {
+    stage = 'owned-clean-restore';
+    const { runOwnedRecovery } = await import('./recovery-drill.mjs');
+    runOwnedRecovery({
+      container: name,
+      databaseName,
+      databaseUrl: env.DATABASE_URL,
+    });
+  }
   stage = 'rollback';
   const rollbackDirectory = new URL('../prisma/rollback/', import.meta.url);
   for (const filename of readdirSync(rollbackDirectory)

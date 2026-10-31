@@ -42,7 +42,8 @@
     "test:poker:harness": "pnpm build:packages && tsx scripts/poker-harness.mts",
     "test:poker:evolved": "pnpm build:packages && tsx scripts/evolved-simulation.mts",
     "security:check": "tsx scripts/security-scan.mts",
-    "ci:load": "node scripts/load-check.mjs"
+    "ci:load": "node scripts/load-check.mjs",
+    "ci:recovery": "node scripts/recovery-check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

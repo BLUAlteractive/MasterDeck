@@ -136,3 +136,5 @@ pnpm --filter @deckforge/mobile exec expo start --web --clear --port 8081
 A web root returning 200 does not prove the app bundle compiled. Check the browser error and Metro terminal as well. See the ticket reports for automated evidence and the remaining native/provider acceptance work.
 
 Privacy settings, bounded owner exports and deletion requests are available in the authenticated **Privacy & account** tab. New opt-ins and provider deletion require reviewed server-only configuration; main supplies none. A request immediately revokes access, while provider verification and retained financial/game records remain explicit. See [privacy operations and limits](docs/PRIVACY.md).
+
+`pnpm ci:recovery` additionally restores the owned fixture database into a second clean database, replays every poker/Spades history, checks wallet/ownership integrity and verifies restored original assets. CI runs this drill before disposable rollback/reset/reseed. See [recovery scope and production gates](docs/RESTORE_RUNBOOK.md).

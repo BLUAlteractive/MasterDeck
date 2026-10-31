@@ -62,3 +62,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B050 — Load and failure test | Observed 500 rooms/1000 signed clients; cancellation and source retry validated | [B050 report](../docs/B050_REPORT.md), [baseline](../docs/load/b050-owned-500.json) | Distributed/mobile/soak and 500 funded-table capacity remain unverified; production limits unchanged. |
 
 | B051 — Privacy deletion/export | Policy-bound consent, bounded owner exports and verified deletion workflow implemented | [B051 report](../docs/B051_REPORT.md), [privacy](../docs/PRIVACY.md) | Regional policy/retention approval, real provider/backup erasure and device/export support acceptance remain open. |
+
+| B052 — Backups and disaster recovery | Owned clean database/assets restore and full replay verifier implemented | [B052 report](../docs/B052_REPORT.md), [runbook](../docs/RESTORE_RUNBOOK.md) | Production PITR/offsite storage, workload RPO/RTO, recovery keys and operator sign-off remain open. |

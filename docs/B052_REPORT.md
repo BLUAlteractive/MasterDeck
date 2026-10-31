@@ -1,0 +1,13 @@
+# B052 — Backup and disaster recovery
+
+Added `pnpm ci:recovery`: the existing owned PostgreSQL runner dumps a frozen acceptance database and restores into a second clean database, compares every public table, independently replays all poker/Spades histories and settled outcomes, reconciles balances/origins, and archives/restores original assets with SHA-256 checks. Credentials/private rows/dumps never enter reports; cleanup covers failure and normal completion. The normal runner remains unchanged unless explicit recovery mode is requested.
+
+Files: root command and backup ignores; owned database runner, recovery wrapper, private dump/asset drill and strict replay verifier; restore runbook, observed aggregate baseline, decisions/status/report. No application behavior or schema change.
+
+Production backup scheduling, PITR/offsite encryption, key-manager recovery, identity/provider operations, deletion replay, workload RPO/RTO and independent operator approval remain unverified. See [runbook](RESTORE_RUNBOOK.md). Next: B053 launch operations with an honest go/no-go gate.
+
+Observed clean recovery: **87 public tables, 11,576 rows, all 55 poker and 7 Spades histories**, with 32 settled poker allocations and 4 settled Spades outcomes recomputed. All 57 original asset files matched. Wallet mismatches and missing origins were zero; total Play Chips remained zero. The 1,124,261-byte custom dump restored in 300 ms; dump through complete data/replay/assets verification took 2,166 ms. Exact aggregate digests: [owned restore evidence](recovery/b052-owned-restore.json). These timings describe this frozen laptop fixture only.
+
+The first attempt exposed a CLI TypeScript/CommonJS barrel export issue before verification. Importing the direct pure pots module fixed startup; a no-connection probe then correctly rejected the absent owned environment. Added fixed stage/error categories without printing provider responses, rows or DSNs. CI now runs the recovery command, and the tracked-backup scanner also rejects compressed SQL/private backup directories. No backup scheduler, cloud credential or production mutation was created.
+
+Final validation: `pnpm ci:quality` passed format/lint/strict types, 308 tests in 60 files and 11 builds (`/tmp/deckforge-b052-quality-release.log`). `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION='Do the next 10' pnpm ci:recovery` passed the observed clean restore and 162 database cases in 31 files twice, one optional load skip, deployment/seed repetition, full disposable reverse migrations and reset/reseed (`/tmp/deckforge-b052-recovery-diagnostic.log`, 139 seconds). Targeted type/lint and diff checks passed. The initial failed drill is retained in the work log rather than counted as success.

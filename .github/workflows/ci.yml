@@ -52,8 +52,8 @@ jobs:
         run: pnpm security:check
       - name: Reproduce experimental Evolved diagnostics
         run: pnpm test:poker:evolved --verify docs/simulations/evolved-a-v1.json
-      - name: Isolated migrations, seeds, constraints and rollback
-        run: pnpm ci:database
+      - name: Isolated restore, replay, migrations and rollback
+        run: pnpm ci:recovery
 
   audit:
     name: Dependency audit
