@@ -28,3 +28,4 @@ export {
 export * from './activity';
 export * from './reward-pool';
 export * from './screen-recipe';
+export * from './press-job';

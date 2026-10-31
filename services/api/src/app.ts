@@ -1,3 +1,5 @@
+import { PressJobController, PressJobService } from './press/jobs';
+import type { PressPolicy } from '@deckforge/contracts';
 import { OwnedScreenController, OwnedScreenService } from './press/screens';
 import { ScreenCatalogController, ScreenCatalogService } from './press/catalog';
 import type { ScreenPolicy } from '@deckforge/contracts';
@@ -122,6 +124,7 @@ export async function createApp(
     privacy?: PrivacyConfig;
     activity?: ActivityConfig;
     packPolicy?: PackPolicy;
+    pressPolicy?: PressPolicy;
     screenPolicy?: ScreenPolicy;
     packOpening?: PackOpeningConfig;
   } = {},
@@ -194,6 +197,7 @@ export async function createApp(
         ActivityController,
         ScreenCatalogController,
         OwnedScreenController,
+        PressJobController,
         PackCatalogController,
         PackOpeningController,
         FixedPackController,
@@ -240,6 +244,12 @@ export async function createApp(
                   features.screenPolicy ?? null,
                 ),
               )
+            : null,
+        },
+        {
+          provide: 'PRESS_JOBS',
+          useValue: catalogDatabase
+            ? new PressJobService(catalogDatabase, features.pressPolicy ?? null)
             : null,
         },
         { provide: 'PACK_OPENINGS', useValue: packOpenings },
