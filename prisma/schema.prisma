@@ -1134,3 +1134,8 @@ model GameReport {
   @@index([game, gameId, createdAt])
   @@index([userId, createdAt])
 }
+
+model CollectorActivity {
+  userId           String   @id @db.Uuid
+  lastCollectionAt DateTime @default(now()) @db.Timestamptz(3)
+}

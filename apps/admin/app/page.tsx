@@ -1,3 +1,4 @@
+import { OperationsDashboard } from './operations-dashboard';
 import { ContentWorkbench } from './content-workbench';
 import { shellTheme } from '@deckforge/ui';
 export default function Page() {
@@ -10,6 +11,7 @@ export default function Page() {
         verified MFA access.
       </p>
       <ContentWorkbench />
+      <OperationsDashboard />
     </main>
   );
 }

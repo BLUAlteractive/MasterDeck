@@ -59,6 +59,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@deckforge/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@deckforge/ui':
         specifier: workspace:*
         version: link:../../packages/ui

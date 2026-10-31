@@ -1,3 +1,4 @@
+import { OperationsController, RequestLatency } from './admin/operations';
 import { SafetyController } from './admin/moderation';
 import { ContentAdminController } from './admin/content';
 import {
@@ -107,6 +108,7 @@ export async function createApp(
     ? new TournamentService(auth.database, tournamentPolicy, admissionPolicy)
     : null;
   let stopTournaments = async () => {};
+  const latency = new RequestLatency();
   const storefrontPolicy = features.storefrontPolicy
     ? storefrontPolicySchema.parse(features.storefrontPolicy)
     : null;
@@ -140,6 +142,7 @@ export async function createApp(
         HealthController,
         ContentAdminController,
         SafetyController,
+        OperationsController,
         IdentityController,
         CatalogController,
         StarterController,
@@ -162,6 +165,7 @@ export async function createApp(
       ],
       providers: [
         { provide: 'TOURNAMENT_SERVICE', useValue: tournaments },
+        { provide: 'REQUEST_LATENCY', useValue: latency },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
         { provide: 'SPADES_POLICY', useValue: spadesPolicy },
@@ -202,6 +206,19 @@ export async function createApp(
     },
     {
       logger: ['error', 'warn', 'log'],
+    },
+  );
+  app.use(
+    (
+      _req: unknown,
+      res: import('express').Response,
+      next: import('express').NextFunction,
+    ) => {
+      const start = process.hrtime.bigint();
+      res.once('finish', () =>
+        latency.observe(Number(process.hrtime.bigint() - start) / 1e6),
+      );
+      next();
     },
   );
   app.useBodyParser('json', { limit: '16kb' });

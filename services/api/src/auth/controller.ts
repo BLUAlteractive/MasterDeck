@@ -1,3 +1,5 @@
+import { recordCollection } from '../collector-activity';
+import { lockPrincipal } from '../rooms/shared';
 import {
   Body,
   Controller,
@@ -78,32 +80,40 @@ export class IdentityController {
     const input = this.validate(inventoryQuerySchema.safeParse(query));
     const service = this.service();
     const principal = await service.authenticate(req.headers.authorization);
-    const rows = await service.database.cardInstance.findMany({
-      where: {
-        ownerId: principal.userId,
-        owner: { status: 'ACTIVE' },
-        status: { in: ['OWNED', 'LOCKED'] },
-        ...(input.cursor ? { id: { gt: input.cursor } } : {}),
-      },
-      orderBy: { id: 'asc' },
-      take: input.limit + 1,
-      select: {
-        id: true,
-        faceId: true,
-        level: true,
-        branch: true,
-        rarity: true,
-        stateVersion: true,
-        status: true,
-        seriesId: true,
-        template: {
-          select: { version: true, series: { select: { displayName: true } } },
+    const rows = await service.database.$transaction(async (tx) => {
+      await lockPrincipal(tx, principal);
+      const rows = await tx.cardInstance.findMany({
+        where: {
+          ownerId: principal.userId,
+          owner: { status: 'ACTIVE' },
+          status: { in: ['OWNED', 'LOCKED'] },
+          ...(input.cursor ? { id: { gt: input.cursor } } : {}),
         },
-        favorites: {
-          where: { userId: principal.userId },
-          select: { favorite: true },
+        orderBy: { id: 'asc' },
+        take: input.limit + 1,
+        select: {
+          id: true,
+          faceId: true,
+          level: true,
+          branch: true,
+          rarity: true,
+          stateVersion: true,
+          status: true,
+          seriesId: true,
+          template: {
+            select: {
+              version: true,
+              series: { select: { displayName: true } },
+            },
+          },
+          favorites: {
+            where: { userId: principal.userId },
+            select: { favorite: true },
+          },
         },
-      },
+      });
+      if (rows.length) await recordCollection(tx, principal.userId);
+      return rows;
     });
     const page = rows.slice(0, input.limit);
     return privateCardsSchema.parse({

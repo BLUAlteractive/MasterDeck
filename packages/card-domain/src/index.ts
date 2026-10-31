@@ -19,3 +19,9 @@ export { advanceProgress, progressWindow } from './progress';
 
 export { currencyDirection } from './currency';
 export type { Currency, CurrencyPurpose } from './currency';
+export {
+  emptyLatency,
+  observeLatency,
+  latencyPercentileUpper,
+  latencyBounds,
+} from './latency';

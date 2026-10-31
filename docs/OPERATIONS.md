@@ -1,0 +1,13 @@
+# Database-sourced operations snapshots
+
+`POST /v1/admin/operations/snapshot` accepts only commandId/reason and requires current AUDITOR scope, local permanent ADMIN and MFA. It writes an immutable read audit. Repeating the same command returns the original snapshot; a new command refreshes. Bounded retries handle snapshot isolation/idempotency conflicts. The disconnected admin preview loads no user data and accepts no pasted bearer.
+
+Snapshot counters use one PostgreSQL repeatable-read transaction and server time. Funnels count accounts created in the rolling seven-day window, currently permanent accounts from that cohort, starter grants, settled poker/Spades and fusion jobs. Paid counts are verified PRODUCTION purchase states only; catalog reference prices are not recognized revenue. Queues include stored environments and expose only aggregate counts. Reports are reported as total recorded cases, not a claim that every case remains unresolved.
+
+WEC follows MASTER_SPEC's conjunction: a settled valid server match plus a collection action in a rolling seven days. New authenticated nonempty inventory reads and successful favorites record only the latest collection timestamp per user; fusion/Press ownership history also qualifies. Historical view/favorite, archive-only or incubation actions without this instrumentation are not fabricated or backfilled. The dashboard discloses coverage. WEC never grants a reward and there is no client event ingestion endpoint.
+
+Integrity metrics independently reconcile materialized Play Chip/restricted balances with immutable journals, signed currency totals, card origins and purchase/grant counts/status. Exceptions require investigation; zero exceptions is not a fraud/security certification. Queue counts cover billing inbox/acknowledgements, void coverage gaps, completed-but-unsettled poker, bound tournament results and recorded reports.
+
+HTTP latency is a separate bounded process-memory histogram with fixed buckets, no URL/user/IP labels and an explicit since-boot timestamp. p95 is a conservative bucket upper bound; null means no samples or the percentile exceeds 5 seconds. It is not a cross-server or persistent latency baseline. Restart resets it. No client-reported latency becomes a ledger fact.
+
+CollectorActivity stores only one server timestamp; B051 owns its deletion/retention. No raw route/health history is created. Owned rollback drops only that aggregate table; production erasure/repair must follow reviewed retention policy. Monitor snapshot failures/timeouts, mismatches, recovery age and histogram tails. Alert routing, production dashboards and independent fraud analysis still need staging/operations acceptance before launch.
