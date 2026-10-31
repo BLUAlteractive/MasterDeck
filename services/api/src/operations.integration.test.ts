@@ -4,6 +4,7 @@ import { identityFixture } from '../test/auth-fixture';
 import { fixtureAdmin } from '../test/admin-fixture';
 import { fixtureLoadout } from '../test/funded';
 import { fullHouseFixture } from '../test/progress-fixture';
+import { PrivacyService } from './privacy/service';
 import { OperationsService, RequestLatency } from './admin/operations';
 import { operationalSummarySchema } from '@deckforge/contracts';
 let f: Awaited<ReturnType<typeof identityFixture>>,
@@ -64,6 +65,20 @@ it('requires current scoped MFA and audits source-idempotent consistent aggregat
 }, 30000);
 it('counts WEC only after both a settled match and a server-observed owned collection action, never arbitrary client analytics', async () => {
   const player = f.players[0]!;
+  await new PrivacyService(f.auth, {
+    policyVersion: 'TEST_ONLY_V1',
+    policyUrl: 'https://example.invalid/privacy',
+    approvalReference: 'TEST_ONLY_APPROVAL',
+    retentionApprovalReference: 'TEST_ONLY_RETENTION',
+    analyticsRetentionDays: 30,
+    identityHashKey: Buffer.alloc(32, 7),
+    provider: null,
+  }).consent(player.principal, {
+    commandId: randomUUID(),
+    purpose: 'ANALYTICS',
+    enabled: true,
+    policyVersion: 'TEST_ONLY_V1',
+  });
   await fixtureLoadout(f.db, player.userId);
   const before = await service.read(a.principal, command());
   await fullHouseFixture(

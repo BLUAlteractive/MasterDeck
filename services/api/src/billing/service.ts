@@ -106,11 +106,6 @@ export class BillingService {
         const user = await tx.user.findUniqueOrThrow({
           where: { id: binding.userId },
         });
-        if (
-          verified.state === 'ACTIVE' &&
-          (user.status !== 'ACTIVE' || user.isGuest)
-        )
-          throw new ApiFailure('PERMANENT_ACCOUNT_REQUIRED', 403);
         let purchase = await tx.verifiedPurchase.findUnique({
           where: {
             platform_environment_transactionId: {
@@ -120,6 +115,12 @@ export class BillingService {
             },
           },
         });
+        if (
+          verified.state === 'ACTIVE' &&
+          (user.status !== 'ACTIVE' || user.isGuest) &&
+          (!purchase || p)
+        )
+          throw new ApiFailure('PERMANENT_ACCOUNT_REQUIRED', 403);
         if (
           purchase &&
           (purchase.bindingId !== binding.id ||

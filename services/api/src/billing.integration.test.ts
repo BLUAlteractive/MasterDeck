@@ -285,3 +285,44 @@ it('honors a delayed first verified paid proof after an offer switch while keepi
     (await service.currentPurchase(actor.principal, receipt.purchaseId)).status,
   ).toBe('ACTIVE');
 });
+
+it('continues authoritative reconciliation of existing purchases after a deletion request without permitting new grants', async () => {
+  const a = await bound(),
+    proof = fixture.proof(
+      'APPLE',
+      a.context.appleAppAccountToken,
+      product.appleProductId,
+    ),
+    receipt = await service.verify(a.principal, proof);
+  await f.auth.requestDeletion(a.principal);
+  await f.db.purchaseReconciliation.update({
+    where: { purchaseId: receipt.purchaseId },
+    data: { nextAttemptAt: new Date(0) },
+  });
+  await service.reconcile(a.userId);
+  expect(
+    (
+      await f.db.purchaseReconciliation.findUniqueOrThrow({
+        where: { purchaseId: receipt.purchaseId },
+      })
+    ).attempts,
+  ).toBe(0);
+  fixture.records.get(hash(proof))!.state = 'REVOKED';
+  await f.db.purchaseReconciliation.update({
+    where: { purchaseId: receipt.purchaseId },
+    data: { nextAttemptAt: new Date(0) },
+  });
+  await service.reconcile(a.userId);
+  expect(
+    (
+      await f.db.verifiedPurchase.findUniqueOrThrow({
+        where: { id: receipt.purchaseId },
+      })
+    ).status,
+  ).toBe('REVOKED');
+  expect(
+    await f.db.cosmeticGrant.count({
+      where: { purchaseId: receipt.purchaseId, status: 'ACTIVE' },
+    }),
+  ).toBe(0);
+});

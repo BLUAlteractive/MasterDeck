@@ -1,3 +1,4 @@
+import { PrivacyPanel } from './privacy/PrivacyPanel';
 import { FeedbackProvider } from './experience/Feedback';
 import { GettingStarted } from './experience/GettingStarted';
 import { Tournaments } from './tournaments/Tournaments';
@@ -35,12 +36,22 @@ export function CollectionApp({
   );
   return (
     <FeedbackProvider key={collectionConnection?.sessionKey ?? 'preview-only'}>
-      <CollectionWorkspace client={client} />
+      <CollectionWorkspace
+        client={client}
+        onDeletionAccepted={collectionConnection?.onDeletionAccepted}
+      />
     </FeedbackProvider>
   );
 }
-function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
+function CollectionWorkspace({
+  client,
+  onDeletionAccepted,
+}: {
+  client: CollectionClient | null;
+  onDeletionAccepted: ((requestId: string) => Promise<void>) | undefined;
+}) {
   const [view, setView] = useState<
+    | 'privacy'
     | 'gallery'
     | 'archive'
     | 'play'
@@ -99,6 +110,11 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           selected={view === 'archive'}
           onPress={() => setView('archive')}
         />
+        <Action
+          label="Privacy & account"
+          selected={view === 'privacy'}
+          onPress={() => setView('privacy')}
+        />
       </ScrollView>
       <View
         style={{ flex: 1, display: view === 'gallery' ? 'flex' : 'none' }}
@@ -118,6 +134,9 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
       >
         <Fusion client={client} makeId={randomUUID} />
       </View>
+      {view === 'privacy' ? (
+        <PrivacyPanel client={client} onDeletionAccepted={onDeletionAccepted} />
+      ) : null}
       {view === 'activity' ? (
         <Activity client={client} makeId={randomUUID} />
       ) : null}
