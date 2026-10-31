@@ -208,6 +208,23 @@ export async function createApp(
       logger: ['error', 'warn', 'log'],
     },
   );
+  app.getHttpAdapter().getInstance().disable('x-powered-by');
+  app.use(
+    (
+      _req: unknown,
+      res: import('express').Response,
+      next: import('express').NextFunction,
+    ) => {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Referrer-Policy', 'no-referrer');
+      res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'none'; frame-ancestors 'none'",
+      );
+      next();
+    },
+  );
   app.use(
     (
       _req: unknown,

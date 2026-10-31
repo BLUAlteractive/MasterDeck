@@ -40,7 +40,8 @@
     "test:poker:exhaustive": "pnpm build:packages && vitest run packages/game-poker/src/evaluator.exhaustive.test.ts",
     "test:poker:seven": "pnpm build:packages && vitest run packages/game-poker/src/seven.test.ts",
     "test:poker:harness": "pnpm build:packages && tsx scripts/poker-harness.mts",
-    "test:poker:evolved": "pnpm build:packages && tsx scripts/evolved-simulation.mts"
+    "test:poker:evolved": "pnpm build:packages && tsx scripts/evolved-simulation.mts",
+    "security:check": "tsx scripts/security-scan.mts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

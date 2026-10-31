@@ -45,6 +45,13 @@ beforeAll(async () => {
     where: { id: admin.userId },
     data: { role: 'ADMIN' },
   });
+  await f.db.adminCapability.create({
+    data: {
+      userId: admin.userId,
+      capability: 'GAME_OPERATOR',
+      grantedBy: 'test.operator-provisioning-only',
+    },
+  });
   players = [];
   for (let i = 0; i < 4; i++) {
     const p = await f.actor(false);
@@ -281,10 +288,28 @@ it('keeps hidden state/account IDs out of brackets and enforces membership and a
   expect(
     (await f.request('tournaments?limit=999', outsider.bearer)).status,
   ).toBe(400);
+  const unscoped = await f.actor(false, 'aal2');
+  await f.db.user.update({
+    where: { id: unscoped.userId },
+    data: { role: 'ADMIN' },
+  });
+  await expect(
+    a.replay(unscoped.principal, tournamentId, {
+      ...key(),
+      reason: 'Unscoped admin must not operate games',
+    }),
+  ).rejects.toMatchObject({ code: 'FORBIDDEN' });
   const weak = await f.actor(false);
   await f.db.user.update({
     where: { id: weak.userId },
     data: { role: 'ADMIN' },
+  });
+  await f.db.adminCapability.create({
+    data: {
+      userId: weak.userId,
+      capability: 'GAME_OPERATOR',
+      grantedBy: 'test.operator-provisioning-only',
+    },
   });
   await expect(
     a.replay(weak.principal, tournamentId, {
