@@ -66,7 +66,7 @@ import { PokerRoomService, startTimeoutWorker } from './rooms/service';
 import { StarterController, StarterService } from './starter';
 import type { AuthService } from './auth/service';
 import { SafeErrorFilter } from './auth/errors';
-import { attachAuthSocket } from './auth/socket';
+import { attachAuthSocket, type SocketAdmissionPolicy } from './auth/socket';
 import { rateLimit } from 'express-rate-limit';
 
 @Controller('health')
@@ -95,6 +95,7 @@ export async function createApp(
     storefrontPolicy?: StorefrontPolicy;
     billing?: BillingConfig;
     tournamentPolicy?: TournamentPolicy;
+    socketAdmissionPolicy?: SocketAdmissionPolicy;
   } = {},
 ) {
   const tournamentPolicy = features.tournamentPolicy
@@ -245,6 +246,7 @@ export async function createApp(
     auth,
     origins,
     gameRooms,
+    features.socketAdmissionPolicy,
   );
   if (pokerRooms) stopTimeouts = startTimeoutWorker(pokerRooms);
   if (auth)

@@ -61,13 +61,20 @@ export async function identityFixture(
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
   }
-  async function actor(guest = true, aal: 'aal1' | 'aal2' = 'aal1') {
+  async function actor(
+    guest = true,
+    aal: 'aal1' | 'aal2' = 'aal1',
+    viaHttp = true,
+  ) {
     const sub = randomUUID(),
       sid = randomUUID();
     const bearer = await token(sub, sid, guest, aal);
-    const response = await request('auth/session', bearer, {});
-    expect(response.status).toBe(200);
-    const profile = (await response.json()) as { userId: string };
+    let profile: { userId: string };
+    if (viaHttp) {
+      const response = await request('auth/session', bearer, {});
+      expect(response.status).toBe(200);
+      profile = (await response.json()) as { userId: string };
+    } else profile = await auth.startSession('Bearer ' + bearer);
     return {
       sub,
       sid,
