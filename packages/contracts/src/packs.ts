@@ -171,3 +171,18 @@ export const supplyViewSchema = z
     purchasable: z.literal(false),
   })
   .strict();
+export const fixedPackQuerySchema = z
+  .object({
+    platform: z.enum(['APPLE', 'GOOGLE']),
+    expectedDefinitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict();
+export const fixedPackOfferSchema = z
+  .object({
+    packId: z.uuid(),
+    definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    product: cosmeticProductViewSchema,
+    fulfillment: z.literal('VERIFIED_PLATFORM_BILLING'),
+    functionalEffects: z.literal(false),
+  })
+  .strict();

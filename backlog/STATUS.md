@@ -66,3 +66,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B062 — Versioned pack catalog | Immutable reviewed earned/fixed definitions and exact current pool/contents catalog implemented | [B062 report](../docs/B062_REPORT.md), [catalog](../docs/PACK_CATALOG.md) | Actual economy/rights/provider approval remains open; opening/region/stock fulfillment is B063 and fixed pack billing is B064. |
 
 | B063 — Earned pack open engine | Atomic earned debit, server-seeded immutable outcomes, finite stock and bound supplies validated | [B063 report](../docs/B063_REPORT.md), [opening guide](../docs/EARNED_PACK_OPENING.md) | Real economy/rights, region trust, native integration and key operations remain activation gates. |
+
+| B064 — Purchased fixed cosmetic pack IAP | Exact platform SKU admission and complete multi-item verified grant/refund/restore validated; existing journal reused | [B064 report](../docs/B064_REPORT.md), [fixed packs](../docs/FIXED_COSMETIC_PACKS.md) | Real platform/native checkout, device evidence and live approval remain open; regional paid admission and finite paid stock stay unavailable. |
