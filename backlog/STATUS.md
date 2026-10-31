@@ -64,3 +64,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B061 — Canonical activity ingestion | Canonical proof boundary, source dedupe, independent allocations, correction holds and precision cleanup implemented | [B061 report](../docs/B061_REPORT.md), [activity](../docs/ACTIVITY_INGESTION.md) | No live verifier; actual native proof/device acceptance, correction resolution and B069 job integration remain open. |
 
 | B062 — Versioned pack catalog | Immutable reviewed earned/fixed definitions and exact current pool/contents catalog implemented | [B062 report](../docs/B062_REPORT.md), [catalog](../docs/PACK_CATALOG.md) | Actual economy/rights/provider approval remains open; opening/region/stock fulfillment is B063 and fixed pack billing is B064. |
+
+| B063 — Earned pack open engine | Atomic earned debit, server-seeded immutable outcomes, finite stock and bound supplies validated | [B063 report](../docs/B063_REPORT.md), [opening guide](../docs/EARNED_PACK_OPENING.md) | Real economy/rights, region trust, native integration and key operations remain activation gates. |

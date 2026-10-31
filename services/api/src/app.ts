@@ -1,3 +1,8 @@
+import {
+  PackOpeningController,
+  PackOpeningService,
+  type PackOpeningConfig,
+} from './packs/opening';
 import { PackCatalogController, PackCatalogService } from './packs/catalog';
 import type { PackPolicy } from '@deckforge/contracts';
 import {
@@ -113,6 +118,7 @@ export async function createApp(
     privacy?: PrivacyConfig;
     activity?: ActivityConfig;
     packPolicy?: PackPolicy;
+    packOpening?: PackOpeningConfig;
   } = {},
 ) {
   const tournamentPolicy = features.tournamentPolicy
@@ -149,6 +155,9 @@ export async function createApp(
         storefrontPolicy,
       )
     : null;
+  const packOpenings = packCatalog
+    ? new PackOpeningService(packCatalog, features.packOpening ?? null)
+    : null;
   const billing =
     features.billing && auth && storefrontPolicy
       ? new BillingService(auth.database, features.billing, storefrontPolicy)
@@ -179,6 +188,7 @@ export async function createApp(
         PrivacyController,
         ActivityController,
         PackCatalogController,
+        PackOpeningController,
         IdentityController,
         CatalogController,
         StarterController,
@@ -204,6 +214,7 @@ export async function createApp(
         { provide: 'PRIVACY_SERVICE', useValue: privacy },
         { provide: 'ACTIVITY_SERVICE', useValue: activity },
         { provide: 'PACK_CATALOG', useValue: packCatalog },
+        { provide: 'PACK_OPENINGS', useValue: packOpenings },
         { provide: 'REQUEST_LATENCY', useValue: latency },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },

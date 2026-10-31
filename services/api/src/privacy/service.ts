@@ -167,7 +167,34 @@ export class PrivacyService {
       const after = q.cursor ? { id: { gt: q.cursor } } : {},
         take = q.limit + 1;
       let rows: Record<string, unknown>[] = [];
-      if (q.resource === 'ACTIVITY')
+      if (q.resource === 'PACK_OPENINGS')
+        rows = await tx.packOpening.findMany({
+          where: { userId: p.userId, ...after },
+          take,
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            packId: true,
+            definitionHash: true,
+            result: true,
+            createdAt: true,
+          },
+        });
+      else if (q.resource === 'SUPPLIES')
+        rows = await tx.supplyEvent.findMany({
+          where: { userId: p.userId, ...after },
+          take,
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            kind: true,
+            delta: true,
+            version: true,
+            reason: true,
+            createdAt: true,
+          },
+        });
+      else if (q.resource === 'ACTIVITY')
         rows = await tx.activitySource.findMany({
           where: { userId: p.userId, ...after },
           take,
