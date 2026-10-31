@@ -132,3 +132,33 @@ it('rejects cross-currency functionality, direct balance edits and public grant/
       ).status,
     ).toBe(404);
 });
+
+it('cannot use an earned balance to fund a paid-currency debit and rolls the whole attempted transaction back', async () => {
+  const a = await f.actor(),
+    input = decision(a.userId);
+  await expect(
+    f.db.$transaction(async (tx) => {
+      await moveRestrictedCurrency(tx, input);
+      await moveRestrictedCurrency(tx, {
+        ...input,
+        currency: 'STORE_GEMS',
+        purpose: 'BUY_COSMETIC',
+        amount: 1n,
+        sourceKey: randomUUID(),
+      });
+    }),
+  ).rejects.toMatchObject({ code: 'INSUFFICIENT_FUNDS' });
+  expect(
+    await f.db.restrictedTransfer.count({
+      where: { sourceKey: input.sourceKey },
+    }),
+  ).toBe(0);
+  const view = walletViewSchema.parse(
+    await (await f.request('wallets', a.bearer)).json(),
+  );
+  expect([view.playChips, view.trailCredits, view.storeGems]).toEqual([
+    '0',
+    '0',
+    '0',
+  ]);
+});

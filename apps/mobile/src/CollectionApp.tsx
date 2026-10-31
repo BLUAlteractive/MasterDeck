@@ -1,3 +1,4 @@
+import { Wallets } from './wallets/Wallets';
 import { PrivacyPanel } from './privacy/PrivacyPanel';
 import { FeedbackProvider } from './experience/Feedback';
 import { GettingStarted } from './experience/GettingStarted';
@@ -51,6 +52,7 @@ function CollectionWorkspace({
   onDeletionAccepted: ((requestId: string) => Promise<void>) | undefined;
 }) {
   const [view, setView] = useState<
+    | 'wallets'
     | 'privacy'
     | 'gallery'
     | 'archive'
@@ -115,6 +117,11 @@ function CollectionWorkspace({
           selected={view === 'privacy'}
           onPress={() => setView('privacy')}
         />
+        <Action
+          label="Wallets"
+          selected={view === 'wallets'}
+          onPress={() => setView('wallets')}
+        />
       </ScrollView>
       <View
         style={{ flex: 1, display: view === 'gallery' ? 'flex' : 'none' }}
@@ -137,6 +144,7 @@ function CollectionWorkspace({
       {view === 'privacy' ? (
         <PrivacyPanel client={client} onDeletionAccepted={onDeletionAccepted} />
       ) : null}
+      {view === 'wallets' ? <Wallets client={client} /> : null}
       {view === 'activity' ? (
         <Activity client={client} makeId={randomUUID} />
       ) : null}

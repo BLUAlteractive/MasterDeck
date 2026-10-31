@@ -1,4 +1,5 @@
 import {
+  walletViewSchema,
   privacyStateSchema,
   privacyConsentSchema,
   privacyConsentReceiptSchema,
@@ -135,6 +136,9 @@ export function createCollectionClient(
   }
 
   return {
+    async wallets() {
+      return walletViewSchema.parse(await request('/v1/wallets'));
+    },
     async privacyState() {
       return privacyStateSchema.parse(await request('/v1/privacy'));
     },
