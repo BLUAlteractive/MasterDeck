@@ -48,3 +48,5 @@
 | B043 — Tournament mobile UI                                     | Implemented; strict UI/transport and database regression validated                        | [B043 report](../docs/B043_REPORT.md), [batch report](../docs/NEXT_TEN_ACTIVITY_COMMERCE_TOURNAMENT_REPORT.md)                                                                                              | Native multi-device/screen-reader acceptance and reviewed event activation remain open; full moderation triage belongs to B045.                                           |
 
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
+
+| B044 — Admin content/catalog | Scoped review/publish/retire and audited product switches implemented | [B044 report](../docs/B044_REPORT.md) | Real operator MFA/provisioning and commercial art review remain open; no public mint or live activation. |

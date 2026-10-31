@@ -28,7 +28,11 @@ afterAll(async () => {
 });
 describe('versioned catalog assets in PostgreSQL and public API', () => {
   it('stores 53 assets and 52 version-one templates without publishing the preview', async () => {
-    expect(await database.designAsset.count()).toBe(53);
+    expect(
+      await database.designAsset.count({
+        where: { id: { in: developmentCatalog.assets.map((a) => a.id) } },
+      }),
+    ).toBe(53);
     const templates = await database.cardTemplate.findMany({
       where: { seriesId: developmentCatalog.seriesId, version: 1 },
     });
@@ -111,6 +115,7 @@ describe('versioned catalog assets in PostgreSQL and public API', () => {
   it('returns only safe published metadata when synthetic test approval evidence is present', async () => {
     // Synthetic proof exists only in this runner-owned DB; never in the real draft manifest.
     await database.designAsset.updateMany({
+      where: { id: { in: developmentCatalog.assets.map((a) => a.id) } },
       data: {
         useScope: 'COMMERCIAL',
         approvalReference: 'TEST_ONLY_APPROVAL_FIXTURE',
@@ -142,6 +147,7 @@ describe('versioned catalog assets in PostgreSQL and public API', () => {
         data: { status: 'DRAFT' },
       });
       await database.designAsset.updateMany({
+        where: { id: { in: developmentCatalog.assets.map((a) => a.id) } },
         data: { useScope: 'INTERNAL_PREVIEW', approvalReference: null },
       });
     }
