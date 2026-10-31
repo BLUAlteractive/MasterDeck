@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
@@ -14,6 +15,10 @@ import { z } from 'zod';
 import { createCardWithOrigin } from '@deckforge/database';
 import { rewardPoolTotal, rewardPoolIndex } from '@deckforge/card-domain';
 import {
+  packCancelResultSchema,
+  pendingPackSchema,
+  packHistoryQuerySchema,
+  packHistorySchema,
   packOpenSchema,
   packDefinitionSchema,
   packOpeningSchema,
@@ -89,6 +94,18 @@ export class PackOpeningService {
             throw new ApiFailure('IDEMPOTENCY_CONFLICT', 409);
           return packOpeningSchema.parse(old.result);
         }
+        if (
+          await tx.operationRecord.findUnique({
+            where: {
+              userId_operation_key: {
+                userId: p.userId,
+                operation: 'PACK_CANCEL',
+                key: input.commandId,
+              },
+            },
+          })
+        )
+          throw new ApiFailure('PACK_OPENING_CANCELLED', 409);
         if (
           !this.config ||
           !this.catalog.policy ||
@@ -256,6 +273,79 @@ export class PackOpeningService {
       return packOpeningSchema.parse(row.result);
     });
   }
+  async cancel(p: Principal, body: unknown) {
+    const parsed = pendingPackSchema.safeParse(body);
+    if (!parsed.success) throw new ApiFailure('INVALID_REQUEST', 400);
+    const { packId, command } = parsed.data,
+      digest = hash({ packId, ...command });
+    return this.catalog.db.$transaction(async (tx) => {
+      await lockPrincipal(tx, p);
+      const old = await tx.packOpening.findUnique({
+        where: {
+          userId_commandId: { userId: p.userId, commandId: command.commandId },
+        },
+      });
+      if (old) {
+        if (old.requestHash !== digest)
+          throw new ApiFailure('IDEMPOTENCY_CONFLICT', 409);
+        return packCancelResultSchema.parse({
+          status: 'COMMITTED',
+          receipt: packOpeningSchema.parse(old.result),
+        });
+      }
+      const key = {
+          userId: p.userId,
+          operation: 'PACK_CANCEL',
+          key: command.commandId,
+        },
+        prior = await tx.operationRecord.findUnique({
+          where: { userId_operation_key: key },
+        });
+      if (prior) {
+        if (prior.requestHash !== digest)
+          throw new ApiFailure('IDEMPOTENCY_CONFLICT', 409);
+        return packCancelResultSchema.parse(prior.result);
+      }
+      const result = packCancelResultSchema.parse({
+        status: 'CANCELLED',
+        commandId: command.commandId,
+      });
+      await tx.operationRecord.create({
+        data: { ...key, requestHash: digest, result: json(result) },
+      });
+      return result;
+    });
+  }
+  async history(p: Principal, query: unknown) {
+    const parsed = packHistoryQuerySchema.safeParse(query);
+    if (!parsed.success) throw new ApiFailure('INVALID_REQUEST', 400);
+    const input = parsed.data;
+    return this.catalog.db.$transaction(async (tx) => {
+      await lockPrincipal(tx, p);
+      if (input.cursor) {
+        const cursor = await tx.packOpening.findUnique({
+          where: { id: input.cursor },
+        });
+        if (!cursor || cursor.userId !== p.userId)
+          throw new ApiFailure('OPENING_UNAVAILABLE', 404);
+      }
+      const rows = await tx.packOpening.findMany({
+        where: { userId: p.userId },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: input.limit + 1,
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        select: { id: true, result: true, createdAt: true },
+      });
+      const page = rows.slice(0, input.limit);
+      return packHistorySchema.parse({
+        items: page.map((r) => ({
+          openedAt: r.createdAt.toISOString(),
+          receipt: packOpeningSchema.parse(r.result),
+        })),
+        nextCursor: rows.length > input.limit ? page.at(-1)!.id : null,
+      });
+    });
+  }
   async supplies(p: Principal) {
     return this.catalog.db.$transaction(async (tx) => {
       await lockPrincipal(tx, p);
@@ -348,6 +438,23 @@ export class PackOpeningController {
       await s.auth.authenticate(r.headers.authorization),
       id,
       b,
+    );
+  }
+  @Post('cancel') @HttpCode(200) async cancel(
+    @Req() r: Request,
+    @Body() body: unknown,
+  ) {
+    const s = this.enabled();
+    return s.service.cancel(
+      await s.auth.authenticate(r.headers.authorization),
+      body,
+    );
+  }
+  @Get('openings') async history(@Req() r: Request, @Query() query: unknown) {
+    const s = this.enabled();
+    return s.service.history(
+      await s.auth.authenticate(r.headers.authorization),
+      query,
     );
   }
   @Get('openings/:id') async receipt(

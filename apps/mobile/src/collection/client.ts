@@ -1,4 +1,14 @@
 import {
+  packCancelResultSchema,
+  pendingPackSchema,
+  packCatalogSchema,
+  packOpeningSchema,
+  packOpenSchema,
+  packHistoryQuerySchema,
+  packHistorySchema,
+  supplyViewSchema,
+  fixedPackQuerySchema,
+  fixedPackOfferSchema,
   walletViewSchema,
   privacyStateSchema,
   privacyConsentSchema,
@@ -136,6 +146,88 @@ export function createCollectionClient(
   }
 
   return {
+    apiOrigin: base.origin,
+    async packs(platform: 'APPLE' | 'GOOGLE', signal?: AbortSignal) {
+      return packCatalogSchema.parse(
+        await request(
+          '/v1/packs/catalog?platform=' + platform,
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async openPack(
+      packId: string,
+      input: ReturnType<typeof packOpenSchema.parse>,
+      signal?: AbortSignal,
+    ) {
+      const pending = pendingPackSchema.parse({ packId, command: input });
+      const receipt = packOpeningSchema.parse(
+        await request(
+          '/v1/packs/' + encodeURIComponent(pending.packId) + '/open',
+          'POST',
+          pending.command,
+          signal,
+        ),
+      );
+      if (
+        receipt.packId !== packId ||
+        receipt.definitionHash !== input.expectedDefinitionHash
+      )
+        throw new Error('Pack receipt does not match the requested offer.');
+      return receipt;
+    },
+    async cancelPack(
+      input: ReturnType<typeof pendingPackSchema.parse>,
+      signal?: AbortSignal,
+    ) {
+      return packCancelResultSchema.parse(
+        await request(
+          '/v1/packs/cancel',
+          'POST',
+          pendingPackSchema.parse(input),
+          signal,
+        ),
+      );
+    },
+    async packHistory(cursor?: string, signal?: AbortSignal) {
+      const q = packHistoryQuerySchema.parse({ cursor, limit: 20 });
+      return packHistorySchema.parse(
+        await request(
+          '/v1/packs/openings?limit=20' +
+            (q.cursor ? '&cursor=' + q.cursor : ''),
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async supplies(signal?: AbortSignal) {
+      return supplyViewSchema.parse(
+        await request('/v1/packs/supplies', 'GET', undefined, signal),
+      );
+    },
+    async fixedPackOffer(
+      packId: string,
+      query: ReturnType<typeof fixedPackQuerySchema.parse>,
+      signal?: AbortSignal,
+    ) {
+      const q = fixedPackQuerySchema.parse(query);
+      return fixedPackOfferSchema.parse(
+        await request(
+          '/v1/packs/' +
+            encodeURIComponent(packId) +
+            '/fixed-offer?platform=' +
+            q.platform +
+            '&expectedDefinitionHash=' +
+            q.expectedDefinitionHash,
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
     async wallets() {
       return walletViewSchema.parse(await request('/v1/wallets'));
     },

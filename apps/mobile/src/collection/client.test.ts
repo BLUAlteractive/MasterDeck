@@ -106,3 +106,37 @@ describe('session-bound collection transport', () => {
     ).toThrow();
   });
 });
+it('rejects a pack receipt for another offer and never accepts a client draw or currency override', async () => {
+  const id = '00000000-0000-4000-8000-000000000001',
+    other = '00000000-0000-4000-8000-000000000002';
+  const transport = vi.fn<typeof fetch>().mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        openingId: id,
+        packId: other,
+        definitionHash: 'a'.repeat(64),
+        currency: 'TRAIL_CREDITS',
+        charged: '100',
+        rngVersion: 'HMAC_SHA256_V1',
+        seedCommitment: 'b'.repeat(64),
+        outcomes: [{ kind: 'TRAIL_INK', units: 1 }],
+      }),
+    ),
+  );
+  const client = createCollectionClient(
+    'https://api.example.invalid',
+    async () => 'token',
+    transport,
+  );
+  await expect(
+    client.openPack(id, {
+      commandId: id,
+      expectedDefinitionHash: 'a'.repeat(64),
+    }),
+  ).rejects.toThrow('does not match');
+  expect(JSON.parse(transport.mock.calls[0]![1]!.body as string)).toEqual({
+    commandId: id,
+    expectedDefinitionHash: 'a'.repeat(64),
+  });
+  expect(client.apiOrigin).toBe('https://api.example.invalid');
+});

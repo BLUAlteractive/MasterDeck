@@ -1,3 +1,4 @@
+import { Packs } from './packs/Packs';
 import { Wallets } from './wallets/Wallets';
 import { PrivacyPanel } from './privacy/PrivacyPanel';
 import { FeedbackProvider } from './experience/Feedback';
@@ -52,6 +53,7 @@ function CollectionWorkspace({
   onDeletionAccepted: ((requestId: string) => Promise<void>) | undefined;
 }) {
   const [view, setView] = useState<
+    | 'packs'
     | 'wallets'
     | 'privacy'
     | 'gallery'
@@ -63,6 +65,7 @@ function CollectionWorkspace({
     | 'storefront'
     | 'tournaments'
   >('gallery');
+  const [collectionRevision, setCollectionRevision] = useState(0);
   return (
     <View style={{ flex: 1 }}>
       <GettingStarted connected={client !== null} />
@@ -72,6 +75,11 @@ function CollectionWorkspace({
         contentContainerStyle={{ flexDirection: 'row', gap: 8, padding: 12 }}
         accessibilityLabel="Main navigation"
       >
+        <Action
+          label="Pack shelf"
+          selected={view === 'packs'}
+          onPress={() => setView('packs')}
+        />
         <Action
           label="Card gallery"
           selected={view === 'gallery'}
@@ -130,7 +138,7 @@ function CollectionWorkspace({
           view === 'gallery' ? 'auto' : 'no-hide-descendants'
         }
       >
-        <Gallery client={client} makeId={randomUUID} />
+        <Gallery key={collectionRevision} client={client} makeId={randomUUID} />
       </View>
       <View
         style={{ flex: 1, display: view === 'fusion' ? 'flex' : 'none' }}
@@ -141,6 +149,13 @@ function CollectionWorkspace({
       >
         <Fusion client={client} makeId={randomUUID} />
       </View>
+      {view === 'packs' ? (
+        <Packs
+          client={client}
+          makeId={randomUUID}
+          onOpened={() => setCollectionRevision((n) => n + 1)}
+        />
+      ) : null}
       {view === 'privacy' ? (
         <PrivacyPanel client={client} onDeletionAccepted={onDeletionAccepted} />
       ) : null}
