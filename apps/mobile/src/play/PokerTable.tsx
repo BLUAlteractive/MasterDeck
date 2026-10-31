@@ -1,3 +1,4 @@
+import { SafetyPanel } from './SafetyPanel';
 import { useEffect, useRef, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import type { PokerRoomCommand, PokerViewResponse } from '@deckforge/contracts';
@@ -251,6 +252,14 @@ function ConnectedPokerTable({
           Connecting to your private tournament hand…
         </Text>
       )}
+      {snapshot ? (
+        <SafetyPanel
+          client={client}
+          game="POKER"
+          gameId={gameId}
+          makeId={makeId}
+        />
+      ) : null}
       <Text style={{ color: shellTheme.text }} accessibilityLiveRegion="polite">
         {notice}
       </Text>

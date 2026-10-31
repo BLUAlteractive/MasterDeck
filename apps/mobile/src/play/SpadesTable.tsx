@@ -1,3 +1,4 @@
+import { SafetyPanel } from './SafetyPanel';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { shellTheme } from '@deckforge/ui';
 import { Text as NativeText, View } from 'react-native';
@@ -157,6 +158,12 @@ function ConnectedTable({
           onPress={() => void submit()}
         />
       ) : null}
+      <SafetyPanel
+        client={client}
+        game="SPADES"
+        gameId={gameId}
+        makeId={makeId}
+      />
       {notice ? <Text accessibilityRole="alert">{notice}</Text> : null}
     </View>
   );

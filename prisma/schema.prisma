@@ -1098,3 +1098,39 @@ model ProductAvailability {
   version   Int      @default(1)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 }
+
+model UserBlock {
+  userId       String  @db.Uuid
+  targetUserId String  @db.Uuid
+  active       Boolean @default(false)
+  version      Int     @default(0)
+
+  @@id([userId, targetUserId])
+}
+
+model UserBlockEvent {
+  id           String   @id @db.Uuid
+  userId       String   @db.Uuid
+  targetUserId String   @db.Uuid
+  active       Boolean
+  version      Int
+  commandId    String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, targetUserId, version])
+  @@unique([userId, commandId])
+}
+
+model GameReport {
+  id           String   @id @db.Uuid
+  userId       String   @db.Uuid
+  game         String
+  gameId       String   @db.Uuid
+  code         String
+  stateVersion Int
+  evidenceHash String
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([game, gameId, createdAt])
+  @@index([userId, createdAt])
+}

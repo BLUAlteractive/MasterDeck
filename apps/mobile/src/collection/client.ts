@@ -14,6 +14,11 @@ import {
   pokerCommandSchema,
   pokerCommandReceiptSchema,
   type PokerRoomCommand,
+  safetyContextSchema,
+  safetyCommandSchema,
+  safetyViewSchema,
+  safetyReceiptSchema,
+  type SafetyCommand,
   privateCardsSchema,
   billingProofSchema,
   billingContextSchema,
@@ -121,6 +126,31 @@ export function createCollectionClient(
   }
 
   return {
+    async safety(
+      game: 'POKER' | 'SPADES',
+      gameId: string,
+      signal?: AbortSignal,
+    ) {
+      const c = safetyContextSchema.parse({ game, gameId });
+      return safetyViewSchema.parse(
+        await request(
+          '/v1/safety/rooms/' + c.game + '/' + c.gameId,
+          'GET',
+          undefined,
+          signal,
+        ),
+      );
+    },
+    async safetyCommand(command: SafetyCommand, signal?: AbortSignal) {
+      return safetyReceiptSchema.parse(
+        await request(
+          '/v1/safety/commands',
+          'POST',
+          safetyCommandSchema.parse(command),
+          signal,
+        ),
+      );
+    },
     async tournaments(cursor?: string, signal?: AbortSignal) {
       const q = tournamentListQuerySchema.parse({
         limit: 10,

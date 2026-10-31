@@ -1,3 +1,4 @@
+import { eligibleGroup } from '../admin/group';
 import {
   Body,
   Controller,
@@ -111,6 +112,10 @@ export class SpadesAdmissionService {
               throw new ApiFailure('REMATCH_UNAVAILABLE', 409);
           } else if (input.rematchOf)
             throw new ApiFailure('REMATCH_UNAVAILABLE', 409);
+          await eligibleGroup(
+            tx,
+            lobby.seats.map((s) => s.userId),
+          );
           const loadouts = [];
           for (const seat of lobby.seats) {
             const loadout = await tx.loadout.findUnique({

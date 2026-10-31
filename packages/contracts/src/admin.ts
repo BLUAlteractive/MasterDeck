@@ -47,3 +47,81 @@ export const contentCommandSchema = z.discriminatedUnion('action', [
     .strict(),
 ]);
 export type ContentCommand = z.infer<typeof contentCommandSchema>;
+export const safetyContextSchema = z
+  .object({ game: z.enum(['POKER', 'SPADES']), gameId: z.uuid() })
+  .strict();
+export const safetyCommandSchema = z.discriminatedUnion('action', [
+  safetyContextSchema
+    .extend({
+      action: z.literal('REPORT'),
+      commandId: z.uuid(),
+      code: z.enum([
+        'RESULT_INCONSISTENT',
+        'CONNECTION_FAILURE',
+        'HARASSMENT',
+        'COLLUSION',
+      ]),
+    })
+    .strict(),
+  safetyContextSchema
+    .extend({
+      action: z.literal('SET_BLOCK'),
+      commandId: z.uuid(),
+      targetUserId: z.uuid(),
+      blocked: z.boolean(),
+    })
+    .strict(),
+]);
+export const safetyViewSchema = z
+  .object({
+    gameId: z.uuid(),
+    participants: z
+      .array(
+        z
+          .object({
+            userId: z.uuid(),
+            seat: z.number().int(),
+            blocked: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(5),
+    reports: z
+      .array(
+        z
+          .object({
+            id: z.uuid(),
+            code: z.string(),
+            createdAt: z.iso.datetime(),
+          })
+          .strict(),
+      )
+      .max(100),
+  })
+  .strict();
+export const safetyReceiptSchema = z
+  .object({ recorded: z.literal(true), reference: z.uuid() })
+  .strict();
+export const moderationCommandSchema = z.discriminatedUnion('action', [
+  adminCommandSchema
+    .extend({
+      action: z.enum(['SUSPEND', 'REINSTATE']),
+      targetUserId: z.uuid(),
+    })
+    .strict(),
+  adminCommandSchema
+    .extend({
+      action: z.literal('INSPECT'),
+      game: z.enum(['POKER', 'SPADES']),
+      gameId: z.uuid(),
+    })
+    .strict(),
+  adminCommandSchema
+    .extend({
+      action: z.literal('REVIEW_REPORT'),
+      reportId: z.uuid(),
+      decision: z.enum(['NO_ACTION', 'ESCALATE', 'RESOLVED']),
+    })
+    .strict(),
+]);
+export type SafetyCommand = z.infer<typeof safetyCommandSchema>;

@@ -1,3 +1,4 @@
+import { eligibleGroup } from '../admin/group';
 import type { Prisma } from '@deckforge/database';
 import type { ClassicAdmissionPolicy } from '../rooms/settlement';
 import { ApiFailure } from '../auth/errors';
@@ -15,6 +16,7 @@ export async function bindTournamentRoom(
     include: { match: { include: { tournament: true } } },
   });
   if (!binding) return;
+  await eligibleGroup(tx, userIds);
   const m = binding.match;
   await tx.$queryRaw`SELECT "id" FROM "Tournament" WHERE "id"=${m.tournamentId}::uuid FOR UPDATE`;
   await tx.$queryRaw`SELECT "id" FROM "TournamentMatch" WHERE "id"=${m.id}::uuid FOR UPDATE`;

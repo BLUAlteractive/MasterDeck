@@ -392,3 +392,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Operator-provisioned capabilities refine local ADMIN; every command rechecks current role, scope and MFA under lock. No public capability grant or mint endpoint. Draft templates reference existing art assets; commercial provenance must already be approved by the trusted pipeline. Editor, two independent reviewers and publisher cannot substitute one actor for the full review chain.
 - Review the exact publishable manifest hash. Retire published series rather than rewriting earned templates. Live cosmetic switches require both an approved fixed product and the existing server allow-list; disabled products reject new purchases but existing purchase restore/refund evidence remains valid. Main remains unconfigured for live commerce.
 - Admin UI receives a refresh-aware managed-auth connection from its host, stores no bearer token and defaults disconnected. This implements administration infrastructure, not a claim of real operator/rights/provider approval.
+
+### B045 — Participant safety without invented forfeitures
+
+- Bind reports and block targets to verified room participation. Preserve immutable report version/hash and versioned block events; future admissions reject blocked pairs in either direction. Blocking an existing opponent does not modify an already accepted hand or payout.
+- SUPPORT requires current operator scope, local ADMIN and MFA; audited suspension revokes sessions and open ordinary queues, while game escrow/locks and tournament evidence remain intact. Reinstatement cannot bypass pending deletion and never resurrects old bearer sessions.
+- Dispute inspection replays authoritative poker/Spades history and returns bounded hashes/proofs rather than hidden-card or shuffle snapshots. Staff decisions are triage records, not an automatic result override. Incident/appeal/forfeit policy and full moderation operations remain beta gates.
