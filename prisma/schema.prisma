@@ -1264,3 +1264,30 @@ model ActivityReview {
   @@unique([sourceId, revision])
   @@index([userId])
 }
+
+model PackDefinition {
+  id             String   @id @db.Uuid
+  slug           String
+  version        Int
+  status         String   @default("DRAFT")
+  stateVersion   Int      @default(1)
+  definition     Json
+  definitionHash String
+  creatorId      String   @db.Uuid
+  publisherId    String?  @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([slug, version])
+}
+
+model PackReview {
+  packId         String   @db.Uuid
+  reviewerId     String   @db.Uuid
+  review         String
+  definitionHash String
+  evidence       String
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([packId, review])
+  @@unique([packId, reviewerId])
+}

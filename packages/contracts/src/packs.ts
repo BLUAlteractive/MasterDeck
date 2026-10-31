@@ -1,0 +1,127 @@
+import { z } from 'zod';
+import { adminCommandSchema } from './admin';
+import { cosmeticProductViewSchema } from './commerce';
+const common = {
+  name: z.string().min(3).max(100),
+  startsAt: z.iso.datetime(),
+  endsAt: z.iso.datetime(),
+  stockLimit: z.number().int().min(1).max(1000000).nullable(),
+  regions: z
+    .array(z.string().regex(/^[A-Z]{2}$/))
+    .max(100)
+    .refine((r) => new Set(r).size === r.length),
+};
+export const earnedRewardSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('CARD'),
+      templateId: z.uuid(),
+      branch: z.enum(['BLUE', 'RED']),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('TRAIL_INK'),
+      units: z.number().int().min(1).max(1000),
+    })
+    .strict(),
+]);
+export const packDefinitionSchema = z
+  .discriminatedUnion('kind', [
+    z
+      .object({
+        ...common,
+        kind: z.literal('DISCOVERY'),
+        currency: z.literal('TRAIL_CREDITS'),
+        price: z.number().int().min(1).max(1000000),
+        drawCount: z.number().int().min(1).max(10),
+        duplicatePolicy: z.literal('ALLOW_COPIES'),
+        guarantee: z.literal('NONE'),
+        pool: z
+          .array(
+            z
+              .object({
+                weight: z.number().int().min(1).max(1000000),
+                reward: earnedRewardSchema,
+              })
+              .strict(),
+          )
+          .min(1)
+          .max(100),
+      })
+      .strict(),
+    z
+      .object({
+        ...common,
+        kind: z.literal('FIXED_COSMETIC'),
+        stockLimit: z.null(),
+        cosmeticProductId: z.uuid(),
+        functionalEffects: z.literal(false),
+        randomized: z.literal(false),
+      })
+      .strict(),
+  ])
+  .refine((d) => Date.parse(d.endsAt) > Date.parse(d.startsAt));
+export type PackDefinition = z.infer<typeof packDefinitionSchema>;
+export const packPolicySchema = z
+  .object({
+    version: z.string().min(1).max(100),
+    approvalReference: z.string().min(8).max(200),
+    allowedPackIds: z
+      .array(z.uuid())
+      .max(100)
+      .refine((ids) => new Set(ids).size === ids.length),
+  })
+  .strict();
+export type PackPolicy = z.infer<typeof packPolicySchema>;
+export const packAdminSchema = z.discriminatedUnion('action', [
+  adminCommandSchema
+    .extend({
+      action: z.literal('DRAFT'),
+      packId: z.uuid(),
+      slug: z.string().regex(/^[a-z0-9-]{3,80}$/),
+      version: z.number().int().positive(),
+      definition: packDefinitionSchema,
+    })
+    .strict(),
+  adminCommandSchema
+    .extend({
+      action: z.literal('REVIEW'),
+      packId: z.uuid(),
+      review: z.enum(['CONTENT', 'ECONOMY']),
+      definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+      evidence: z.string().min(8).max(200),
+    })
+    .strict(),
+  adminCommandSchema
+    .extend({
+      action: z.enum(['PUBLISH', 'RETIRE']),
+      packId: z.uuid(),
+      expectedVersion: z.number().int().positive(),
+    })
+    .strict(),
+]);
+export const packViewSchema = z
+  .object({
+    id: z.uuid(),
+    slug: z.string(),
+    version: z.number().int().positive(),
+    definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    definition: packDefinitionSchema,
+    odds: z
+      .array(
+        z
+          .object({
+            reward: earnedRewardSchema,
+            numerator: z.number().int().positive(),
+            denominator: z.number().int().positive(),
+          })
+          .strict(),
+      )
+      .max(100),
+    fixedContents: cosmeticProductViewSchema.nullable(),
+  })
+  .strict();
+export const packCatalogSchema = z
+  .object({ available: z.boolean(), packs: z.array(packViewSchema).max(100) })
+  .strict();

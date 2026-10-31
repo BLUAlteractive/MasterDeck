@@ -1,0 +1,7 @@
+# B062 — Versioned pack catalog
+
+Added strict earned/fixed pack definitions, exact integer pool odds, immutable persisted versions, time/stock/region metadata, independently reviewed publication and audited retirement. Public catalog is server allow-listed and defaults unavailable. Earned card references require published original commercial art; fixed references resolve exact approved cosmetic contents. No catalog command mints inventory, spends currency or activates billing. Paid random and functional paid definitions are rejected structurally.
+
+Files: shared pack contracts/unit and index; Prisma catalog/review schema, migration and disposable rollback; pack catalog/admin service/controller and integration tests; app policy injection; decisions/status/catalog guide/report. Real economy/rights/provider approval remains open. Stock/region enforcement and opening transactions are B063; fixed multi-item verification is B064.
+
+Validation: final `pnpm ci:quality` passed 319 tests in 65 files, format/lint/types and 11 builds (`/tmp/deckforge-b062-quality-final.log`). Owned `pnpm ci:recovery` passed 171 cases in 33 files twice, one optional load skip, 94-table clean restore, game replay/assets and disposable reverse migrations/reset/reseed (`/tmp/deckforge-b062-recovery.log`, 145 seconds). Fixed paid packs explicitly require unlimited stock until verified reservation/admission exists; earned caps remain versioned. No developer/production data mutation or live activation. Next: B063 earned pack atomic opening and supply provenance.

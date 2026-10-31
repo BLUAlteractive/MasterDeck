@@ -62,3 +62,5 @@ The 82-row CSV remains the source of scope/dependencies. This file records evide
 | B060 — Separate three wallet balances | Existing B038 journal reused; exact server-balance display and cross-wallet atomic rollback validated | [B060 report](../docs/B060_REPORT.md) | Real-device presentation and reviewed economy/provider activation remain open; no legacy balance conversion was necessary. |
 
 | B061 — Canonical activity ingestion | Canonical proof boundary, source dedupe, independent allocations, correction holds and precision cleanup implemented | [B061 report](../docs/B061_REPORT.md), [activity](../docs/ACTIVITY_INGESTION.md) | No live verifier; actual native proof/device acceptance, correction resolution and B069 job integration remain open. |
+
+| B062 — Versioned pack catalog | Immutable reviewed earned/fixed definitions and exact current pool/contents catalog implemented | [B062 report](../docs/B062_REPORT.md), [catalog](../docs/PACK_CATALOG.md) | Actual economy/rights/provider approval remains open; opening/region/stock fulfillment is B063 and fixed pack billing is B064. |
