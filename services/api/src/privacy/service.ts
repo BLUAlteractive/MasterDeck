@@ -167,7 +167,22 @@ export class PrivacyService {
       const after = q.cursor ? { id: { gt: q.cursor } } : {},
         take = q.limit + 1;
       let rows: Record<string, unknown>[] = [];
-      if (q.resource === 'PACK_OPENINGS')
+      if (q.resource === 'SCREENS')
+        rows = await tx.ownedScreen.findMany({
+          where: { userId: p.userId, ...after },
+          take,
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            patternId: true,
+            definitionHash: true,
+            snapshot: true,
+            status: true,
+            stateVersion: true,
+            createdAt: true,
+          },
+        });
+      else if (q.resource === 'PACK_OPENINGS')
         rows = await tx.packOpening.findMany({
           where: { userId: p.userId, ...after },
           take,

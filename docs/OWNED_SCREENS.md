@@ -1,0 +1,11 @@
+# Earned screen purchase and inventory
+
+`POST /v1/press/screens/:patternId/buy` accepts only `{commandId, expectedDefinitionHash}`. A fresh linked owner, reviewed server allow-list and currently published immutable recipe are required for a new purchase. The server chooses the earned Trail Credit price and currency; no client amount, paid wallet or functional modifier is accepted.
+
+Under the owner lock, one transaction posts a balanced BUY_SCREEN debit, creates an OwnedScreen with the exact recipe/hash snapshot, records an immutable purchase receipt and appends its ScreenEvent origin. The pattern share lock prevents retirement racing initial admission. Deferred database checks reconcile owner/price/currency/transfer, exact receipt and the entitlement event. Retrying a committed command returns its original receipt even when new admission is disabled or the pattern is retired. Incomplete grants roll the debit back. There is no public grant, currency refund or functional paid route.
+
+`GET /v1/press/screens` returns bounded owner-only current inventory (default 50, maximum 100) and rejects another owner's cursor. Privacy export resource SCREENS exposes minimized owner entitlement metadata and its reviewed recipe, not another user's inventory. Screen IDs persist into later Press jobs.
+
+B067 entitlements start AVAILABLE and cannot be directly changed/deleted. B068 adds the reservation lifecycle; B069 consumes a screen only during an atomic successful in-place print. No existing purchase endpoint can bypass job locks or refund an assigned/consumed screen. Retiring a pattern preserves earlier owned recipes; new versions never rewrite them. Main has no live recipe policy.
+
+Migration `202610310004_owned_screens` adds OwnedScreen/ScreenEvent, foreign keys, command/debit uniqueness, immutable origins and deferred receipt/event reconciliation. Reverse SQL is for disposable databases only. Production rollback disables new admission while retaining entitlements, debit journals and event history; repair must be reviewed and append evidence. Aggregate `press.screen_purchase` success events and existing API latency/error metrics omit user IDs, balances and proof payloads. Test funding completes actual accessible quests against replayable isolated game evidence; it is not a health verifier or a runtime faucet.

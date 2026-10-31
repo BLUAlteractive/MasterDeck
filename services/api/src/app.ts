@@ -1,3 +1,4 @@
+import { OwnedScreenController, OwnedScreenService } from './press/screens';
 import { ScreenCatalogController, ScreenCatalogService } from './press/catalog';
 import type { ScreenPolicy } from '@deckforge/contracts';
 import { FixedPackController, FixedPackService } from './packs/fixed';
@@ -192,6 +193,7 @@ export async function createApp(
         PrivacyController,
         ActivityController,
         ScreenCatalogController,
+        OwnedScreenController,
         PackCatalogController,
         PackOpeningController,
         FixedPackController,
@@ -226,6 +228,17 @@ export async function createApp(
             ? new ScreenCatalogService(
                 catalogDatabase,
                 features.screenPolicy ?? null,
+              )
+            : null,
+        },
+        {
+          provide: 'OWNED_SCREENS',
+          useValue: catalogDatabase
+            ? new OwnedScreenService(
+                new ScreenCatalogService(
+                  catalogDatabase,
+                  features.screenPolicy ?? null,
+                ),
               )
             : null,
         },

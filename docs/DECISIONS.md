@@ -489,3 +489,8 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 
 - Separate reviewed Screen Pattern definitions from future Owned Screen consumables. Only Basic Blue 1→3, Fine Red 2→4 and Master Blue 3→5/Red 4→6 are structurally valid. Functional price is Trail Credits only; cosmetic fields cannot change recipe costs, requirements or throughput. Main has no active recipe policy and prototype amounts remain unapproved.
 - Reuse fresh scoped MFA and four-party exact-hash content/economy publication. Every version is immutable; retirement hides new admission without changing a future owned screen/job snapshot. Store explicit before-progress return semantics and a reviewed post-progress policy (DISABLED or FORFEIT_SCREEN), with no automatic refund invented here. Job reservation, progress and successful consumption are separate B067–B069 transactions.
+
+### B067 — Owned screen purchase is one earned ledger transaction
+
+- Snapshot the exact reviewed recipe/hash in a unique OwnedScreen and immutable original receipt; atomically link one Trail Credit BUY_SCREEN debit and append-only entitlement origin. Fresh linked identity, share-locked publication and user serialization prevent stale/duplicate/overdrawn grants. A committed retry recovers its original screen without requiring current admission.
+- No functional Store Gem payment, currency exchange/refund or public grant is introduced. Initial entitlements are AVAILABLE and immutable until the explicit B068 reservation lifecycle; only B069 successful printing may consume them. Retirement preserves acquired snapshots. Minimize owner inventory/export projections and preserve all history on production rollback.
