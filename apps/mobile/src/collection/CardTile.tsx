@@ -1,4 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRef, useEffect } from 'react';
+import { Animated } from 'react-native';
+import { useReducedMotion } from '../experience/useReducedMotion';
+import { useFeedback } from '../experience/Feedback';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { getFace } from '@deckforge/game-core';
 import { shellTheme } from '@deckforge/ui';
 import { CardArt } from './CardArt';
@@ -12,6 +16,16 @@ export function CardTile({
   width: number;
   onPress: () => void;
 }) {
+  const scale = useRef(new Animated.Value(1)).current,
+    reduce = useReducedMotion(),
+    feedback = useFeedback();
+  useEffect(() => {
+    if (reduce) {
+      scale.stopAnimation();
+      scale.setValue(1);
+    }
+    return () => scale.stopAnimation();
+  }, [reduce, scale]);
   return (
     <Pressable
       accessibilityRole="button"
@@ -27,15 +41,23 @@ export function CardTile({
           : ', draft preview') +
         (entry.favorite ? ', favorite' : '')
       }
-      onPress={onPress}
+      onPress={() => {
+        feedback.tap();
+        if (!reduce) {
+          scale.setValue(0.98);
+          Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+        }
+        onPress();
+      }}
       style={[styles.card, { width }]}
     >
-      <View
+      <Animated.View
+        style={{ transform: [{ scale }] }}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
         <CardArt entry={entry} width={width} />
-      </View>
+      </Animated.View>
       <Text style={styles.name}>{getFace(entry.faceId).label}</Text>
       <Text style={styles.note}>
         {entry.favorite ? '★ ' : ''}

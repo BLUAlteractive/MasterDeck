@@ -1,10 +1,12 @@
+import { FeedbackProvider } from './experience/Feedback';
+import { GettingStarted } from './experience/GettingStarted';
 import { Tournaments } from './tournaments/Tournaments';
 import { Storefront } from './commerce/Storefront';
 import { Activity } from './activity/Activity';
 import { Fusion } from './fusion/Fusion';
 import { SpadesLobby } from './play/SpadesLobby';
 import { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { Action } from './collection/controls';
 import { Archive } from './collection/Archive';
 import type { CollectionClient } from './collection/client';
@@ -32,10 +34,9 @@ export function CollectionApp({
     [collectionConnection],
   );
   return (
-    <CollectionWorkspace
-      key={collectionConnection?.sessionKey ?? 'preview-only'}
-      client={client}
-    />
+    <FeedbackProvider key={collectionConnection?.sessionKey ?? 'preview-only'}>
+      <CollectionWorkspace client={client} />
+    </FeedbackProvider>
   );
 }
 function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
@@ -51,8 +52,12 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
   >('gallery');
   return (
     <View style={{ flex: 1 }}>
-      <View
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 }}
+      <GettingStarted connected={client !== null} />
+      <ScrollView
+        horizontal
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={{ flexDirection: 'row', gap: 8, padding: 12 }}
+        accessibilityLabel="Main navigation"
       >
         <Action
           label="Card gallery"
@@ -94,7 +99,7 @@ function CollectionWorkspace({ client }: { client: CollectionClient | null }) {
           selected={view === 'archive'}
           onPress={() => setView('archive')}
         />
-      </View>
+      </ScrollView>
       <View
         style={{ flex: 1, display: view === 'gallery' ? 'flex' : 'none' }}
         accessibilityElementsHidden={view !== 'gallery'}
