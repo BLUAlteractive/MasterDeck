@@ -25,3 +25,4 @@ export {
   latencyPercentileUpper,
   latencyBounds,
 } from './latency';
+export * from './activity';

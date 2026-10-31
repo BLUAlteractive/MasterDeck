@@ -133,6 +133,11 @@ export class PrivacyService {
           state,
         },
       });
+      if (!updated.activityUpload)
+        await tx.activitySource.updateMany({
+          where: { userId: p.userId },
+          data: { startAt: null, endAt: null },
+        });
       if (!updated.analytics)
         await tx.collectorActivity.deleteMany({ where: { userId: p.userId } });
       const result = { recorded: true, choices: choice(updated) };
@@ -162,7 +167,33 @@ export class PrivacyService {
       const after = q.cursor ? { id: { gt: q.cursor } } : {},
         take = q.limit + 1;
       let rows: Record<string, unknown>[] = [];
-      if (q.resource === 'ACCOUNT') {
+      if (q.resource === 'ACTIVITY')
+        rows = await tx.activitySource.findMany({
+          where: { userId: p.userId, ...after },
+          take,
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            source: true,
+            day: true,
+            acceptedSteps: true,
+            reason: true,
+            revision: true,
+          },
+        });
+      else if (q.resource === 'ACTIVITY_REVIEWS')
+        rows = await tx.activityReview.findMany({
+          where: { userId: p.userId, ...after },
+          take,
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            revision: true,
+            stepAdjustment: true,
+            createdAt: true,
+          },
+        });
+      else if (q.resource === 'ACCOUNT') {
         if (!q.cursor) {
           const user = await tx.user.findUniqueOrThrow({
             where: { id: p.userId },
@@ -461,6 +492,10 @@ export class PrivacyService {
           });
           await tx.collectorActivity.deleteMany({
             where: { userId: job.userId },
+          });
+          await tx.activitySource.updateMany({
+            where: { userId: job.userId },
+            data: { startAt: null, endAt: null },
           });
           await tx.cardFavorite.deleteMany({ where: { userId: job.userId } });
           await tx.privacyChoice.deleteMany({ where: { userId: job.userId } });

@@ -1,4 +1,10 @@
 import {
+  ActivityController,
+  ActivityService,
+  startActivityWorker,
+  type ActivityConfig,
+} from './activity/service';
+import {
   PrivacyController,
   PrivacyService,
   startPrivacyWorker,
@@ -103,6 +109,7 @@ export async function createApp(
     tournamentPolicy?: TournamentPolicy;
     socketAdmissionPolicy?: SocketAdmissionPolicy;
     privacy?: PrivacyConfig;
+    activity?: ActivityConfig;
   } = {},
 ) {
   const tournamentPolicy = features.tournamentPolicy
@@ -120,6 +127,10 @@ export async function createApp(
     ? new PrivacyService(auth, features.privacy ?? null)
     : null;
   let stopPrivacy = async () => {};
+  const activity = auth
+    ? new ActivityService(auth.database, features.activity ?? null)
+    : null;
+  let stopActivity = async () => {};
   const latency = new RequestLatency();
   const storefrontPolicy = features.storefrontPolicy
     ? storefrontPolicySchema.parse(features.storefrontPolicy)
@@ -156,6 +167,7 @@ export async function createApp(
         SafetyController,
         OperationsController,
         PrivacyController,
+        ActivityController,
         IdentityController,
         CatalogController,
         StarterController,
@@ -179,6 +191,7 @@ export async function createApp(
       providers: [
         { provide: 'TOURNAMENT_SERVICE', useValue: tournaments },
         { provide: 'PRIVACY_SERVICE', useValue: privacy },
+        { provide: 'ACTIVITY_SERVICE', useValue: activity },
         { provide: 'REQUEST_LATENCY', useValue: latency },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
@@ -202,6 +215,7 @@ export async function createApp(
           provide: 'AUTH_SHUTDOWN',
           useValue: {
             beforeApplicationShutdown: async () => {
+              await stopActivity();
               await stopPrivacy();
               await stopTournaments();
               await stopBilling();
@@ -275,6 +289,8 @@ export async function createApp(
     stopBilling = startBillingWorker(billing);
   if (tournaments && tournamentPolicy?.workers)
     stopTournaments = startTournamentWorker(tournaments);
+  if (activity && features.activity)
+    stopActivity = startActivityWorker(activity);
   if (privacy && features.privacy) stopPrivacy = startPrivacyWorker(privacy);
   app.enableCors({ origin: origins });
   app.use(

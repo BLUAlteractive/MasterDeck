@@ -60,3 +60,5 @@
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
 
 | B060 — Separate three wallet balances | Existing B038 journal reused; exact server-balance display and cross-wallet atomic rollback validated | [B060 report](../docs/B060_REPORT.md) | Real-device presentation and reviewed economy/provider activation remain open; no legacy balance conversion was necessary. |
+
+| B061 — Canonical activity ingestion | Canonical proof boundary, source dedupe, independent allocations, correction holds and precision cleanup implemented | [B061 report](../docs/B061_REPORT.md), [activity](../docs/ACTIVITY_INGESTION.md) | No live verifier; actual native proof/device acceptance, correction resolution and B069 job integration remain open. |
