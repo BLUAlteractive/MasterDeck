@@ -1,3 +1,4 @@
+import { revokeUserPress } from '../press/state';
 import { privacySubjectHash } from '../privacy/key';
 import { lockPrincipal } from '../rooms/shared';
 import { retryableTransaction } from '../database-retry';
@@ -238,6 +239,7 @@ export class AuthService {
         create: { userId: principal.userId },
         update: {},
       });
+      await revokeUserPress(tx, principal.userId, request.id);
       await tx.user.update({
         where: { id: principal.userId },
         data: { status: 'SUSPENDED' },

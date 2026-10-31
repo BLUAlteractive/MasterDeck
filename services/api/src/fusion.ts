@@ -46,6 +46,16 @@ async function proposal(
     orderBy: { id: 'asc' },
   });
   if (cards.length !== 5) throw new ApiFailure('SOURCES_UNAVAILABLE', 404);
+  if (
+    await tx.pressJob.count({
+      where: {
+        userId: ownerId,
+        cardId: { in: ids },
+        status: { in: ['ACTIVE', 'PAUSED', 'READY_TO_CLAIM'] },
+      },
+    })
+  )
+    throw new ApiFailure('CARD_RESERVED_FOR_PRESS', 409);
   let output;
   try {
     output = fusionRecipe(ownerId, cards, policy.eligibleSeries);

@@ -1,0 +1,11 @@
+# B068 — Printing Press job domain
+
+Added one reserved job per owner/card/screen, immutable recipe/source/policy snapshots, expected-version commands, append-only job/screen events and safe owner views/export. Start assigns a screen without consuming it. Pause retains reservation, resume starts a fresh active window, and untouched cancellation returns the screen. Snapshotted post-progress policy is explicit. Main has no reviewed Press policy; new/resumed work stays unavailable.
+
+The original card remains playable at its old state through existing game locks. Start rejects a game-locked, stale, terminal, cross-branch or foreign source. Active/paused reservations block fusion and direct consume/revoke/level edits through application and SQL guards. Requested deletion revokes the job/screen reservation atomically before suspension, without an upgrade, duplication, successful screen consumption or currency grant. Existing active-game/provider cleanup gates remain.
+
+Files: pure job transition helper/test and index; shared Press policy/start/command/view and privacy contracts; Prisma job/event and screen link models, migration/disposable rollback; Press service/state helpers/controllers/wiring; fusion guard; auth deletion cleanup and minimized privacy export; fixture/database tests; decisions, status, job guide and report. B069 owns actual authoritative progress and atomic in-place claims.
+
+Validation: final `pnpm ci:quality` passed formatting/lint/types, 333 tests in 72 files and all 11 builds (`/tmp/deckforge-b068-quality-final.log`). Database/recovery and tracked-secret evidence is recorded below after completion. Real proof/device/economy activation and progress/claim acceptance remain open. Next smallest ticket: B069 walk-to-evolve atomic claim.
+
+Final owned `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION='do the next 15' pnpm ci:recovery` passed 189 database cases in 38 files twice, one optional load skip, Prisma validation/deploy/seed, 104-table clean restore/game replay with zero balance/origin mismatches and complete reverse migrations/reset/reseed (161 seconds, `/tmp/deckforge-b068-recovery.log`). `pnpm security:check` passed. No existing database, live job policy or production data was changed.

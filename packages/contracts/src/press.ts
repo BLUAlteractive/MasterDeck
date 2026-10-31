@@ -114,3 +114,60 @@ export const screenInventorySchema = z
     nextCursor: z.uuid().nullable(),
   })
   .strict();
+export const pressPolicySchema = z
+  .object({
+    version: z.string().min(1).max(100),
+    approvalReference: z.string().min(8).max(200),
+  })
+  .strict();
+export type PressPolicy = z.infer<typeof pressPolicySchema>;
+export const pressStartSchema = z
+  .object({
+    commandId: z.uuid(),
+    cardId: z.uuid(),
+    screenId: z.uuid(),
+    expectedCardVersion: z.number().int().positive(),
+    expectedScreenVersion: z.number().int().positive(),
+  })
+  .strict();
+export const pressCommandSchema = z
+  .object({
+    commandId: z.uuid(),
+    jobId: z.uuid(),
+    expectedVersion: z.number().int().positive(),
+    action: z.enum(['PAUSE', 'RESUME', 'CANCEL']),
+  })
+  .strict();
+export const pressStatusSchema = z.enum([
+  'ACTIVE',
+  'PAUSED',
+  'READY_TO_CLAIM',
+  'COMPLETED',
+  'CANCELLED',
+  'REVOKED',
+]);
+export const pressReceiptSchema = z
+  .object({
+    jobId: z.uuid(),
+    stateVersion: z.number().int().positive(),
+    status: pressStatusSchema,
+  })
+  .strict();
+export const pressJobViewSchema = z
+  .object({
+    id: z.uuid(),
+    cardId: z.uuid(),
+    screenId: z.uuid(),
+    status: pressStatusSchema,
+    stateVersion: z.number().int().positive(),
+    acceptedSteps: z.number().int().nonnegative(),
+    accessibleUnits: z.number().int().nonnegative(),
+    definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    definition: screenPatternSchema,
+    startedAt: z.iso.datetime(),
+    activeSince: z.iso.datetime().nullable(),
+  })
+  .strict();
+export const pressJobsSchema = z
+  .object({ available: z.boolean(), active: pressJobViewSchema.nullable() })
+  .strict();

@@ -167,7 +167,24 @@ export class PrivacyService {
       const after = q.cursor ? { id: { gt: q.cursor } } : {},
         take = q.limit + 1;
       let rows: Record<string, unknown>[] = [];
-      if (q.resource === 'SCREENS')
+      if (q.resource === 'PRESS_JOBS')
+        rows = await tx.pressJob.findMany({
+          where: { userId: p.userId, ...after },
+          take,
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            cardId: true,
+            screenId: true,
+            snapshot: true,
+            status: true,
+            stateVersion: true,
+            acceptedSteps: true,
+            accessibleUnits: true,
+            startedAt: true,
+          },
+        });
+      else if (q.resource === 'SCREENS')
         rows = await tx.ownedScreen.findMany({
           where: { userId: p.userId, ...after },
           take,

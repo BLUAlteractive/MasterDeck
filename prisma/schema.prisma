@@ -1367,6 +1367,7 @@ model ScreenReview {
 }
 
 model OwnedScreen {
+  jobId          String?  @db.Uuid
   id             String   @id @db.Uuid
   userId         String   @db.Uuid
   patternId      String   @db.Uuid
@@ -1396,4 +1397,36 @@ model ScreenEvent {
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
 
   @@unique([screenId, version])
+}
+
+model PressJob {
+  id              String    @id @db.Uuid
+  userId          String    @db.Uuid
+  cardId          String    @db.Uuid
+  screenId        String    @db.Uuid
+  definitionHash  String
+  snapshot        Json
+  cardBefore      Json
+  policy          Json
+  status          String    @default("ACTIVE")
+  stateVersion    Int       @default(1)
+  acceptedSteps   Int       @default(0)
+  accessibleUnits Int       @default(0)
+  startedAt       DateTime  @default(now()) @db.Timestamptz(3)
+  activeSince     DateTime? @db.Timestamptz(3)
+}
+
+model PressJobEvent {
+  id          String   @id @db.Uuid
+  jobId       String   @db.Uuid
+  userId      String   @db.Uuid
+  version     Int
+  action      String
+  sourceKey   String   @unique
+  requestHash String
+  before      Json?
+  after       Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([jobId, version])
 }
