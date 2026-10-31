@@ -1,3 +1,4 @@
+import { useFeedback } from '../experience/Feedback';
 import { Pressable, Text, StyleSheet } from 'react-native';
 import { shellTheme } from '@deckforge/ui';
 export function Action({
@@ -11,13 +12,17 @@ export function Action({
   selected?: boolean;
   disabled?: boolean;
 }) {
+  const feedback = useFeedback();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
-      onPress={onPress}
+      onPress={() => {
+        feedback.tap();
+        onPress();
+      }}
       style={[
         styles.button,
         selected && styles.selected,

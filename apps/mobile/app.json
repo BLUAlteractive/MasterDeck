@@ -3,7 +3,7 @@
     "name": "DeckForge Dev",
     "slug": "deckforge-dev",
     "version": "0.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "dark",
     "web": {
       "bundler": "metro"
@@ -25,6 +25,15 @@
         "expo-secure-store",
         {
           "configureAndroidBackup": true
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
         }
       ]
     ]

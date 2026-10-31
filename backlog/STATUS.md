@@ -52,3 +52,5 @@
 The 82-row CSV remains the source of scope/dependencies. This file records evidence without weakening acceptance criteria. Hosted failure and recovery were observed; green quality checks do not waive the dependency-audit requirement.
 
 | B046 — Operational dashboards | Audited reconciled aggregates, WEC coverage and bounded HTTP latency implemented | [B046 report](../docs/B046_REPORT.md), [operations](../docs/OPERATIONS.md) | Historical analytics coverage, production monitoring and independent fraud review remain open. |
+
+| B047 — Mobile polish | Adaptive shell, guidance, card interaction and optional feedback implemented; web validated | [B047 report](../docs/B047_REPORT.md) | Native toolchain/device journey and playback/haptic/rotation acceptance remain open. |

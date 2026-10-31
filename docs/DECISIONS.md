@@ -405,3 +405,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Record one latest server collection timestamp for authenticated nonempty inventory views/successful favorites; combine with settled match and fusion/Press history for rolling WEC. Do not invent historical view/archive/incubation facts or let analytics grant rewards. Coverage is disclosed and B051 owns retention/erasure.
 - HTTP latency is a bounded process-only histogram with fixed labels and since-boot timestamp, separate from database facts. Integrity exceptions need investigation; zero counts do not prove absence of fraud.
 - Security follow-up for B049: review disabled storefront offers with delayed first-time verified purchase proofs. An offer switch must not strand a legitimate already-paid transaction; distinguish sale visibility/initiation from authoritative fulfillment of earlier platform evidence. Live billing remains disabled until this is resolved and platform-tested.
+
+### B047 — Optional feedback and adaptive mobile shell
+
+- Keep sound/haptics off by default and scoped to the current identity session. Use original procedural audio, no microphone or background recording/playback permission, strict foreground checks and cleanup of late async playback. Feedback cannot replace a visible server result or block a command.
+- Compact navigation and getting-started guidance preserve current account safety disclosures and server-only availability. Card interaction respects system reduced motion; orientation is adaptive. No guest linking or permanent-account policy is improvised.
+- Web/TS/native configuration checks cannot satisfy real Android/iOS journey acceptance. Native toolchain/device gates remain open. Current dependency audit also reports moderate advisories in unchanged CLI/lint paths; B049 reviews them before beta.
