@@ -68,6 +68,8 @@ async function fund(a: { userId: string; principal: Principal }) {
 }
 beforeAll(async () => {
   f = await identityFixture();
+  f.players[0] = await f.actor(false);
+  f.players[1] = await f.actor(false);
   pack = await fixturePack(f, { cardOnly: true });
   service = new PackOpeningService(pack.catalog, config);
 }, 30000);
@@ -149,7 +151,7 @@ it('opens once under ten concurrent retries with one debit, original item IDs an
 it('serializes finite stock across distinct owners, including ink-only outcomes, with no partial debit on failure', async () => {
   const limited = await fixturePack(f, { stockLimit: 1, inkOnly: true }),
     opening = new PackOpeningService(limited.catalog, config),
-    players = await Promise.all([f.actor(), f.actor()]);
+    players = await Promise.all([f.actor(false), f.actor(false)]);
   try {
     for (const p of players) await fund(p);
     const results = await Promise.allSettled(
@@ -201,6 +203,12 @@ it('serializes finite stock across distinct owners, including ink-only outcomes,
 it('rejects insufficient funds, stale odds and unverified region without minting or spending; supplies cannot be edited', async () => {
   const p = f.players[1]!,
     before = await f.db.cardInstance.count();
+  await expect(
+    service.open(f.players[2]!.principal, pack.packId, {
+      commandId: randomUUID(),
+      expectedDefinitionHash: hash(pack.definition),
+    }),
+  ).rejects.toMatchObject({ code: 'PERMANENT_ACCOUNT_REQUIRED' });
   await expect(
     service.open(p.principal, pack.packId, {
       commandId: randomUUID(),

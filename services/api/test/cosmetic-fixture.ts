@@ -1,24 +1,34 @@
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@deckforge/database';
-export async function cosmeticFixture(db: PrismaClient, publish = true) {
+export async function cosmeticFixture(
+  db: PrismaClient,
+  publish = true,
+  count = 1,
+) {
   const productId = randomUUID(),
     itemId = randomUUID();
+  const itemIds = [
+    itemId,
+    ...Array.from({ length: count - 1 }, () => randomUUID()),
+  ];
   await db.$transaction(async (tx) => {
-    await tx.cosmeticItem.create({
-      data: {
-        id: itemId,
-        name: 'Evening table',
-        presentation: {
-          kind: 'TABLE_THEME',
-          primaryColor: '#123456',
-          accentColor: '#ffffff',
-          motif: 'SOLID',
+    for (const id of itemIds) {
+      await tx.cosmeticItem.create({
+        data: {
+          id,
+          name: 'Evening table',
+          presentation: {
+            kind: 'TABLE_THEME',
+            primaryColor: '#123456',
+            accentColor: '#ffffff',
+            motif: 'SOLID',
+          },
+          rightsOwner: 'ISOLATED_ORIGINAL_FIXTURE',
+          rightsBasis: 'ORIGINAL',
+          approvalReference: 'FIXTURE_NOT_APPROVAL',
         },
-        rightsOwner: 'ISOLATED_ORIGINAL_FIXTURE',
-        rightsBasis: 'ORIGINAL',
-        approvalReference: 'FIXTURE_NOT_APPROVAL',
-      },
-    });
+      });
+    }
     await tx.cosmeticProduct.create({
       data: {
         id: productId,
@@ -32,7 +42,9 @@ export async function cosmeticFixture(db: PrismaClient, publish = true) {
         approvalReference: 'FIXTURE_NOT_APPROVAL',
       },
     });
-    await tx.cosmeticProductItem.create({ data: { productId, itemId } });
+    await tx.cosmeticProductItem.createMany({
+      data: itemIds.map((itemId) => ({ productId, itemId })),
+    });
     if (publish)
       await tx.cosmeticProduct.update({
         where: { id: productId },
@@ -42,6 +54,7 @@ export async function cosmeticFixture(db: PrismaClient, publish = true) {
   return {
     productId,
     itemId,
+    itemIds,
     appleProductId: 'test.apple.' + productId,
     googleProductId: 'test.google.' + productId,
   };

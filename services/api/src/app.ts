@@ -1,3 +1,4 @@
+import { FixedPackController, FixedPackService } from './packs/fixed';
 import {
   PackOpeningController,
   PackOpeningService,
@@ -189,6 +190,7 @@ export async function createApp(
         ActivityController,
         PackCatalogController,
         PackOpeningController,
+        FixedPackController,
         IdentityController,
         CatalogController,
         StarterController,
@@ -215,6 +217,12 @@ export async function createApp(
         { provide: 'ACTIVITY_SERVICE', useValue: activity },
         { provide: 'PACK_CATALOG', useValue: packCatalog },
         { provide: 'PACK_OPENINGS', useValue: packOpenings },
+        {
+          provide: 'FIXED_PACKS',
+          useValue: packCatalog
+            ? new FixedPackService(packCatalog, billing)
+            : null,
+        },
         { provide: 'REQUEST_LATENCY', useValue: latency },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },

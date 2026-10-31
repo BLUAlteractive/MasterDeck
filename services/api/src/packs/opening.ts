@@ -95,6 +95,10 @@ export class PackOpeningService {
           !this.catalog.policy.allowedPackIds.includes(packId)
         )
           throw new ApiFailure('PACK_OPENING_NOT_CONFIGURED', 503);
+        if (
+          (await tx.user.findUniqueOrThrow({ where: { id: p.userId } })).isGuest
+        )
+          throw new ApiFailure('PERMANENT_ACCOUNT_REQUIRED', 403);
         await tx.$queryRaw`SELECT id FROM "PackDefinition" WHERE id=${packId}::uuid FOR SHARE`;
         const pack = await tx.packDefinition.findUnique({
           where: { id: packId },
