@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "target": "production",
+  "artifactCommit": null,
+  "apiOrigin": null,
+  "adminOrigin": null,
+  "corsOrigins": [],
+  "databaseReference": null,
+  "keySetReference": null,
+  "flags": {
+    "classicAdmission": false,
+    "evolvedAdmission": false,
+    "spadesAdmission": false,
+    "tournaments": false,
+    "billing": false,
+    "activity": false,
+    "poiDrops": false,
+    "trailRewards": false
+  },
+  "gates": {
+    "CORE_B060_B082": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "QUALITY_AND_SECURITY": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "NATIVE_ACCESSIBILITY": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "PLATFORM_BILLING": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "PRIVACY_DELETION_RETENTION": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "LEGAL_AGE_ODDS_RIGHTS": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "STAGING_ENVIRONMENT_ISOLATION": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "PRODUCTION_KEYS_AND_BACKUPS": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "RESTORE_AND_ROLLBACK_DRILL": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "CAPACITY_AND_ALERT_DELIVERY": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "SUPPORT_INCIDENT_STAFFING": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    },
+    "PRODUCT_GO_NO_GO": {
+      "status": "UNVERIFIED",
+      "evidenceRef": null,
+      "evidenceSha256": null,
+      "approval": null
+    }
+  }
+}
