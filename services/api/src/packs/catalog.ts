@@ -245,6 +245,18 @@ export class PackCatalogService {
           : 0;
       packs.push(
         packViewSchema.parse({
+          remainingStock:
+            definition.stockLimit === null
+              ? null
+              : Math.max(
+                  0,
+                  definition.stockLimit -
+                    ((
+                      await this.db.packStock.findUnique({
+                        where: { packId: row.id },
+                      })
+                    )?.issued ?? 0),
+                ),
           id: row.id,
           slug: row.slug,
           version: row.version,

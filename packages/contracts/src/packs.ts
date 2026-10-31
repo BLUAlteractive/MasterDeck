@@ -103,6 +103,7 @@ export const packAdminSchema = z.discriminatedUnion('action', [
 ]);
 export const packViewSchema = z
   .object({
+    remainingStock: z.number().int().nonnegative().nullable(),
     id: z.uuid(),
     slug: z.string(),
     version: z.number().int().positive(),
@@ -124,4 +125,49 @@ export const packViewSchema = z
   .strict();
 export const packCatalogSchema = z
   .object({ available: z.boolean(), packs: z.array(packViewSchema).max(100) })
+  .strict();
+export const packOpenSchema = z
+  .object({
+    commandId: z.uuid(),
+    expectedDefinitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict();
+export const packOutcomeSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('CARD'),
+      instanceId: z.uuid(),
+      templateId: z.uuid(),
+      faceId: z.string(),
+      branch: z.enum(['BLUE', 'RED']),
+      level: z.number().int().min(1).max(2),
+      rarity: z.enum(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('TRAIL_INK'),
+      units: z.number().int().positive(),
+    })
+    .strict(),
+]);
+export const packOpeningSchema = z
+  .object({
+    openingId: z.uuid(),
+    packId: z.uuid(),
+    definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    currency: z.literal('TRAIL_CREDITS'),
+    charged: z.string().regex(/^[1-9]\d*$/),
+    rngVersion: z.literal('HMAC_SHA256_V1'),
+    seedCommitment: z.string().regex(/^[a-f0-9]{64}$/),
+    outcomes: z.array(packOutcomeSchema).min(1).max(10),
+  })
+  .strict();
+export type PackOpeningReceipt = z.infer<typeof packOpeningSchema>;
+export const supplyViewSchema = z
+  .object({
+    trailInk: z.string().regex(/^\d+$/),
+    transferable: z.literal(false),
+    purchasable: z.literal(false),
+  })
   .strict();

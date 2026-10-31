@@ -1,0 +1,11 @@
+# B063 — Earned pack opening
+
+Added server-seeded atomic earned openings, persistent stock and safe outcome receipts. One Trail Credit debit, exact published odds/version, immutable card origins or bound ink, and a whole opening commit together. Concurrent retries return the original instance IDs. User/stock locks prevent overselling; failure rolls back spending and rewards. Owner-only receipt and supply views omit secret RNG evidence; internal authenticated seed replay verifies the original draw sequence. Main has no activation policy/key/provider.
+
+Files: pure reward-pool helpers/tests and index; pack/privacy contracts; Prisma stock/opening/supply models, migration and disposable rollback; API opening/RNG/supply services, controllers and wiring; catalog remaining stock; minimized privacy exports; owned pack fixtures/integration tests; decisions, status and this report. See [opening guide](EARNED_PACK_OPENING.md).
+
+Validation: `pnpm ci:quality` passed format, lint, strict types, 322 tests in 67 files and all 11 builds (`/tmp/deckforge-b063-quality-final.log`). `pnpm security:check` passed; `pnpm ci:audit` passed the high/critical threshold with one inherited low advisory. The initial database run correctly rejected test funding without accessible quest evidence; the fixture now completes a genuine server-verified quest using replayable isolated game results. Card-only and ink-only pools guarantee both paths are tested; failed fixture setup no longer leaks published artwork.
+
+Database validation evidence is recorded below after the complete recovery run. Production economy approval, real region/provider trust, native integration, key custody/rotation and production recovery remain open. No purchased power, public grant, live activation or existing data mutation. Next smallest ticket: B064 fixed cosmetic pack IAP using the existing verified entitlement journal.
+
+Final `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION='do the next 15' pnpm ci:recovery` passed all 174 database cases in 34 files twice (one optional load test skipped), Prisma validation/deploy twice/seed, 98-table clean restore with full game replay and no ledger/origin mismatches, all reverse migrations, reset/reseed and rerun in 149 seconds (`/tmp/deckforge-b063-recovery-final.log`).

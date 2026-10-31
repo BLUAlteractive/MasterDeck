@@ -1291,3 +1291,50 @@ model PackReview {
   @@id([packId, review])
   @@unique([packId, reviewerId])
 }
+
+model PackStock {
+  packId  String @id @db.Uuid
+  issued  Int    @default(0)
+  version Int    @default(1)
+}
+
+model PackOpening {
+  id             String   @id @db.Uuid
+  packId         String   @db.Uuid
+  userId         String   @db.Uuid
+  commandId      String   @db.Uuid
+  requestHash    String
+  definitionHash String
+  snapshot       Json
+  result         Json
+  draws          Json
+  rngBox         String
+  rngKeyVersion  String
+  transferId     String   @unique @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, commandId])
+}
+
+model SupplyBalance {
+  userId  String @db.Uuid
+  kind    String
+  units   Int    @default(0)
+  version Int    @default(0)
+
+  @@id([userId, kind])
+}
+
+model SupplyEvent {
+  id          String   @id @db.Uuid
+  userId      String   @db.Uuid
+  kind        String
+  delta       Int
+  version     Int
+  sourceKey   String   @unique
+  requestHash String
+  reason      String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, kind, version])
+}

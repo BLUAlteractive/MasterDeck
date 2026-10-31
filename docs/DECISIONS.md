@@ -466,3 +466,9 @@ Register D-03 additionally specifies the single shuffled 52-face pool (MASTER_SP
 - Display exact per-draw numerator/denominator odds; stock caps count whole openings, not undisclosed per-card rarity changes. Region enforcement and stock/atomic draw fulfillment are B063, billing pack verification is B064. Configured prices/weights remain explicit reviewed data, not silently approved economy tuning.
 
 - B062 paid-stock clarification: fixed cosmetics require `stockLimit: null` until a trusted platform purchase-admission/reservation flow can honor finite caps without rejecting legitimate delayed proofs. Earned stock limits remain supported; no finite paid-stock promise is activated.
+
+### B063 — Atomic earned openings and bound supply provenance
+
+- A whole opening, its exact version/hash, one Trail Credit debit, independently minted card origins and bound ink share one transaction. Serialize user then pack stock; no partial debit or oversell. Every retry preserves original instance IDs and does not call a region provider after commitment. Historical receipts remain readable when new openings are disabled.
+- Use server-generated encrypted seeds and versioned HMAC-SHA256 rejection sampling, exact integer weights and immutable draws for internal replay. The API returns a seed commitment, not a usable seed or hidden RNG state. Production key custody/rotation and reviewed economy configuration remain activation gates.
+- Trail Ink is an earned bound supply with a reconciled append-only journal, not a fourth purchasable/exchangeable currency. No public grant endpoint exists. Later Press and trail tickets must provide authoritative transactions and source evidence for their allowed supply reasons.

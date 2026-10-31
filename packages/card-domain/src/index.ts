@@ -26,3 +26,4 @@ export {
   latencyBounds,
 } from './latency';
 export * from './activity';
+export * from './reward-pool';
