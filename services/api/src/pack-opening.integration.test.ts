@@ -253,3 +253,70 @@ it('rejects insufficient funds, stale odds and unverified region without minting
       }),
     ).rejects.toThrow();
 }, 30000);
+it('paginates only owner-safe history and fences cancellation racing an opening without refunds or delayed spend', async () => {
+  const p = f.players[0]!,
+    command = () => ({
+      commandId: randomUUID(),
+      expectedDefinitionHash: hash(pack.definition),
+    });
+  const first = await service.history(p.principal, { limit: 1 });
+  expect(first.items).toHaveLength(1);
+  expect(JSON.stringify(first)).not.toMatch(/rngBox|draws|"seed"/);
+  await expect(
+    service.history(f.players[1]!.principal, {
+      cursor: first.items[0]!.receipt.openingId,
+    }),
+  ).rejects.toMatchObject({ code: 'OPENING_UNAVAILABLE' });
+  await expect(
+    service.history(p.principal, { limit: 51 }),
+  ).rejects.toMatchObject({ code: 'INVALID_REQUEST' });
+  const cancelled = { packId: pack.packId, command: command() };
+  const cancellations = await Promise.all(
+    Array.from({ length: 10 }, () => service.cancel(p.principal, cancelled)),
+  );
+  for (const result of cancellations)
+    expect(result).toEqual({
+      status: 'CANCELLED',
+      commandId: cancelled.command.commandId,
+    });
+  await expect(
+    service.open(p.principal, pack.packId, cancelled.command),
+  ).rejects.toMatchObject({ code: 'PACK_OPENING_CANCELLED' });
+  const race = { packId: pack.packId, command: command() },
+    [opened, stopped] = await Promise.allSettled([
+      service.open(p.principal, pack.packId, race.command),
+      service.cancel(p.principal, race),
+    ]);
+  expect(stopped.status).toBe('fulfilled');
+  if (opened.status === 'fulfilled') {
+    expect(stopped.status === 'fulfilled' && stopped.value).toEqual({
+      status: 'COMMITTED',
+      receipt: opened.value,
+    });
+  } else {
+    expect(stopped.status === 'fulfilled' && stopped.value.status).toBe(
+      'CANCELLED',
+    );
+    expect(opened.reason).toMatchObject({ code: 'PACK_OPENING_CANCELLED' });
+  }
+  await service.open(p.principal, pack.packId, command());
+  const page = await service.history(p.principal, { limit: 1 });
+  expect(page.nextCursor).not.toBeNull();
+  const next = await service.history(p.principal, {
+    cursor: page.nextCursor!,
+    limit: 1,
+  });
+  expect(next.items[0]!.receipt.openingId).not.toBe(
+    page.items[0]!.receipt.openingId,
+  );
+  const count = await f.db.packOpening.count({ where: { userId: p.userId } });
+  expect(
+    (
+      await f.db.restrictedAccount.findUniqueOrThrow({
+        where: {
+          userId_currency: { userId: p.userId, currency: 'TRAIL_CREDITS' },
+        },
+      })
+    ).balance,
+  ).toBe(1000n - BigInt(count) * 100n);
+}, 30000);

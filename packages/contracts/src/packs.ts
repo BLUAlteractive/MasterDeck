@@ -186,3 +186,33 @@ export const fixedPackOfferSchema = z
     functionalEffects: z.literal(false),
   })
   .strict();
+export const packHistoryQuerySchema = z
+  .object({
+    cursor: z.uuid().optional(),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+  })
+  .strict();
+export const packHistorySchema = z
+  .object({
+    items: z
+      .array(
+        z
+          .object({ openedAt: z.iso.datetime(), receipt: packOpeningSchema })
+          .strict(),
+      )
+      .max(50),
+    nextCursor: z.uuid().nullable(),
+  })
+  .strict();
+export const pendingPackSchema = z
+  .object({ packId: z.uuid(), command: packOpenSchema })
+  .strict();
+export type PendingPack = z.infer<typeof pendingPackSchema>;
+export type PackView = z.infer<typeof packViewSchema>;
+export type PackHistory = z.infer<typeof packHistorySchema>;
+export const packCancelResultSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('CANCELLED'), commandId: z.uuid() }).strict(),
+  z
+    .object({ status: z.literal('COMMITTED'), receipt: packOpeningSchema })
+    .strict(),
+]);

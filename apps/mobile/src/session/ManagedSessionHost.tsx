@@ -1,3 +1,4 @@
+import { pendingPackKey } from '../packs/pending';
 import 'react-native-url-polyfill/auto';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, StyleSheet, Text, View } from 'react-native';
@@ -162,8 +163,16 @@ export function ManagedSessionHost({
                   });
                   if (error) throw error;
                 },
-                clearCredentials: () =>
-                  credentialStorage.removeItem(storageKey),
+                clearCredentials: async () => {
+                  const results = await Promise.allSettled([
+                    credentialStorage.removeItem(storageKey),
+                    credentialStorage.removeItem(
+                      pendingPackKey(ready.userId, new URL(apiUrl).origin),
+                    ),
+                  ]);
+                  if (results.some((r) => r.status === 'rejected'))
+                    throw new Error('Local deletion cleanup incomplete');
+                },
               });
               setSession(null);
               setNeedsCleanup(
