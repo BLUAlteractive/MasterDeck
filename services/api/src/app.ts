@@ -1,3 +1,5 @@
+import { PackCatalogController, PackCatalogService } from './packs/catalog';
+import type { PackPolicy } from '@deckforge/contracts';
 import {
   ActivityController,
   ActivityService,
@@ -110,6 +112,7 @@ export async function createApp(
     socketAdmissionPolicy?: SocketAdmissionPolicy;
     privacy?: PrivacyConfig;
     activity?: ActivityConfig;
+    packPolicy?: PackPolicy;
   } = {},
 ) {
   const tournamentPolicy = features.tournamentPolicy
@@ -139,6 +142,13 @@ export async function createApp(
     throw new Error(
       'Billing requires configured identity and reviewed catalog',
     );
+  const packCatalog = catalogDatabase
+    ? new PackCatalogService(
+        catalogDatabase,
+        features.packPolicy ?? null,
+        storefrontPolicy,
+      )
+    : null;
   const billing =
     features.billing && auth && storefrontPolicy
       ? new BillingService(auth.database, features.billing, storefrontPolicy)
@@ -168,6 +178,7 @@ export async function createApp(
         OperationsController,
         PrivacyController,
         ActivityController,
+        PackCatalogController,
         IdentityController,
         CatalogController,
         StarterController,
@@ -192,6 +203,7 @@ export async function createApp(
         { provide: 'TOURNAMENT_SERVICE', useValue: tournaments },
         { provide: 'PRIVACY_SERVICE', useValue: privacy },
         { provide: 'ACTIVITY_SERVICE', useValue: activity },
+        { provide: 'PACK_CATALOG', useValue: packCatalog },
         { provide: 'REQUEST_LATENCY', useValue: latency },
         { provide: 'AUTH_SERVICE', useValue: auth },
         { provide: 'ADMISSION_POLICY', useValue: admissionPolicy },
